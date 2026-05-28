@@ -1,10 +1,9 @@
 """
 LinkedIn company URL finder with fallback chain and LLM validation.
 
-Fallback order:
-1. Google search via crawl4AI (site:linkedin.com/company "{name}")
-2. Linkup API
-3. LLM direct knowledge (final fallback)
+Fallback order (no Google — always triggers CAPTCHA):
+1. Linkup API
+2. LLM direct knowledge (final fallback)
 
 After each successful result, the candidate URL is validated by the LLM.
 If validation fails, the next fallback is tried.
@@ -25,7 +24,6 @@ import httpx
 
 from config import config
 from llm import llm
-from tools.scraper import search_google
 
 logger = logging.getLogger(__name__)
 
@@ -43,19 +41,13 @@ async def find_linkedin_company(company_name: str) -> str:
     logger.info("Finding LinkedIn company page for: '%s'", company_name)
     logger.info("=" * 60)
 
-    # ── Fallback 1: Google search ───────────────────────────────────────────
-    candidate = await _fallback_google(company_name)
-    if candidate and await _validate_company_url(candidate, company_name):
-        logger.info("[OK] Google returned validated URL: %s", candidate)
-        return candidate
-
-    # ── Fallback 2: Linkup API ──────────────────────────────────────────────
+    # ── Fallback 1: Linkup API ──────────────────────────────────────────────
     candidate = await _fallback_linkup(company_name)
     if candidate and await _validate_company_url(candidate, company_name):
         logger.info("[OK] Linkup returned validated URL: %s", candidate)
         return candidate
 
-    # ── Fallback 3: LLM direct knowledge ────────────────────────────────────
+    # ── Fallback 2: LLM direct knowledge ────────────────────────────────────
     candidate = await _fallback_llm_knowledge(company_name)
     if candidate and await _validate_company_url(candidate, company_name):
         logger.info("[OK] LLM knowledge returned validated URL: %s", candidate)
@@ -67,58 +59,74 @@ async def find_linkedin_company(company_name: str) -> str:
 
 # ── Fallback implementations ────────────────────────────────────────────────
 
-async def _fallback_google(company_name: str) -> str | None:
-    """Search ``site:linkedin.com/company "{company}"`` via Google."""
-    query = f'site:linkedin.com/company "{company_name}"'
-    logger.info("Fallback 1 [Google]: searching for '%s'", query)
-    urls = await search_google(query, max_results=5)
-    for url in urls:
-        if "linkedin.com/company/" in url:
-            clean = url.split("?")[0].rstrip("/")
-            logger.info("  Google returned: %s", clean)
-            return clean
-    logger.info("  Google found no LinkedIn company URLs")
-    return None
-
 
 async def _fallback_linkup(company_name: str) -> str | None:
-    """Call the Linkup API to get the company's LinkedIn URL."""
-    logger.info("Fallback 2 [Linkup]: looking up '%s'", company_name)
+    """Call the LinkUp API to get the company's LinkedIn URL.
+
+    Uses ``site:linkedin.com/company`` search operator.
+    """
+    logger.info("Fallback 1 [LinkUp]: looking up '%s'", company_name)
     if not config.linkup_api_key:
         logger.warning("  LINKUP_API_KEY not set, skipping")
         return None
 
+    query = f'site:linkedin.com/company "{company_name}"'
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
-            # Linkup API endpoint — adjust based on their actual spec
             resp = await client.post(
-                "https://api.linkup.com/v1/company/search",
+                "https://api.linkup.so/v1/search",
                 headers={
                     "Authorization": f"Bearer {config.linkup_api_key}",
                     "Content-Type": "application/json",
                 },
-                json={"name": company_name, "include_linkedin": True},
+                json={"q": query, "depth": "fast", "outputType": "searchResults", "count": 5},
             )
             if resp.status_code != 200:
-                logger.warning("  Linkup returned status %d", resp.status_code)
+                logger.warning("  LinkUp returned status %d", resp.status_code)
                 return None
 
             data = resp.json()
-            url = data.get("linkedin_url") or data.get("company", {}).get("linkedin_url")
-            if url:
-                clean = url.split("?")[0].rstrip("/")
-                logger.info("  Linkup returned: %s", clean)
-                return clean
-            logger.info("  Linkup returned no LinkedIn URL in response")
+            results = data.get("results", [])
+            for item in results:
+                url = (item.get("url") or "").strip()
+                if url and "/company/" in url:
+                    clean = url.split("?")[0].rstrip("/")
+                    # Normalise country subdomain → www (e.g. ro.linkedin.com → www.linkedin.com)
+                    if clean.startswith("https://") and ".linkedin.com" in clean:
+                        subdomain = clean.split("://", 1)[1].split(".linkedin.com")[0]
+                        if subdomain != "www" and "." not in subdomain:
+                            clean = clean.replace(f"https://{subdomain}.linkedin.com", "https://www.linkedin.com")
+                    logger.info("  LinkUp returned: %s", clean)
+                    return clean
+            logger.info("  LinkUp returned no LinkedIn URL in response")
             return None
     except Exception as exc:
-        logger.warning("  Linkup API call failed: %s", exc)
+        logger.warning("  LinkUp API call failed: %s", exc)
         return None
 
 
 async def _fallback_llm_knowledge(company_name: str) -> str | None:
-    """Ask the LLM directly if it knows the LinkedIn company URL."""
-    logger.info("Fallback 3 [LLM knowledge]: asking about '%s'", company_name)
+    """Ask the LLM directly — with a confidence check to prevent hallucination."""
+    logger.info("Fallback 2 [LLM knowledge]: asking about '%s'", company_name)
+
+    # Stage 1: Confidence check
+    check_prompt = (
+        f"Do you actually know the specific LinkedIn company page URL for "
+        f"'{company_name}'? ONLY answer YES if you are absolutely certain "
+        f"and can provide the exact URL. Answer NO if you would be guessing "
+        f"or are unsure.\n\nAnswer (YES/NO):"
+    )
+    try:
+        stage1 = await llm.ask_async(check_prompt)
+        if not stage1.strip().upper().startswith("YES"):
+            logger.info("  Stage 1 [confidence]: LLM is not confident — skipping")
+            return None
+        logger.info("  Stage 1 [confidence]: passed")
+    except Exception as exc:
+        logger.warning("  Stage 1 [confidence] failed: %s", exc)
+        return None
+
+    # Stage 2: URL extraction
     prompt = (
         f"What is the LinkedIn company page URL for '{company_name}'? "
         f"Return ONLY the full URL starting with https://, nothing else. "
@@ -128,13 +136,13 @@ async def _fallback_llm_knowledge(company_name: str) -> str | None:
         result = await llm.ask_async(prompt)
         result = result.strip().strip('"').strip("'")
         if result.upper() == "UNKNOWN" or "linkedin.com/company/" not in result:
-            logger.info("  LLM does not know the LinkedIn URL")
+            logger.info("  Stage 2 [extraction]: LLM does not know the LinkedIn URL")
             return None
         clean = result.split("?")[0].rstrip("/")
-        logger.info("  LLM knowledge returned: %s", clean)
+        logger.info("  Stage 2 [extraction]: %s", clean)
         return clean
     except Exception as exc:
-        logger.warning("  LLM knowledge call failed: %s", exc)
+        logger.warning("  Stage 2 [extraction] failed: %s", exc)
         return None
 
 

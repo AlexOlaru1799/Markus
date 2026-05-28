@@ -28,6 +28,18 @@ class Config:
         os.environ.get("LINKUP_API_KEY") or os.environ.get("LINKUP_API_TOKEN") or ""
     ))
 
+    # ── SMTP (optional — for sending results via email) ────────────────────
+    smtp_host: str = field(default_factory=lambda: os.environ.get("SMTP_HOST", ""))
+    smtp_port: int = field(default_factory=lambda: int(os.environ.get("SMTP_PORT", "587")))
+    smtp_user: str = field(default_factory=lambda: os.environ.get("SMTP_USER", ""))
+    smtp_password: str = field(default_factory=lambda: os.environ.get("SMTP_PASSWORD", ""))
+    email_from: str = field(default_factory=lambda: os.environ.get("EMAIL_FROM", ""))
+
+    @property
+    def smtp_configured(self) -> bool:
+        """Check whether SMTP credentials are fully configured."""
+        return bool(self.smtp_host and self.smtp_user and self.smtp_password)
+
     # ── LinkedIn session credentials ────────────────────────────────────────
     # These are needed by the linkedin-scraper-no-selenium library.
     # Get your li_at cookie value from browser DevTools (Application > Cookies).
@@ -41,7 +53,7 @@ class Config:
         if self.linkedin_li_at:
             parts.append(f"li_at={self.linkedin_li_at}")
         if self.linkedin_jsessionid:
-            parts.append(f"JSESSIONID=\\\"{self.linkedin_jsessionid}\\\"")
+            parts.append(f'JSESSIONID="{self.linkedin_jsessionid}"')
         return "; ".join(parts)
 
     @property
@@ -54,7 +66,7 @@ class Config:
 
     # ── Scraping ────────────────────────────────────────────────────────────
     crawl4ai_delay: float = field(default_factory=lambda: float(
-        os.environ.get("CRAWL4AI_DELAY", "1.0")
+        os.environ.get("CRAWL4AI_DELAY", "3.0")
     ))
 
     # ── Validation ──────────────────────────────────────────────────────────

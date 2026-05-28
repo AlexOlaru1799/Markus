@@ -14,6 +14,7 @@ Every step is logged with timestamps for full traceability.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import sys
 from datetime import datetime, timezone
@@ -34,13 +35,34 @@ from tools import (
 logger = logging.getLogger(__name__)
 
 
+# ── ANSI colour codes ────────────────────────────────────────────────────────
+
+C_RESET = "\033[0m"
+C_GREEN = "\033[1;32m"    # bold green  — INFO
+C_RED   = "\033[1;31m"    # bold red    — ERROR
+C_ORANGE = "\033[0;33m"   # orange       — NOTICE
+C_YELLOW = "\033[1;33m"   # bold yellow  — WARN
+C_DIM   = "\033[2m"       # dim          — DEBUG
+
+_LEVEL_COLORS: dict[str, str] = {
+    "INFO":  C_GREEN,
+    "DEBUG": C_DIM,
+    "ERROR": C_RED,
+    "WARN":  C_YELLOW,
+    "NOTICE": C_ORANGE,
+}
+
+
 # ── Logging helper ──────────────────────────────────────────────────────────
 
 def _log(level: str, message: str, *args: Any) -> None:
-    """Print a timestamped log line to stderr."""
+    """Print a timestamped, colour-coded log line to stderr."""
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     formatted = message % args if args else message
-    print(f"[{ts}] [{level}] {formatted}", file=sys.stderr, flush=True)
+    color = _LEVEL_COLORS.get(level, "")
+    label = f"{color}{level}{C_RESET}" if color else level
+    # Colour the entire line
+    print(f"{color}[{ts}] [{label}] {formatted}{C_RESET}", file=sys.stderr, flush=True)
 
 
 def _log_phase(phase_name: str) -> None:
@@ -53,7 +75,10 @@ def _log_phase(phase_name: str) -> None:
 
 # ── Agent loop ──────────────────────────────────────────────────────────────
 
-async def run_agent(keywords: list[str]) -> AgentState:
+async def run_agent(
+    keywords: list[str],
+    max_results: int | None = None,
+) -> AgentState:
     """
     Run the full agentic workflow.
 
@@ -61,6 +86,10 @@ async def run_agent(keywords: list[str]) -> AgentState:
     ----------
     keywords : list[str]
         Search terms for job boards.
+    max_results : int or None
+        Exact number of job postings to target. The scraper will stop
+        early once this many unique jobs have been collected, and the
+        list is truncated to exactly this many entries.
 
     Returns
     -------
@@ -72,6 +101,8 @@ async def run_agent(keywords: list[str]) -> AgentState:
     _log("INFO", "Agent started with keywords: %s", keywords)
     _log("INFO", "LLM model: %s", config.llm_model)
     _log("INFO", "Output file: %s", config.output_sheet)
+    if max_results is not None:
+        _log("INFO", "Max results: %d", max_results)
 
     # ── Phase 1: Search jobs ────────────────────────────────────────────────
     _log_phase("Phase 1: Job Search")
@@ -79,7 +110,7 @@ async def run_agent(keywords: list[str]) -> AgentState:
 
     try:
         _log("INFO", "Scraping job boards for keywords: %s", keywords)
-        jobs = await search_jobs(keywords)
+        jobs = await search_jobs(keywords, max_results=max_results)
 
         # Check for CAPTCHA signal
         if jobs and isinstance(jobs, list) and len(jobs) == 1 and jobs[0].get("captcha"):
@@ -97,7 +128,7 @@ async def run_agent(keywords: list[str]) -> AgentState:
             jobs = []
 
         state.jobs = [j for j in (jobs or []) if not j.get("captcha")]
-        _log("INFO", "Phase 1 complete: %d job entries collected", len(state.jobs))
+        _log("NOTICE", "Phase 1 complete: %d job entries collected", len(state.jobs))
 
     except Exception as exc:
         _log("ERROR", "Job search failed: %s", exc)
@@ -123,7 +154,7 @@ async def run_agent(keywords: list[str]) -> AgentState:
                 if company not in company_jobs_map:
                     company_jobs_map[company] = []
                 company_jobs_map[company].append(job)
-                _log("INFO", "    -> Company: '%s'", company)
+                _log("NOTICE", "    -> Company: '%s'", company)
             else:
                 _log("WARN", "    -> Could not extract company name")
                 state.add_error("extract", job_url, "Unknown company")
@@ -133,9 +164,9 @@ async def run_agent(keywords: list[str]) -> AgentState:
 
     companies = list(company_jobs_map.keys())
     state.companies = companies
-    _log("INFO", "Phase 2 complete: %d unique companies found", len(companies))
+    _log("NOTICE", "Phase 2 complete: %d unique companies found", len(companies))
     for c in companies:
-        _log("INFO", "  - %s (%d job(s))", c, len(company_jobs_map[c]))
+        _log("NOTICE", "  - %s (%d job(s))", c, len(company_jobs_map[c]))
 
     # ── Phase 3: Find LinkedIn company pages ────────────────────────────────
     _log_phase("Phase 3: LinkedIn Company Search")
@@ -149,7 +180,7 @@ async def run_agent(keywords: list[str]) -> AgentState:
             url = await find_linkedin_company(company)
             linkedin_companies[company] = url
             if url != "LinkedIn not found" and "linkedin.com/company" in url.lower():
-                _log("INFO", "    -> LinkedIn URL: %s", url)
+                _log("NOTICE", "    -> LinkedIn URL: %s", url)
             else:
                 _log("WARN", "    -> LinkedIn not found")
         except Exception as exc:
@@ -157,9 +188,14 @@ async def run_agent(keywords: list[str]) -> AgentState:
             linkedin_companies[company] = "LinkedIn not found"
             state.add_error("find_company", company, str(exc))
 
+        # Slow down between companies to avoid triggering CAPTCHAs
+        if idx < len(companies) - 1:
+            _log("DEBUG", "  Waiting %.1fs before next company ...", config.crawl4ai_delay)
+            await asyncio.sleep(config.crawl4ai_delay)
+
     state.linkedin_companies = linkedin_companies
     found_count = sum(1 for v in linkedin_companies.values() if "linkedin.com" in v.lower())
-    _log("INFO", "Phase 3 complete: %d/%d companies have LinkedIn pages", found_count, len(companies))
+    _log("NOTICE", "Phase 3 complete: %d/%d companies have LinkedIn pages", found_count, len(companies))
 
     # ── Phase 4: Find people names ──────────────────────────────────────────
     _log_phase("Phase 4: People Name Discovery")
@@ -169,16 +205,26 @@ async def run_agent(keywords: list[str]) -> AgentState:
     for idx, company in enumerate(companies):
         _log("INFO", "  [%d/%d] Searching for executives at: '%s'", idx + 1, len(companies), company)
 
+        # Pass the LinkedIn company URL from Phase 3 so LinkUp can use the slug
+        linkedin_url = linkedin_companies.get(company, "")
+        if linkedin_url and linkedin_url != "LinkedIn not found":
+            _log("INFO", "    Using LinkedIn URL context: %s", linkedin_url)
+
         try:
-            names = await find_people_names(company)
+            names = await find_people_names(company, company_linkedin_url=linkedin_url)
             people_names[company] = names
-            _log("INFO", "    -> CEO: %s", names.get("ceo") or "(not found)")
-            _log("INFO", "    -> CFO: %s", names.get("cfo") or "(not found)")
-            _log("INFO", "    -> Director General: %s", names.get("director_general") or "(not found)")
+            _log("NOTICE", "    -> CEO: %s", names.get("ceo") or "(not found)")
+            _log("NOTICE", "    -> CFO: %s", names.get("cfo") or "(not found)")
+            _log("NOTICE", "    -> Director General: %s", names.get("director_general") or "(not found)")
         except Exception as exc:
             _log("ERROR", "    -> Name search failed: %s", exc)
             people_names[company] = {"ceo": "", "cfo": "", "director_general": ""}
             state.add_error("find_names", company, str(exc))
+
+        # Slow down between companies to avoid triggering CAPTCHAs
+        if idx < len(companies) - 1:
+            _log("DEBUG", "  Waiting %.1fs before next company ...", config.crawl4ai_delay)
+            await asyncio.sleep(config.crawl4ai_delay)
 
     state.people_names = people_names
 
@@ -187,20 +233,23 @@ async def run_agent(keywords: list[str]) -> AgentState:
     state.phase = "find_profiles"
 
     all_records: list[dict[str, str]] = []
-    for company in companies:
+    for idx, company in enumerate(companies):
+        if idx > 0:
+            await asyncio.sleep(config.crawl4ai_delay)
+
         names = people_names.get(company, {"ceo": "", "cfo": "", "director_general": ""})
         jobs_for_company = company_jobs_map.get(company, [])
         linkedin_company_url = linkedin_companies.get(company, "")
 
         _log("INFO", "  Processing profiles for: '%s' (%d job source(s))", company, len(jobs_for_company))
         if linkedin_company_url and "linkedin.com/company" in linkedin_company_url.lower():
-            _log("INFO", "    LinkedIn company URL: %s", linkedin_company_url)
+            _log("NOTICE", "    LinkedIn company URL: %s", linkedin_company_url)
 
         try:
             profiles = await find_people_profiles(company, names, linkedin_company_url)
-            _log("INFO", "    -> CEO profile: %s", profiles.get("ceo", {}).get("url") or "(not found)")
-            _log("INFO", "    -> CFO profile: %s", profiles.get("cfo", {}).get("url") or "(not found)")
-            _log("INFO", "    -> Director General profile: %s", profiles.get("director_general", {}).get("url") or "(not found)")
+            _log("NOTICE", "    -> CEO profile: %s", profiles.get("ceo", {}).get("url") or "(not found)")
+            _log("NOTICE", "    -> CFO profile: %s", profiles.get("cfo", {}).get("url") or "(not found)")
+            _log("NOTICE", "    -> Director General profile: %s", profiles.get("director_general", {}).get("url") or "(not found)")
 
             # Build one record per job source URL for this company
             if not jobs_for_company:
@@ -221,7 +270,7 @@ async def run_agent(keywords: list[str]) -> AgentState:
             state.add_error("find_profiles", company, str(exc))
 
     state.people_profiles = all_records
-    _log("INFO", "Phase 5 complete: %d records built", len(all_records))
+    _log("NOTICE", "Phase 5 complete: %d records built", len(all_records))
 
     # ── Phase 6: Write to spreadsheet ───────────────────────────────────────
     _log_phase("Phase 6: Writing to Spreadsheet")
@@ -230,7 +279,7 @@ async def run_agent(keywords: list[str]) -> AgentState:
     if all_records:
         try:
             confirmation = await write_spreadsheet(all_records)
-            _log("INFO", "Write result: %s", confirmation)
+            _log("NOTICE", "Write result: %s", confirmation)
         except Exception as exc:
             _log("ERROR", "Write failed: %s", exc)
             state.add_error("write", config.output_sheet, str(exc))
@@ -242,12 +291,12 @@ async def run_agent(keywords: list[str]) -> AgentState:
     state.done = True
 
     _log_phase("EXECUTION COMPLETE")
-    _log("INFO", "Summary:")
-    _log("INFO", "  Jobs scraped:      %d", len(state.jobs))
-    _log("INFO", "  Companies found:   %d", len(state.companies))
-    _log("INFO", "  LinkedIn found:    %d", found_count)
-    _log("INFO", "  Records written:   %d", len(all_records))
-    _log("INFO", "  Errors:            %d", len(state.errors))
+    _log("NOTICE", "Summary:")
+    _log("NOTICE", "  Jobs scraped:      %d", len(state.jobs))
+    _log("NOTICE", "  Companies found:   %d", len(state.companies))
+    _log("NOTICE", "  LinkedIn found:    %d", found_count)
+    _log("NOTICE", "  Records written:   %d", len(all_records))
+    _log("NOTICE", "  Errors:            %d", len(state.errors))
 
     if state.errors:
         _log("WARN", "Error log:")

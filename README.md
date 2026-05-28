@@ -153,9 +153,8 @@ The CSV contains the following columns:
 > linkedin-scraper-no-selenium is NOT used here — it requires a LinkedIn company URL
 > as input, so it cannot help find one.
 
-1. **Google search** — `site:linkedin.com/company "{company_name}"` via crawl4AI
-2. **Linkup API** — enterprise API for company data
-3. **LLM direct knowledge** — ask the DeepSeek LLM directly
+1. **Linkup API** — enterprise API for company data
+2. **LLM direct knowledge** — ask the DeepSeek LLM directly
 
 After each successful result → **LLM Validation** → If rejected, try next fallback.
 
@@ -167,9 +166,8 @@ After each successful result → **LLM Validation** → If rejected, try next fa
    The results are filtered to match the target names (CEO, CFO, Director General).
 
 If the bulk lookup doesn't find a match, individual fallbacks are tried:
-1. **Google search** — `site:linkedin.com/in "{name}" "{company}"` via crawl4AI
-2. **Linkup API** — enterprise API for people data
-3. **LLM direct knowledge** — ask the DeepSeek LLM directly
+1. **Linkup API** — enterprise API for people data
+2. **LLM direct knowledge** — ask the DeepSeek LLM directly
 
 After each successful result → **LLM Validation** → If rejected, try next fallback.
 

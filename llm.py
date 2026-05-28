@@ -63,6 +63,45 @@ class LLMClient:
         response = await self._retry_async(messages, **kwargs)
         return response
 
+    async def chat_async(
+        self,
+        prompt: str,
+        system: str | None = None,
+        history: list[dict[str, str]] | None = None,
+        **kwargs: Any,
+    ) -> str:
+        """
+        Async chat with conversation history support.
+
+        Parameters
+        ----------
+        prompt : str
+            The new user message.
+        system : str, optional
+            Optional system-prompt override.
+        history : list[dict], optional
+            Previous conversation turns as ``[{"role": "user", "content": "..."},
+            {"role": "assistant", "content": "..."}, ...]``.
+            Only ``user`` and ``assistant`` roles are forwarded.
+        """
+        messages: list[dict[str, str]] = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        else:
+            messages.append({
+                "role": "system",
+                "content": "You are a helpful assistant that extracts structured "
+                           "information from web content and provides precise answers.",
+            })
+        if history:
+            # Only forward user/assistant messages (strip tool/system messages)
+            for msg in history:
+                if msg.get("role") in ("user", "assistant"):
+                    messages.append({"role": msg["role"], "content": msg["content"]})
+        messages.append({"role": "user", "content": prompt})
+        response = await self._retry_async(messages, **kwargs)
+        return response
+
     # ── Internals ───────────────────────────────────────────────────────────
 
     def _build_messages(self, prompt: str, system: str | None) -> list[dict[str, str]]:

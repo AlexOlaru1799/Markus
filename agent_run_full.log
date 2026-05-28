@@ -1,0 +1,1535 @@
+============================================================
+  JOB SEARCH AGENT
+============================================================
+  Keywords: ['call center', 'operator introducere date']
+  Output:   output.csv
+  LLM:      deepseek-chat
+============================================================
+
+  Starting persistent browser (visible window)...
+2026-05-28 15:54:23 [INFO] tools.browser_manager: Persistent headed browser started — window visible on screen
+[2026-05-28 12:54:23] [INFO] Agent started with keywords: ['call center', 'operator introducere date']
+[2026-05-28 12:54:23] [INFO] LLM model: deepseek-chat
+[2026-05-28 12:54:23] [INFO] Output file: output.csv
+[2026-05-28 12:54:23] [INFO] 
+[2026-05-28 12:54:23] [INFO] ======================================================================
+[2026-05-28 12:54:23] [INFO]   PHASE: Phase 1: Job Search
+[2026-05-28 12:54:23] [INFO] ======================================================================
+[2026-05-28 12:54:23] [INFO] Scraping job boards for keywords: ['call center', 'operator introducere date']
+2026-05-28 15:54:23 [INFO] tools.scraper: ==================================================
+2026-05-28 15:54:23 [INFO] tools.scraper: Searching for keyword: 'call center'
+2026-05-28 15:54:23 [INFO] tools.scraper: ==================================================
+2026-05-28 15:54:23 [INFO] tools.scraper: Scraping ejobs for keyword 'call center': https://www.ejobs.ro/locuri-de-munca/call+center
+2026-05-28 15:54:23 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/call+center
+2026-05-28 15:54:27 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 726109 chars → assuming solved
+2026-05-28 15:54:27 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/agent-vanzari-callcenter-bucuresti/1960372
+2026-05-28 15:54:27 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/agent-vanzari-callcenter-bucuresti/1960372
+2026-05-28 15:54:30 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723649 chars → assuming solved
+2026-05-28 15:54:33 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/call-center-officer-perioada-determinata/1959366
+2026-05-28 15:54:33 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/call-center-officer-perioada-determinata/1959366
+2026-05-28 15:54:36 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723556 chars → assuming solved
+2026-05-28 15:54:39 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/consultant-vanzari-call-center-telefonie-mobila/1954709
+2026-05-28 15:54:39 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/consultant-vanzari-call-center-telefonie-mobila/1954709
+2026-05-28 15:54:42 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723602 chars → assuming solved
+2026-05-28 15:54:45 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/ofiter-call-center-suport-clienti/1955998
+2026-05-28 15:54:45 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/ofiter-call-center-suport-clienti/1955998
+2026-05-28 15:54:49 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723602 chars → assuming solved
+2026-05-28 15:54:52 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/consultant-call-center/1956074
+2026-05-28 15:54:52 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/consultant-call-center/1956074
+2026-05-28 15:54:55 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723602 chars → assuming solved
+2026-05-28 15:54:58 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/consultant-vanzari-call-center-sales-support-clienti-bb/1954243
+2026-05-28 15:54:58 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/consultant-vanzari-call-center-sales-support-clienti-bb/1954243
+2026-05-28 15:55:01 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723602 chars → assuming solved
+2026-05-28 15:55:04 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/consultant-credite-call-center/1953900
+2026-05-28 15:55:04 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/consultant-credite-call-center/1953900
+2026-05-28 15:55:07 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723602 chars → assuming solved
+2026-05-28 15:55:10 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/agent-call-center-reprezentant-vanzari/1956981
+2026-05-28 15:55:10 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/agent-call-center-reprezentant-vanzari/1956981
+2026-05-28 15:55:13 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723602 chars → assuming solved
+2026-05-28 15:55:16 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/call-center-with-advanced-english-june-class/1956741
+2026-05-28 15:55:16 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/call-center-with-advanced-english-june-class/1956741
+2026-05-28 15:55:19 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723602 chars → assuming solved
+2026-05-28 15:55:22 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/agent-call-center/1960253
+2026-05-28 15:55:22 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/agent-call-center/1960253
+2026-05-28 15:55:25 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723602 chars → assuming solved
+2026-05-28 15:55:25 [INFO] tools.scraper:   ejobs returned 10 job entries
+2026-05-28 15:55:25 [INFO] tools.scraper: Waiting 3.0s before next board to avoid triggering CAPTCHA ...
+2026-05-28 15:55:28 [INFO] tools.scraper: Scraping bestjobs for keyword 'call center': https://www.bestjobs.eu/locuri-de-munca/call+center
+2026-05-28 15:55:28 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/locuri-de-munca/call+center
+2026-05-28 15:55:31 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/agent-servicii-client-call-center-16
+2026-05-28 15:55:31 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/agent-servicii-client-call-center-16
+2026-05-28 15:55:37 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/agent-call-center-full-time-11
+2026-05-28 15:55:37 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/agent-call-center-full-time-11
+2026-05-28 15:55:42 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/reprezentant-relatii-clienti-call-center-34
+2026-05-28 15:55:42 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/reprezentant-relatii-clienti-call-center-34
+2026-05-28 15:55:47 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/customer-support-german-bucharest-7
+2026-05-28 15:55:47 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/customer-support-german-bucharest-7
+2026-05-28 15:55:53 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/customer-support-representative-with-portuguese-1
+2026-05-28 15:55:53 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/customer-support-representative-with-portuguese-1
+2026-05-28 15:55:58 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/client-support-representative-with-french-16
+2026-05-28 15:55:58 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/client-support-representative-with-french-16
+2026-05-28 15:56:04 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/teleconseiller-service-assurance-34
+2026-05-28 15:56:04 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/teleconseiller-service-assurance-34
+2026-05-28 15:56:10 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/customer-support-representative-with-german-32
+2026-05-28 15:56:10 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/customer-support-representative-with-german-32
+2026-05-28 15:56:16 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/consultant-relatii-clienti-53
+2026-05-28 15:56:16 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/consultant-relatii-clienti-53
+2026-05-28 15:56:22 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/customer-service-agent-with-italian-4
+2026-05-28 15:56:22 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/customer-service-agent-with-italian-4
+2026-05-28 15:56:25 [INFO] tools.scraper:   bestjobs returned 10 job entries
+2026-05-28 15:56:25 [INFO] tools.scraper: ==================================================
+2026-05-28 15:56:25 [INFO] tools.scraper: Searching for keyword: 'operator introducere date'
+2026-05-28 15:56:25 [INFO] tools.scraper: ==================================================
+2026-05-28 15:56:25 [INFO] tools.scraper: Scraping ejobs for keyword 'operator introducere date': https://www.ejobs.ro/locuri-de-munca/operator+introducere+date
+2026-05-28 15:56:25 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/operator+introducere+date
+2026-05-28 15:56:27 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 725273 chars → assuming solved
+2026-05-28 15:56:28 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/specialist-procese-si-sisteme-craiova/1960405
+2026-05-28 15:56:28 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/specialist-procese-si-sisteme-craiova/1960405
+2026-05-28 15:56:31 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723596 chars → assuming solved
+2026-05-28 15:56:34 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/operator-transferuri-si-administrare-date/1960398
+2026-05-28 15:56:34 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/operator-transferuri-si-administrare-date/1960398
+2026-05-28 15:56:37 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723596 chars → assuming solved
+2026-05-28 15:56:40 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/ai-ml-engineer/1960411
+2026-05-28 15:56:40 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/ai-ml-engineer/1960411
+2026-05-28 15:56:43 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723596 chars → assuming solved
+2026-05-28 15:56:46 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/operator-introducere-si-validare-date/1960335
+2026-05-28 15:56:46 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/operator-introducere-si-validare-date/1960335
+2026-05-28 15:56:48 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723596 chars → assuming solved
+2026-05-28 15:56:51 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/operator-introducere-date-contabil-junior/1958325
+2026-05-28 15:56:51 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/operator-introducere-date-contabil-junior/1958325
+2026-05-28 15:56:54 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723596 chars → assuming solved
+2026-05-28 15:56:57 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/operator-introducere-validare-si-prelucrare-date/1958875
+2026-05-28 15:56:57 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/operator-introducere-validare-si-prelucrare-date/1958875
+2026-05-28 15:57:00 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723596 chars → assuming solved
+2026-05-28 15:57:03 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/operator-facturare/1960349
+2026-05-28 15:57:03 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/operator-facturare/1960349
+2026-05-28 15:57:06 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723596 chars → assuming solved
+2026-05-28 15:57:09 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/operator-introducere-si-prelucrare-date/1956378
+2026-05-28 15:57:09 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/operator-introducere-si-prelucrare-date/1956378
+2026-05-28 15:57:12 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723596 chars → assuming solved
+2026-05-28 15:57:15 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/operator-introducere-date-asistent-manager/1953103
+2026-05-28 15:57:15 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/operator-introducere-date-asistent-manager/1953103
+2026-05-28 15:57:18 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723596 chars → assuming solved
+2026-05-28 15:57:21 [INFO] tools.scraper:   Fetching job detail: https://www.ejobs.ro/locuri-de-munca/operator-facturare/1960348
+2026-05-28 15:57:21 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.ejobs.ro/locuri-de-munca/operator-facturare/1960348
+2026-05-28 15:57:24 [INFO] tools.browser_manager:   [browser] CAPTCHA weak indicator 'turnstile' but body has 723601 chars → assuming solved
+2026-05-28 15:57:24 [INFO] tools.scraper:   ejobs returned 10 job entries
+2026-05-28 15:57:24 [INFO] tools.scraper: Waiting 3.0s before next board to avoid triggering CAPTCHA ...
+2026-05-28 15:57:27 [INFO] tools.scraper: Scraping bestjobs for keyword 'operator introducere date': https://www.bestjobs.eu/locuri-de-munca/operator+introducere+date
+2026-05-28 15:57:27 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/locuri-de-munca/operator+introducere+date
+2026-05-28 15:57:31 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/operator-introducere-date-412
+2026-05-28 15:57:31 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/operator-introducere-date-412
+2026-05-28 15:57:37 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/operator-introducere-validare-si-prelucrare-date-377
+2026-05-28 15:57:37 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/operator-introducere-validare-si-prelucrare-date-377
+2026-05-28 15:57:43 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/operator-introducere-date-415
+2026-05-28 15:57:43 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/operator-introducere-date-415
+2026-05-28 15:57:50 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/registrator-medical-asistent-medical-generalist-1
+2026-05-28 15:57:50 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/registrator-medical-asistent-medical-generalist-1
+2026-05-28 15:57:56 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/operator-facturare-1260
+2026-05-28 15:57:56 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/operator-facturare-1260
+2026-05-28 15:58:02 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/operator-date-198
+2026-05-28 15:58:02 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/operator-date-198
+2026-05-28 15:58:09 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/timekeeper-2
+2026-05-28 15:58:09 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/timekeeper-2
+2026-05-28 15:58:14 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/personal-administrativ-arhiva-2
+2026-05-28 15:58:14 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/personal-administrativ-arhiva-2
+2026-05-28 15:58:20 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/asistent-manager-4594
+2026-05-28 15:58:20 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/asistent-manager-4594
+2026-05-28 15:58:25 [INFO] tools.scraper:   Fetching job detail: https://www.bestjobs.eu/loc-de-munca/operator-comenzi-online-52
+2026-05-28 15:58:25 [INFO] tools.browser_manager:   [browser] Navigating to: https://www.bestjobs.eu/loc-de-munca/operator-comenzi-online-52
+2026-05-28 15:58:28 [INFO] tools.scraper:   bestjobs returned 10 job entries
+2026-05-28 15:58:28 [INFO] tools.scraper: Total unique jobs collected: 40
+[2026-05-28 12:58:28] [INFO] Phase 1 complete: 40 job entries collected
+[2026-05-28 12:58:28] [INFO] 
+[2026-05-28 12:58:28] [INFO] ======================================================================
+[2026-05-28 12:58:28] [INFO]   PHASE: Phase 2: Company Name Extraction
+[2026-05-28 12:58:28] [INFO] ======================================================================
+[2026-05-28 12:58:28] [INFO]   [1/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:30 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:30] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:30] [INFO]   [2/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:31 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:31] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:31] [INFO]   [3/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:31 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:31] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:31] [INFO]   [4/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:32 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:32] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:32] [INFO]   [5/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:33 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:33] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:33] [INFO]   [6/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:34 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:34] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:34] [INFO]   [7/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:35 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:35] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:35] [INFO]   [8/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:36 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:36] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:36] [INFO]   [9/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:37 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:37] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:37] [INFO]   [10/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:38 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:38] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:38] [INFO]   [11/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:58:39 [INFO] tools.company_extractor: Extracted company: 'HORNBACH'
+[2026-05-28 12:58:39] [INFO]     -> Company: 'HORNBACH'
+[2026-05-28 12:58:39] [INFO]   [12/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:58:41 [INFO] tools.company_extractor: Extracted company: 'Credit Online IFN S.A.'
+[2026-05-28 12:58:41] [INFO]     -> Company: 'Credit Online IFN S.A.'
+[2026-05-28 12:58:41] [INFO]   [13/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:58:42 [INFO] tools.company_extractor: Extracted company: 'CERTSIGN S.A.'
+[2026-05-28 12:58:42] [INFO]     -> Company: 'CERTSIGN S.A.'
+[2026-05-28 12:58:42] [INFO]   [14/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:58:43 [INFO] tools.company_extractor: Extracted company: 'TELEPERFORMANCE ROMANIA'
+[2026-05-28 12:58:43] [INFO]     -> Company: 'TELEPERFORMANCE ROMANIA'
+[2026-05-28 12:58:43] [INFO]   [15/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:58:44 [INFO] tools.company_extractor: Extracted company: 'TELUS Digital'
+[2026-05-28 12:58:44] [INFO]     -> Company: 'TELUS Digital'
+[2026-05-28 12:58:44] [INFO]   [16/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:58:46 [INFO] tools.company_extractor: Extracted company: 'MOOD MEDIA ROMANIA SRL'
+[2026-05-28 12:58:46] [INFO]     -> Company: 'MOOD MEDIA ROMANIA SRL'
+[2026-05-28 12:58:46] [INFO]   [17/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:58:47 [INFO] tools.company_extractor: Extracted company: 'Cegedim Service Center'
+[2026-05-28 12:58:47] [INFO]     -> Company: 'Cegedim Service Center'
+[2026-05-28 12:58:47] [INFO]   [18/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:58:49 [INFO] tools.company_extractor: Extracted company: 'TELUS Digital'
+[2026-05-28 12:58:49] [INFO]     -> Company: 'TELUS Digital'
+[2026-05-28 12:58:49] [INFO]   [19/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:58:50 [INFO] tools.company_extractor: Extracted company: 'GRAWE ROMANIA ASIGURARE SA'
+[2026-05-28 12:58:50] [INFO]     -> Company: 'GRAWE ROMANIA ASIGURARE SA'
+[2026-05-28 12:58:50] [INFO]   [20/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:58:51 [INFO] tools.company_extractor: Extracted company: 'DKV Mobility Romania'
+[2026-05-28 12:58:51] [INFO]     -> Company: 'DKV Mobility Romania'
+[2026-05-28 12:58:51] [INFO]   [21/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:52 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:52] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:52] [INFO]   [22/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:53 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:53] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:53] [INFO]   [23/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:54 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:54] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:54] [INFO]   [24/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:55 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:55] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:55] [INFO]   [25/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:56 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:56] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:56] [INFO]   [26/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:56 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:56] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:56] [INFO]   [27/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:57 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:57] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:57] [INFO]   [28/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:58 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:58] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:58] [INFO]   [29/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:58:59 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:58:59] [WARN]     -> Could not extract company name
+[2026-05-28 12:58:59] [INFO]   [30/40] Extracting company from: <!DOCTYPE html><html lang="ro" class="" style=""><head><meta charset="utf-8">
+2026-05-28 15:59:00 [INFO] tools.company_extractor: LLM could not determine company name
+[2026-05-28 12:59:00] [WARN]     -> Could not extract company name
+[2026-05-28 12:59:00] [INFO]   [31/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:59:01 [INFO] tools.company_extractor: Extracted company: 'AKTEK'
+[2026-05-28 12:59:01] [INFO]     -> Company: 'AKTEK'
+[2026-05-28 12:59:01] [INFO]   [32/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:59:02 [INFO] tools.company_extractor: Extracted company: 'KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL'
+[2026-05-28 12:59:02] [INFO]     -> Company: 'KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL'
+[2026-05-28 12:59:02] [INFO]   [33/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:59:03 [INFO] tools.company_extractor: Extracted company: 'INTERSNACK ROMANIA'
+[2026-05-28 12:59:03] [INFO]     -> Company: 'INTERSNACK ROMANIA'
+[2026-05-28 12:59:03] [INFO]   [34/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:59:04 [INFO] tools.company_extractor: Extracted company: 'MSN Life Services'
+[2026-05-28 12:59:04] [INFO]     -> Company: 'MSN Life Services'
+[2026-05-28 12:59:04] [INFO]   [35/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:59:06 [INFO] tools.company_extractor: Extracted company: 'NMC STIL DISTRIBUTION SRL'
+[2026-05-28 12:59:06] [INFO]     -> Company: 'NMC STIL DISTRIBUTION SRL'
+[2026-05-28 12:59:06] [INFO]   [36/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:59:07 [INFO] tools.company_extractor: Extracted company: 'Regina Maria'
+[2026-05-28 12:59:07] [INFO]     -> Company: 'Regina Maria'
+[2026-05-28 12:59:07] [INFO]   [37/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:59:08 [INFO] tools.company_extractor: Extracted company: 'CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI'
+[2026-05-28 12:59:08] [INFO]     -> Company: 'CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI'
+[2026-05-28 12:59:08] [INFO]   [38/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:59:10 [INFO] tools.company_extractor: Extracted company: 'SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS'
+[2026-05-28 12:59:10] [INFO]     -> Company: 'SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS'
+[2026-05-28 12:59:10] [INFO]   [39/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:59:11 [INFO] tools.company_extractor: Extracted company: 'Blu Residence Project S.R.L.'
+[2026-05-28 12:59:11] [INFO]     -> Company: 'Blu Residence Project S.R.L.'
+[2026-05-28 12:59:11] [INFO]   [40/40] Extracting company from: window.dataLayer = window.dataLayer || [];
+2026-05-28 15:59:13 [INFO] tools.company_extractor: Extracted company: 'Pantofiori.ro'
+[2026-05-28 12:59:13] [INFO]     -> Company: 'Pantofiori.ro'
+[2026-05-28 12:59:13] [INFO] Phase 2 complete: 19 unique companies found
+[2026-05-28 12:59:13] [INFO]   - HORNBACH (1 job(s))
+[2026-05-28 12:59:13] [INFO]   - Credit Online IFN S.A. (1 job(s))
+[2026-05-28 12:59:13] [INFO]   - CERTSIGN S.A. (1 job(s))
+[2026-05-28 12:59:13] [INFO]   - TELEPERFORMANCE ROMANIA (1 job(s))
+[2026-05-28 12:59:13] [INFO]   - TELUS Digital (2 job(s))
+[2026-05-28 12:59:13] [INFO]   - MOOD MEDIA ROMANIA SRL (1 job(s))
+[2026-05-28 12:59:13] [INFO]   - Cegedim Service Center (1 job(s))
+[2026-05-28 12:59:13] [INFO]   - GRAWE ROMANIA ASIGURARE SA (1 job(s))
+[2026-05-28 12:59:13] [INFO]   - DKV Mobility Romania (1 job(s))
+[2026-05-28 12:59:13] [INFO]   - AKTEK (1 job(s))
+[2026-05-28 12:59:13] [INFO]   - KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL (1 job(s))
+[2026-05-28 12:59:13] [INFO]   - INTERSNACK ROMANIA (1 job(s))
+[2026-05-28 12:59:13] [INFO]   - MSN Life Services (1 job(s))
+[2026-05-28 12:59:13] [INFO]   - NMC STIL DISTRIBUTION SRL (1 job(s))
+[2026-05-28 12:59:13] [INFO]   - Regina Maria (1 job(s))
+[2026-05-28 12:59:13] [INFO]   - CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI (1 job(s))
+[2026-05-28 12:59:13] [INFO]   - SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS (1 job(s))
+[2026-05-28 12:59:13] [INFO]   - Blu Residence Project S.R.L. (1 job(s))
+[2026-05-28 12:59:13] [INFO]   - Pantofiori.ro (1 job(s))
+[2026-05-28 12:59:13] [INFO] 
+[2026-05-28 12:59:13] [INFO] ======================================================================
+[2026-05-28 12:59:13] [INFO]   PHASE: Phase 3: LinkedIn Company Search
+[2026-05-28 12:59:13] [INFO] ======================================================================
+[2026-05-28 12:59:13] [INFO]   [1/19] Finding LinkedIn for: 'HORNBACH'
+2026-05-28 15:59:13 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 15:59:13 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'HORNBACH'
+2026-05-28 15:59:13 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 15:59:13 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'HORNBACH'
+2026-05-28 15:59:14 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/hornbach
+2026-05-28 15:59:15 [INFO] tools.linkedin_finder:   LLM Validation: YES for HORNBACH -> https://www.linkedin.com/company/hornbach
+2026-05-28 15:59:15 [INFO] tools.linkedin_finder: [OK] Linkup returned validated URL: https://www.linkedin.com/company/hornbach
+[2026-05-28 12:59:15] [INFO]     -> LinkedIn URL: https://www.linkedin.com/company/hornbach
+[2026-05-28 12:59:15] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 12:59:18] [INFO]   [2/19] Finding LinkedIn for: 'Credit Online IFN S.A.'
+2026-05-28 15:59:18 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 15:59:18 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'Credit Online IFN S.A.'
+2026-05-28 15:59:18 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 15:59:18 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'Credit Online IFN S.A.'
+2026-05-28 15:59:20 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/hora-credit-ifn-s.a.
+2026-05-28 15:59:22 [INFO] tools.linkedin_finder:   LLM Validation: NO for Credit Online IFN S.A. -> https://www.linkedin.com/company/hora-credit-ifn-s.a. (reason: NO
+The LinkedIn URL points to "Hora Credit IFN S.A.", not "Credit Online IFN S.A.")
+2026-05-28 15:59:22 [INFO] tools.linkedin_finder: Fallback 2 [LLM knowledge]: asking about 'Credit Online IFN S.A.'
+2026-05-28 15:59:23 [INFO] tools.linkedin_finder:   LLM knowledge returned: https://www.linkedin.com/company/credit-online-ifn-s-a
+2026-05-28 15:59:24 [INFO] tools.linkedin_finder:   LLM Validation: YES for Credit Online IFN S.A. -> https://www.linkedin.com/company/credit-online-ifn-s-a
+2026-05-28 15:59:24 [INFO] tools.linkedin_finder: [OK] LLM knowledge returned validated URL: https://www.linkedin.com/company/credit-online-ifn-s-a
+[2026-05-28 12:59:24] [INFO]     -> LinkedIn URL: https://www.linkedin.com/company/credit-online-ifn-s-a
+[2026-05-28 12:59:24] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 12:59:27] [INFO]   [3/19] Finding LinkedIn for: 'CERTSIGN S.A.'
+2026-05-28 15:59:27 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 15:59:27 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'CERTSIGN S.A.'
+2026-05-28 15:59:27 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 15:59:27 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'CERTSIGN S.A.'
+2026-05-28 15:59:30 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/certsign
+2026-05-28 15:59:32 [INFO] tools.linkedin_finder:   LLM Validation: YES for CERTSIGN S.A. -> https://www.linkedin.com/company/certsign
+2026-05-28 15:59:32 [INFO] tools.linkedin_finder: [OK] Linkup returned validated URL: https://www.linkedin.com/company/certsign
+[2026-05-28 12:59:32] [INFO]     -> LinkedIn URL: https://www.linkedin.com/company/certsign
+[2026-05-28 12:59:32] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 12:59:35] [INFO]   [4/19] Finding LinkedIn for: 'TELEPERFORMANCE ROMANIA'
+2026-05-28 15:59:35 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 15:59:35 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'TELEPERFORMANCE ROMANIA'
+2026-05-28 15:59:35 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 15:59:35 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'TELEPERFORMANCE ROMANIA'
+2026-05-28 15:59:36 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/teleperformance
+2026-05-28 15:59:37 [INFO] tools.linkedin_finder:   LLM Validation: NO for TELEPERFORMANCE ROMANIA -> https://www.linkedin.com/company/teleperformance (reason: NO
+The LinkedIn URL points to the global Teleperformance company page, not specifically to "TELEPERF)
+2026-05-28 15:59:37 [INFO] tools.linkedin_finder: Fallback 2 [LLM knowledge]: asking about 'TELEPERFORMANCE ROMANIA'
+2026-05-28 15:59:38 [INFO] tools.linkedin_finder:   LLM knowledge returned: https://www.linkedin.com/company/teleperformance-romania
+2026-05-28 15:59:39 [INFO] tools.linkedin_finder:   LLM Validation: YES for TELEPERFORMANCE ROMANIA -> https://www.linkedin.com/company/teleperformance-romania
+2026-05-28 15:59:39 [INFO] tools.linkedin_finder: [OK] LLM knowledge returned validated URL: https://www.linkedin.com/company/teleperformance-romania
+[2026-05-28 12:59:39] [INFO]     -> LinkedIn URL: https://www.linkedin.com/company/teleperformance-romania
+[2026-05-28 12:59:39] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 12:59:42] [INFO]   [5/19] Finding LinkedIn for: 'TELUS Digital'
+2026-05-28 15:59:42 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 15:59:42 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'TELUS Digital'
+2026-05-28 15:59:42 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 15:59:42 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'TELUS Digital'
+2026-05-28 15:59:43 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/telus-digital
+2026-05-28 15:59:44 [INFO] tools.linkedin_finder:   LLM Validation: YES for TELUS Digital -> https://www.linkedin.com/company/telus-digital
+2026-05-28 15:59:44 [INFO] tools.linkedin_finder: [OK] Linkup returned validated URL: https://www.linkedin.com/company/telus-digital
+[2026-05-28 12:59:44] [INFO]     -> LinkedIn URL: https://www.linkedin.com/company/telus-digital
+[2026-05-28 12:59:44] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 12:59:47] [INFO]   [6/19] Finding LinkedIn for: 'MOOD MEDIA ROMANIA SRL'
+2026-05-28 15:59:47 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 15:59:47 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'MOOD MEDIA ROMANIA SRL'
+2026-05-28 15:59:47 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 15:59:47 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'MOOD MEDIA ROMANIA SRL'
+2026-05-28 15:59:49 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/mood-media-romania
+2026-05-28 15:59:50 [INFO] tools.linkedin_finder:   LLM Validation: YES for MOOD MEDIA ROMANIA SRL -> https://www.linkedin.com/company/mood-media-romania
+2026-05-28 15:59:50 [INFO] tools.linkedin_finder: [OK] Linkup returned validated URL: https://www.linkedin.com/company/mood-media-romania
+[2026-05-28 12:59:50] [INFO]     -> LinkedIn URL: https://www.linkedin.com/company/mood-media-romania
+[2026-05-28 12:59:50] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 12:59:53] [INFO]   [7/19] Finding LinkedIn for: 'Cegedim Service Center'
+2026-05-28 15:59:53 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 15:59:53 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'Cegedim Service Center'
+2026-05-28 15:59:53 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 15:59:53 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'Cegedim Service Center'
+2026-05-28 15:59:54 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/cegedim-service-center
+2026-05-28 15:59:55 [INFO] tools.linkedin_finder:   LLM Validation: YES for Cegedim Service Center -> https://www.linkedin.com/company/cegedim-service-center
+2026-05-28 15:59:55 [INFO] tools.linkedin_finder: [OK] Linkup returned validated URL: https://www.linkedin.com/company/cegedim-service-center
+[2026-05-28 12:59:55] [INFO]     -> LinkedIn URL: https://www.linkedin.com/company/cegedim-service-center
+[2026-05-28 12:59:55] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 12:59:58] [INFO]   [8/19] Finding LinkedIn for: 'GRAWE ROMANIA ASIGURARE SA'
+2026-05-28 15:59:58 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 15:59:58 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'GRAWE ROMANIA ASIGURARE SA'
+2026-05-28 15:59:58 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 15:59:58 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'GRAWE ROMANIA ASIGURARE SA'
+2026-05-28 15:59:59 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/grawe-romania-asigurare-sa
+2026-05-28 16:00:00 [INFO] tools.linkedin_finder:   LLM Validation: YES for GRAWE ROMANIA ASIGURARE SA -> https://www.linkedin.com/company/grawe-romania-asigurare-sa
+2026-05-28 16:00:00 [INFO] tools.linkedin_finder: [OK] Linkup returned validated URL: https://www.linkedin.com/company/grawe-romania-asigurare-sa
+[2026-05-28 13:00:00] [INFO]     -> LinkedIn URL: https://www.linkedin.com/company/grawe-romania-asigurare-sa
+[2026-05-28 13:00:00] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:00:03] [INFO]   [9/19] Finding LinkedIn for: 'DKV Mobility Romania'
+2026-05-28 16:00:03 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:03 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'DKV Mobility Romania'
+2026-05-28 16:00:03 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:03 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'DKV Mobility Romania'
+2026-05-28 16:00:04 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/dkv-mobility
+2026-05-28 16:00:06 [INFO] tools.linkedin_finder:   LLM Validation: NO for DKV Mobility Romania -> https://www.linkedin.com/company/dkv-mobility (reason: NO
+The LinkedIn URL points to the main DKV Mobility company page, not specifically to a Romanian sub)
+2026-05-28 16:00:06 [INFO] tools.linkedin_finder: Fallback 2 [LLM knowledge]: asking about 'DKV Mobility Romania'
+2026-05-28 16:00:07 [INFO] tools.linkedin_finder:   LLM does not know the LinkedIn URL
+2026-05-28 16:00:07 [WARNING] tools.linkedin_finder: [FAIL] All fallbacks exhausted for 'DKV Mobility Romania'
+[2026-05-28 13:00:07] [WARN]     -> LinkedIn not found
+[2026-05-28 13:00:07] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:00:10] [INFO]   [10/19] Finding LinkedIn for: 'AKTEK'
+2026-05-28 16:00:10 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:10 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'AKTEK'
+2026-05-28 16:00:10 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:10 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'AKTEK'
+2026-05-28 16:00:12 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/aktek-inc
+2026-05-28 16:00:14 [INFO] tools.linkedin_finder:   LLM Validation: YES for AKTEK -> https://www.linkedin.com/company/aktek-inc
+2026-05-28 16:00:14 [INFO] tools.linkedin_finder: [OK] Linkup returned validated URL: https://www.linkedin.com/company/aktek-inc
+[2026-05-28 13:00:14] [INFO]     -> LinkedIn URL: https://www.linkedin.com/company/aktek-inc
+[2026-05-28 13:00:14] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:00:17] [INFO]   [11/19] Finding LinkedIn for: 'KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL'
+2026-05-28 16:00:17 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:17 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL'
+2026-05-28 16:00:17 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:17 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL'
+2026-05-28 16:00:19 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/karl-heinz-dietrich-international-exped-s-r-l-
+2026-05-28 16:00:20 [INFO] tools.linkedin_finder:   LLM Validation: YES for KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL -> https://www.linkedin.com/company/karl-heinz-dietrich-international-exped-s-r-l-
+2026-05-28 16:00:20 [INFO] tools.linkedin_finder: [OK] Linkup returned validated URL: https://www.linkedin.com/company/karl-heinz-dietrich-international-exped-s-r-l-
+[2026-05-28 13:00:20] [INFO]     -> LinkedIn URL: https://www.linkedin.com/company/karl-heinz-dietrich-international-exped-s-r-l-
+[2026-05-28 13:00:20] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:00:23] [INFO]   [12/19] Finding LinkedIn for: 'INTERSNACK ROMANIA'
+2026-05-28 16:00:23 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:23 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'INTERSNACK ROMANIA'
+2026-05-28 16:00:23 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:23 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'INTERSNACK ROMANIA'
+2026-05-28 16:00:23 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/intersnack-romania
+2026-05-28 16:00:25 [INFO] tools.linkedin_finder:   LLM Validation: YES for INTERSNACK ROMANIA -> https://www.linkedin.com/company/intersnack-romania
+2026-05-28 16:00:25 [INFO] tools.linkedin_finder: [OK] Linkup returned validated URL: https://www.linkedin.com/company/intersnack-romania
+[2026-05-28 13:00:25] [INFO]     -> LinkedIn URL: https://www.linkedin.com/company/intersnack-romania
+[2026-05-28 13:00:25] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:00:28] [INFO]   [13/19] Finding LinkedIn for: 'MSN Life Services'
+2026-05-28 16:00:28 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:28 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'MSN Life Services'
+2026-05-28 16:00:28 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:28 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'MSN Life Services'
+2026-05-28 16:00:30 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/msn-life-sciences-private-limited
+2026-05-28 16:00:31 [INFO] tools.linkedin_finder:   LLM Validation: NO for MSN Life Services -> https://www.linkedin.com/company/msn-life-sciences-private-limited (reason: NO
+The URL is for "MSN Life Sciences Private Limited," not "MSN Life Services.")
+2026-05-28 16:00:31 [INFO] tools.linkedin_finder: Fallback 2 [LLM knowledge]: asking about 'MSN Life Services'
+2026-05-28 16:00:32 [INFO] tools.linkedin_finder:   LLM does not know the LinkedIn URL
+2026-05-28 16:00:32 [WARNING] tools.linkedin_finder: [FAIL] All fallbacks exhausted for 'MSN Life Services'
+[2026-05-28 13:00:32] [WARN]     -> LinkedIn not found
+[2026-05-28 13:00:32] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:00:35] [INFO]   [14/19] Finding LinkedIn for: 'NMC STIL DISTRIBUTION SRL'
+2026-05-28 16:00:35 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:35 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'NMC STIL DISTRIBUTION SRL'
+2026-05-28 16:00:35 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:35 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'NMC STIL DISTRIBUTION SRL'
+2026-05-28 16:00:37 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.rwim.ro/en/company/nmc-stil-distribution-srl
+2026-05-28 16:00:39 [INFO] tools.linkedin_finder:   LLM Validation: NO for NMC STIL DISTRIBUTION SRL -> https://www.rwim.ro/en/company/nmc-stil-distribution-srl (reason: NO
+The URL is for rwim.ro, not LinkedIn.)
+2026-05-28 16:00:39 [INFO] tools.linkedin_finder: Fallback 2 [LLM knowledge]: asking about 'NMC STIL DISTRIBUTION SRL'
+2026-05-28 16:00:40 [INFO] tools.linkedin_finder:   LLM does not know the LinkedIn URL
+2026-05-28 16:00:40 [WARNING] tools.linkedin_finder: [FAIL] All fallbacks exhausted for 'NMC STIL DISTRIBUTION SRL'
+[2026-05-28 13:00:40] [WARN]     -> LinkedIn not found
+[2026-05-28 13:00:40] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:00:43] [INFO]   [15/19] Finding LinkedIn for: 'Regina Maria'
+2026-05-28 16:00:43 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:43 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'Regina Maria'
+2026-05-28 16:00:43 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:43 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'Regina Maria'
+2026-05-28 16:00:44 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/unirea-medical-center
+2026-05-28 16:00:45 [INFO] tools.linkedin_finder:   LLM Validation: NO for Regina Maria -> https://www.linkedin.com/company/unirea-medical-center (reason: NO
+The LinkedIn URL points to "Unirea Medical Center," not "Regina Maria," which is a different heal)
+2026-05-28 16:00:45 [INFO] tools.linkedin_finder: Fallback 2 [LLM knowledge]: asking about 'Regina Maria'
+2026-05-28 16:00:46 [INFO] tools.linkedin_finder:   LLM knowledge returned: https://www.linkedin.com/company/regina-maria
+2026-05-28 16:00:48 [INFO] tools.linkedin_finder:   LLM Validation: YES for Regina Maria -> https://www.linkedin.com/company/regina-maria
+2026-05-28 16:00:48 [INFO] tools.linkedin_finder: [OK] LLM knowledge returned validated URL: https://www.linkedin.com/company/regina-maria
+[2026-05-28 13:00:48] [INFO]     -> LinkedIn URL: https://www.linkedin.com/company/regina-maria
+[2026-05-28 13:00:48] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:00:51] [INFO]   [16/19] Finding LinkedIn for: 'CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI'
+2026-05-28 16:00:51 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:51 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI'
+2026-05-28 16:00:51 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:51 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI'
+2026-05-28 16:00:51 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/pgd-enerji%CC%87-yatirimlari-sanayi%CC%87-ve-ti%CC%87caret-anoni%CC%87m-%C5%9Fi%CC%87rketi%CC%87
+2026-05-28 16:00:53 [INFO] tools.linkedin_finder:   LLM Validation: NO for CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI -> https://www.linkedin.com/company/pgd-enerji%CC%87-yatirimlari-sanayi%CC%87-ve-ti%CC%87caret-anoni%CC%87m-%C5%9Fi%CC%87rketi%CC%87 (reason: NO
+The LinkedIn URL points to "PGD Enerji Yatırımları Sanayi ve Ticaret Anonim Şirketi," which is a )
+2026-05-28 16:00:53 [INFO] tools.linkedin_finder: Fallback 2 [LLM knowledge]: asking about 'CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI'
+2026-05-28 16:00:54 [INFO] tools.linkedin_finder:   LLM does not know the LinkedIn URL
+2026-05-28 16:00:54 [WARNING] tools.linkedin_finder: [FAIL] All fallbacks exhausted for 'CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI'
+[2026-05-28 13:00:54] [WARN]     -> LinkedIn not found
+[2026-05-28 13:00:54] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:00:57] [INFO]   [17/19] Finding LinkedIn for: 'SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS'
+2026-05-28 16:00:57 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:57 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS'
+2026-05-28 16:00:57 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:00:57 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS'
+2026-05-28 16:00:58 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/cosoreanu-asociatii-societate-civila-de-executori-judecatoresti
+2026-05-28 16:01:00 [INFO] tools.linkedin_finder:   LLM Validation: NO for SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS -> https://www.linkedin.com/company/cosoreanu-asociatii-societate-civila-de-executori-judecatoresti (reason: NO
+The LinkedIn URL points to "Cosoreanu si Asociatii," not "Mazilu si As.")
+2026-05-28 16:01:00 [INFO] tools.linkedin_finder: Fallback 2 [LLM knowledge]: asking about 'SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS'
+2026-05-28 16:01:01 [INFO] tools.linkedin_finder:   LLM does not know the LinkedIn URL
+2026-05-28 16:01:01 [WARNING] tools.linkedin_finder: [FAIL] All fallbacks exhausted for 'SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS'
+[2026-05-28 13:01:01] [WARN]     -> LinkedIn not found
+[2026-05-28 13:01:01] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:01:04] [INFO]   [18/19] Finding LinkedIn for: 'Blu Residence Project S.R.L.'
+2026-05-28 16:01:04 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:01:04 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'Blu Residence Project S.R.L.'
+2026-05-28 16:01:04 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:01:04 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'Blu Residence Project S.R.L.'
+2026-05-28 16:01:06 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/blu-company
+2026-05-28 16:01:07 [INFO] tools.linkedin_finder:   LLM Validation: NO for Blu Residence Project S.R.L. -> https://www.linkedin.com/company/blu-company (reason: NO
+The LinkedIn URL points to "Blu Company," which does not match the specified company name "Blu Re)
+2026-05-28 16:01:07 [INFO] tools.linkedin_finder: Fallback 2 [LLM knowledge]: asking about 'Blu Residence Project S.R.L.'
+2026-05-28 16:01:09 [INFO] tools.linkedin_finder:   LLM does not know the LinkedIn URL
+2026-05-28 16:01:09 [WARNING] tools.linkedin_finder: [FAIL] All fallbacks exhausted for 'Blu Residence Project S.R.L.'
+[2026-05-28 13:01:09] [WARN]     -> LinkedIn not found
+[2026-05-28 13:01:09] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:01:12] [INFO]   [19/19] Finding LinkedIn for: 'Pantofiori.ro'
+2026-05-28 16:01:12 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:01:12 [INFO] tools.linkedin_finder: Finding LinkedIn company page for: 'Pantofiori.ro'
+2026-05-28 16:01:12 [INFO] tools.linkedin_finder: ============================================================
+2026-05-28 16:01:12 [INFO] tools.linkedin_finder: Fallback 1 [LinkUp]: looking up 'Pantofiori.ro'
+2026-05-28 16:01:17 [INFO] tools.linkedin_finder:   LinkUp returned: https://www.linkedin.com/company/pantofioriveseli-ro
+2026-05-28 16:01:18 [INFO] tools.linkedin_finder:   LLM Validation: YES for Pantofiori.ro -> https://www.linkedin.com/company/pantofioriveseli-ro
+2026-05-28 16:01:18 [INFO] tools.linkedin_finder: [OK] Linkup returned validated URL: https://www.linkedin.com/company/pantofioriveseli-ro
+[2026-05-28 13:01:18] [INFO]     -> LinkedIn URL: https://www.linkedin.com/company/pantofioriveseli-ro
+[2026-05-28 13:01:18] [INFO] Phase 3 complete: 13/19 companies have LinkedIn pages
+[2026-05-28 13:01:18] [INFO] 
+[2026-05-28 13:01:18] [INFO] ======================================================================
+[2026-05-28 13:01:18] [INFO]   PHASE: Phase 4: People Name Discovery
+[2026-05-28 13:01:18] [INFO] ======================================================================
+[2026-05-28 13:01:18] [INFO]   [1/19] Searching for executives at: 'HORNBACH'
+2026-05-28 16:01:18 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:01:18 [INFO] tools.people_name_finder: Finding people names for: 'HORNBACH'
+2026-05-28 16:01:18 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:01:18 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'HORNBACH'
+2026-05-28 16:01:20 [INFO] tools.people_name_finder:     LinkUp returned: 'Abdullah S' (from 'Abdullah S')
+2026-05-28 16:01:20 [INFO] tools.people_name_finder:   [CEO] Found: 'Abdullah S'
+2026-05-28 16:01:20 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'HORNBACH'
+2026-05-28 16:01:21 [INFO] tools.people_name_finder:     LinkUp returned: 'Laurentiu Simene' (from 'Laurentiu Simene')
+2026-05-28 16:01:21 [INFO] tools.people_name_finder:   [CFO] Found: 'Laurentiu Simene'
+2026-05-28 16:01:21 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'HORNBACH'
+2026-05-28 16:01:23 [INFO] tools.people_name_finder:     LinkUp returned: 'Thierry Cordonier – Managing Director at Hornbach ...' (from 'Thierry Cordonier – Managing Director at Hornbach ...')
+2026-05-28 16:01:23 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Thierry Cordonier – Managing Director at Hornbach ...'
+[2026-05-28 13:01:23] [INFO]     -> CEO: Abdullah S
+[2026-05-28 13:01:23] [INFO]     -> CFO: Laurentiu Simene
+[2026-05-28 13:01:23] [INFO]     -> Director General: Thierry Cordonier – Managing Director at Hornbach ...
+[2026-05-28 13:01:23] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:01:26] [INFO]   [2/19] Searching for executives at: 'Credit Online IFN S.A.'
+2026-05-28 16:01:26 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:01:26 [INFO] tools.people_name_finder: Finding people names for: 'Credit Online IFN S.A.'
+2026-05-28 16:01:26 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:01:26 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'Credit Online IFN S.A.'
+2026-05-28 16:01:30 [INFO] tools.people_name_finder:     LinkUp returned: 'RALUCA STEFANIA ANDREICA' (from 'RALUCA STEFANIA ANDREICA - Chief Executive Officer and Board Member PATRIA CREDIT IFN S.A. | LinkedIn')
+2026-05-28 16:01:30 [INFO] tools.people_name_finder:   [CEO] Found: 'RALUCA STEFANIA ANDREICA'
+2026-05-28 16:01:30 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'Credit Online IFN S.A.'
+2026-05-28 16:01:33 [INFO] tools.people_name_finder:     LinkUp returned: 'Alina Iftimi' (from 'Alina Iftimi - Chief Executive Officer - Hora Credit IFN S.A.')
+2026-05-28 16:01:33 [INFO] tools.people_name_finder:   [CFO] Found: 'Alina Iftimi'
+2026-05-28 16:01:33 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'Credit Online IFN S.A.'
+2026-05-28 16:01:36 [INFO] tools.people_name_finder:     LinkUp returned: 'Laurentiu Ionut Stan' (from 'Laurentiu Ionut Stan - General Manager at Viva Credit IFN SA | LinkedIn')
+2026-05-28 16:01:36 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Laurentiu Ionut Stan'
+[2026-05-28 13:01:36] [INFO]     -> CEO: RALUCA STEFANIA ANDREICA
+[2026-05-28 13:01:36] [INFO]     -> CFO: Alina Iftimi
+[2026-05-28 13:01:36] [INFO]     -> Director General: Laurentiu Ionut Stan
+[2026-05-28 13:01:36] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:01:39] [INFO]   [3/19] Searching for executives at: 'CERTSIGN S.A.'
+2026-05-28 16:01:39 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:01:39 [INFO] tools.people_name_finder: Finding people names for: 'CERTSIGN S.A.'
+2026-05-28 16:01:39 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:01:39 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'CERTSIGN S.A.'
+2026-05-28 16:01:42 [INFO] tools.people_name_finder:     LinkUp returned: 'Marek Krajčov' (from 'Marek Krajčov - CERTICOM')
+2026-05-28 16:01:42 [INFO] tools.people_name_finder:   [CEO] Found: 'Marek Krajčov'
+2026-05-28 16:01:42 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'CERTSIGN S.A.'
+2026-05-28 16:01:44 [INFO] tools.people_name_finder:     LinkUp returned: 'Ryan Dowling' (from 'Ryan Dowling - Chief Financial Officer')
+2026-05-28 16:01:44 [INFO] tools.people_name_finder:   [CFO] Found: 'Ryan Dowling'
+2026-05-28 16:01:44 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'CERTSIGN S.A.'
+2026-05-28 16:01:48 [INFO] tools.people_name_finder:     LinkUp returned: 'Emilian Dragan' (from 'Emilian Dragan - Archiving Business Unit Director at certSIGN | LinkedIn')
+2026-05-28 16:01:48 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Emilian Dragan'
+[2026-05-28 13:01:48] [INFO]     -> CEO: Marek Krajčov
+[2026-05-28 13:01:48] [INFO]     -> CFO: Ryan Dowling
+[2026-05-28 13:01:48] [INFO]     -> Director General: Emilian Dragan
+[2026-05-28 13:01:48] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:01:51] [INFO]   [4/19] Searching for executives at: 'TELEPERFORMANCE ROMANIA'
+2026-05-28 16:01:51 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:01:51 [INFO] tools.people_name_finder: Finding people names for: 'TELEPERFORMANCE ROMANIA'
+2026-05-28 16:01:51 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:01:51 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'TELEPERFORMANCE ROMANIA'
+2026-05-28 16:01:53 [INFO] tools.people_name_finder:     LinkUp returned: 'Daniel Julien' (from 'Daniel Julien - Teleperformance | LinkedIn')
+2026-05-28 16:01:53 [INFO] tools.people_name_finder:   [CEO] Found: 'Daniel Julien'
+2026-05-28 16:01:53 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'TELEPERFORMANCE ROMANIA'
+2026-05-28 16:01:56 [INFO] tools.people_name_finder:     LinkUp returned: 'Oana Coman' (from 'Oana Coman - Chief Financial Officer Teleperformance Romania | LinkedIn')
+2026-05-28 16:01:56 [INFO] tools.people_name_finder:   [CFO] Found: 'Oana Coman'
+2026-05-28 16:01:56 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'TELEPERFORMANCE ROMANIA'
+2026-05-28 16:01:58 [INFO] tools.people_name_finder:     LinkUp returned: 'Laurent Dolivet' (from 'Laurent Dolivet - Contact Center Manager chez Teleperformance Romania | LinkedIn')
+2026-05-28 16:01:58 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Laurent Dolivet'
+[2026-05-28 13:01:58] [INFO]     -> CEO: Daniel Julien
+[2026-05-28 13:01:58] [INFO]     -> CFO: Oana Coman
+[2026-05-28 13:01:58] [INFO]     -> Director General: Laurent Dolivet
+[2026-05-28 13:01:58] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:02:01] [INFO]   [5/19] Searching for executives at: 'TELUS Digital'
+2026-05-28 16:02:01 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:02:01 [INFO] tools.people_name_finder: Finding people names for: 'TELUS Digital'
+2026-05-28 16:02:01 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:02:01 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'TELUS Digital'
+2026-05-28 16:02:03 [INFO] tools.people_name_finder:     LinkUp returned: 'Tobias Dengel' (from 'Tobias Dengel - TELUS Digital | LinkedIn')
+2026-05-28 16:02:03 [INFO] tools.people_name_finder:   [CEO] Found: 'Tobias Dengel'
+2026-05-28 16:02:03 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'TELUS Digital'
+2026-05-28 16:02:05 [INFO] tools.people_name_finder:     LinkUp returned: 'Gopi Chande, FCPA, FCA' (from 'Gopi Chande, FCPA, FCA - Chief Financial Officer - TELUS ...')
+2026-05-28 16:02:05 [INFO] tools.people_name_finder:   [CFO] Found: 'Gopi Chande, FCPA, FCA'
+2026-05-28 16:02:05 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'TELUS Digital'
+2026-05-28 16:02:07 [INFO] tools.people_name_finder:     LinkUp returned: 'Tobias Dengel' (from 'Tobias Dengel - TELUS Digital | LinkedIn')
+2026-05-28 16:02:07 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Tobias Dengel'
+[2026-05-28 13:02:07] [INFO]     -> CEO: Tobias Dengel
+[2026-05-28 13:02:07] [INFO]     -> CFO: Gopi Chande, FCPA, FCA
+[2026-05-28 13:02:07] [INFO]     -> Director General: Tobias Dengel
+[2026-05-28 13:02:07] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:02:10] [INFO]   [6/19] Searching for executives at: 'MOOD MEDIA ROMANIA SRL'
+2026-05-28 16:02:10 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:02:10 [INFO] tools.people_name_finder: Finding people names for: 'MOOD MEDIA ROMANIA SRL'
+2026-05-28 16:02:10 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:02:10 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'MOOD MEDIA ROMANIA SRL'
+2026-05-28 16:02:12 [INFO] tools.people_name_finder:     LinkUp returned: 'Ioana Comsa' (from 'Ioana Comsa - Head of Operations Central Eastern Europe | Mood Media EMEA | LinkedIn')
+2026-05-28 16:02:12 [INFO] tools.people_name_finder:   [CEO] Found: 'Ioana Comsa'
+2026-05-28 16:02:12 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'MOOD MEDIA ROMANIA SRL'
+2026-05-28 16:02:15 [INFO] tools.people_name_finder:     LinkUp returned: 'Emilian Dascalescu' (from 'Emilian Dascalescu - Chief Financial Officer / Shared ...')
+2026-05-28 16:02:15 [INFO] tools.people_name_finder:   [CFO] Found: 'Emilian Dascalescu'
+2026-05-28 16:02:15 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'MOOD MEDIA ROMANIA SRL'
+2026-05-28 16:02:17 [INFO] tools.people_name_finder:     LinkUp returned: 'Ioana Comsa' (from 'Ioana Comsa - Head of Operations Central Eastern Europe | Mood Media EMEA | LinkedIn')
+2026-05-28 16:02:17 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Ioana Comsa'
+[2026-05-28 13:02:17] [INFO]     -> CEO: Ioana Comsa
+[2026-05-28 13:02:17] [INFO]     -> CFO: Emilian Dascalescu
+[2026-05-28 13:02:17] [INFO]     -> Director General: Ioana Comsa
+[2026-05-28 13:02:17] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:02:20] [INFO]   [7/19] Searching for executives at: 'Cegedim Service Center'
+2026-05-28 16:02:20 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:02:20 [INFO] tools.people_name_finder: Finding people names for: 'Cegedim Service Center'
+2026-05-28 16:02:20 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:02:20 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'Cegedim Service Center'
+2026-05-28 16:02:22 [INFO] tools.people_name_finder:     LinkUp returned no matching profile
+2026-05-28 16:02:22 [INFO] tools.people_name_finder:   Fallback 2 [LLM knowledge]: CEO for 'Cegedim Service Center'
+2026-05-28 16:02:23 [INFO] tools.people_name_finder:     LLM does not know
+2026-05-28 16:02:23 [INFO] tools.people_name_finder:   [CEO] Not found
+2026-05-28 16:02:23 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'Cegedim Service Center'
+2026-05-28 16:02:24 [INFO] tools.people_name_finder:     LinkUp returned: 'Sonia Mariana Wisner Domé' (from 'Sonia Mariana Wisner Domé - CFO | Chief Financial Officer | Finance Director | Finance and Administration Manager | Controller LATAM | Financial Strategy, Governance & Risk | Growth and Transformation | Trilingual (English, Portuguese, Spanish) | LinkedIn')
+2026-05-28 16:02:24 [INFO] tools.people_name_finder:   [CFO] Found: 'Sonia Mariana Wisner Domé'
+2026-05-28 16:02:24 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'Cegedim Service Center'
+2026-05-28 16:02:27 [INFO] tools.people_name_finder:     LinkUp returned: 'Anthony Cercleux' (from 'Anthony Cercleux - Cegedim Service Center Executive Director | LinkedIn')
+2026-05-28 16:02:27 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Anthony Cercleux'
+[2026-05-28 13:02:27] [INFO]     -> CEO: (not found)
+[2026-05-28 13:02:27] [INFO]     -> CFO: Sonia Mariana Wisner Domé
+[2026-05-28 13:02:27] [INFO]     -> Director General: Anthony Cercleux
+[2026-05-28 13:02:27] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:02:30] [INFO]   [8/19] Searching for executives at: 'GRAWE ROMANIA ASIGURARE SA'
+2026-05-28 16:02:30 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:02:30 [INFO] tools.people_name_finder: Finding people names for: 'GRAWE ROMANIA ASIGURARE SA'
+2026-05-28 16:02:30 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:02:30 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'GRAWE ROMANIA ASIGURARE SA'
+2026-05-28 16:02:31 [INFO] tools.people_name_finder:     LinkUp returned: 'Cornelia Eremia' (from 'Cornelia Eremia')
+2026-05-28 16:02:31 [INFO] tools.people_name_finder:   [CEO] Found: 'Cornelia Eremia'
+2026-05-28 16:02:31 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'GRAWE ROMANIA ASIGURARE SA'
+2026-05-28 16:02:32 [INFO] tools.people_name_finder:     LinkUp returned: 'Ramona Toma' (from 'Ramona Toma')
+2026-05-28 16:02:32 [INFO] tools.people_name_finder:   [CFO] Found: 'Ramona Toma'
+2026-05-28 16:02:32 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'GRAWE ROMANIA ASIGURARE SA'
+2026-05-28 16:02:32 [INFO] tools.people_name_finder:     LinkUp returned: 'Ramona Toma' (from 'Ramona Toma')
+2026-05-28 16:02:32 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Ramona Toma'
+[2026-05-28 13:02:32] [INFO]     -> CEO: Cornelia Eremia
+[2026-05-28 13:02:32] [INFO]     -> CFO: Ramona Toma
+[2026-05-28 13:02:32] [INFO]     -> Director General: Ramona Toma
+[2026-05-28 13:02:32] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:02:35] [INFO]   [9/19] Searching for executives at: 'DKV Mobility Romania'
+2026-05-28 16:02:35 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:02:35 [INFO] tools.people_name_finder: Finding people names for: 'DKV Mobility Romania'
+2026-05-28 16:02:35 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:02:35 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'DKV Mobility Romania'
+2026-05-28 16:02:38 [INFO] tools.people_name_finder:     LinkUp returned: 'Liliana Bogdan' (from 'Liliana Bogdan - CFO #International Finance Leadership#Transformation, Treasury &Strategic Finance | LinkedIn')
+2026-05-28 16:02:38 [INFO] tools.people_name_finder:   [CEO] Found: 'Liliana Bogdan'
+2026-05-28 16:02:38 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'DKV Mobility Romania'
+2026-05-28 16:02:40 [INFO] tools.people_name_finder:     LinkUp returned: 'Liliana Bogdan' (from 'Liliana Bogdan - CFO #International Finance Leadership#Transformation, Treasury &Strategic Finance | LinkedIn')
+2026-05-28 16:02:40 [INFO] tools.people_name_finder:   [CFO] Found: 'Liliana Bogdan'
+2026-05-28 16:02:40 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'DKV Mobility Romania'
+2026-05-28 16:02:42 [INFO] tools.people_name_finder:     LinkUp returned: 'Cătălin Constantinescu' (from 'Cătălin Constantinescu - DKV Mobility | LinkedIn')
+2026-05-28 16:02:42 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Cătălin Constantinescu'
+[2026-05-28 13:02:42] [INFO]     -> CEO: Liliana Bogdan
+[2026-05-28 13:02:42] [INFO]     -> CFO: Liliana Bogdan
+[2026-05-28 13:02:42] [INFO]     -> Director General: Cătălin Constantinescu
+[2026-05-28 13:02:42] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:02:45] [INFO]   [10/19] Searching for executives at: 'AKTEK'
+2026-05-28 16:02:45 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:02:45 [INFO] tools.people_name_finder: Finding people names for: 'AKTEK'
+2026-05-28 16:02:45 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:02:45 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'AKTEK'
+2026-05-28 16:02:48 [INFO] tools.people_name_finder:     LinkUp returned: 'Aditya Tallapragada' (from 'Aditya Tallapragada - President @ AKT Health Inc. | HEOR | Market Access | Medical Affairs | Impakt Health - RPM & DCT | IoT | AI | Blockchain | LinkedIn')
+2026-05-28 16:02:48 [INFO] tools.people_name_finder:   [CEO] Found: 'Aditya Tallapragada'
+2026-05-28 16:02:48 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'AKTEK'
+2026-05-28 16:02:50 [INFO] tools.people_name_finder:     LinkUp returned: 'Jon Purdy' (from 'Jon Purdy - Chief Financial Officer (CFO)')
+2026-05-28 16:02:50 [INFO] tools.people_name_finder:   [CFO] Found: 'Jon Purdy'
+2026-05-28 16:02:50 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'AKTEK'
+2026-05-28 16:02:52 [INFO] tools.people_name_finder:     LinkUp returned: 'Semih Gür' (from 'Semih Gür - Director - SAP Business Applications @ Aktek | Driving Business Solutions | LinkedIn')
+2026-05-28 16:02:52 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Semih Gür'
+[2026-05-28 13:02:52] [INFO]     -> CEO: Aditya Tallapragada
+[2026-05-28 13:02:52] [INFO]     -> CFO: Jon Purdy
+[2026-05-28 13:02:52] [INFO]     -> Director General: Semih Gür
+[2026-05-28 13:02:52] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:02:55] [INFO]   [11/19] Searching for executives at: 'KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL'
+2026-05-28 16:02:55 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:02:55 [INFO] tools.people_name_finder: Finding people names for: 'KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL'
+2026-05-28 16:02:55 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:02:55 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL'
+2026-05-28 16:02:57 [INFO] tools.people_name_finder:     LinkUp returned: 'Dietrich Wanke' (from 'Dietrich Wanke - european lithium limited')
+2026-05-28 16:02:57 [INFO] tools.people_name_finder:   [CEO] Found: 'Dietrich Wanke'
+2026-05-28 16:02:57 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL'
+2026-05-28 16:03:00 [INFO] tools.people_name_finder:     LinkUp returned no matching profile
+2026-05-28 16:03:00 [INFO] tools.people_name_finder:   Fallback 2 [LLM knowledge]: CFO for 'KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL'
+2026-05-28 16:03:01 [INFO] tools.people_name_finder:     LLM does not know
+2026-05-28 16:03:01 [INFO] tools.people_name_finder:   [CFO] Not found
+2026-05-28 16:03:01 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL'
+2026-05-28 16:03:02 [INFO] tools.people_name_finder:     LinkUp returned no matching profile
+2026-05-28 16:03:02 [INFO] tools.people_name_finder:   Fallback 2 [LLM knowledge]: DIRECTOR_GENERAL for 'KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL'
+2026-05-28 16:03:03 [INFO] tools.people_name_finder:     LLM does not know
+2026-05-28 16:03:03 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Not found
+[2026-05-28 13:03:03] [INFO]     -> CEO: Dietrich Wanke
+[2026-05-28 13:03:03] [INFO]     -> CFO: (not found)
+[2026-05-28 13:03:03] [INFO]     -> Director General: (not found)
+[2026-05-28 13:03:03] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:03:06] [INFO]   [12/19] Searching for executives at: 'INTERSNACK ROMANIA'
+2026-05-28 16:03:06 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:03:06 [INFO] tools.people_name_finder: Finding people names for: 'INTERSNACK ROMANIA'
+2026-05-28 16:03:06 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:03:06 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'INTERSNACK ROMANIA'
+2026-05-28 16:03:09 [INFO] tools.people_name_finder:     LinkUp returned: 'Cătălin Georgescu' (from 'Cătălin Georgescu - Sales Director @ Intersnack Romania, ...')
+2026-05-28 16:03:09 [INFO] tools.people_name_finder:   [CEO] Found: 'Cătălin Georgescu'
+2026-05-28 16:03:09 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'INTERSNACK ROMANIA'
+2026-05-28 16:03:11 [INFO] tools.people_name_finder:     LinkUp returned: 'Petre Matea' (from 'Petre Matea - Manager at SC Intersnack Romania SRL')
+2026-05-28 16:03:11 [INFO] tools.people_name_finder:   [CFO] Found: 'Petre Matea'
+2026-05-28 16:03:11 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'INTERSNACK ROMANIA'
+2026-05-28 16:03:12 [INFO] tools.people_name_finder:     LinkUp returned: 'Petre Matea' (from 'Petre Matea - Manager at SC Intersnack Romania SRL')
+2026-05-28 16:03:12 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Petre Matea'
+[2026-05-28 13:03:12] [INFO]     -> CEO: Cătălin Georgescu
+[2026-05-28 13:03:12] [INFO]     -> CFO: Petre Matea
+[2026-05-28 13:03:12] [INFO]     -> Director General: Petre Matea
+[2026-05-28 13:03:12] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:03:15] [INFO]   [13/19] Searching for executives at: 'MSN Life Services'
+2026-05-28 16:03:15 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:03:15 [INFO] tools.people_name_finder: Finding people names for: 'MSN Life Services'
+2026-05-28 16:03:15 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:03:15 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'MSN Life Services'
+2026-05-28 16:03:19 [INFO] tools.people_name_finder:     LinkUp returned: 'Bo Trotter' (from 'Bo Trotter - CEO & Founder, MSN Healthcare Solutions')
+2026-05-28 16:03:19 [INFO] tools.people_name_finder:   [CEO] Found: 'Bo Trotter'
+2026-05-28 16:03:19 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'MSN Life Services'
+2026-05-28 16:03:21 [INFO] tools.people_name_finder:     LinkUp returned: 'LinkedIn India: Log In or Sign Up' (from 'LinkedIn India: Log In or Sign Up')
+2026-05-28 16:03:21 [INFO] tools.people_name_finder:   [CFO] Found: 'LinkedIn India: Log In or Sign Up'
+2026-05-28 16:03:21 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'MSN Life Services'
+2026-05-28 16:03:24 [INFO] tools.people_name_finder:     LinkUp returned: 'Eli Arnett' (from 'Eli Arnett - Director, Client Services and Operations at MSN ...')
+2026-05-28 16:03:24 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Eli Arnett'
+[2026-05-28 13:03:24] [INFO]     -> CEO: Bo Trotter
+[2026-05-28 13:03:24] [INFO]     -> CFO: LinkedIn India: Log In or Sign Up
+[2026-05-28 13:03:24] [INFO]     -> Director General: Eli Arnett
+[2026-05-28 13:03:24] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:03:27] [INFO]   [14/19] Searching for executives at: 'NMC STIL DISTRIBUTION SRL'
+2026-05-28 16:03:27 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:03:27 [INFO] tools.people_name_finder: Finding people names for: 'NMC STIL DISTRIBUTION SRL'
+2026-05-28 16:03:27 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:03:27 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'NMC STIL DISTRIBUTION SRL'
+2026-05-28 16:03:30 [INFO] tools.people_name_finder:     LinkUp returned: 'Nigel Isaacs' (from 'Nigel Isaacs - Chief Executive Officer - NMC Construction, inc. | LinkedIn')
+2026-05-28 16:03:30 [INFO] tools.people_name_finder:   [CEO] Found: 'Nigel Isaacs'
+2026-05-28 16:03:30 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'NMC STIL DISTRIBUTION SRL'
+2026-05-28 16:03:32 [INFO] tools.people_name_finder:     LinkUp returned: 'Stefano Sartoretti' (from 'Stefano Sartoretti - Chief Financial Officer - NMC Healthcare | LinkedIn')
+2026-05-28 16:03:32 [INFO] tools.people_name_finder:   [CFO] Found: 'Stefano Sartoretti'
+2026-05-28 16:03:32 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'NMC STIL DISTRIBUTION SRL'
+2026-05-28 16:03:34 [INFO] tools.people_name_finder:     LinkUp returned: 'Constantin Alan' (from 'Constantin Alan - Administrator - NMC stil distribution srl')
+2026-05-28 16:03:34 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Constantin Alan'
+[2026-05-28 13:03:34] [INFO]     -> CEO: Nigel Isaacs
+[2026-05-28 13:03:34] [INFO]     -> CFO: Stefano Sartoretti
+[2026-05-28 13:03:34] [INFO]     -> Director General: Constantin Alan
+[2026-05-28 13:03:34] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:03:37] [INFO]   [15/19] Searching for executives at: 'Regina Maria'
+2026-05-28 16:03:37 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:03:37 [INFO] tools.people_name_finder: Finding people names for: 'Regina Maria'
+2026-05-28 16:03:37 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:03:37 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'Regina Maria'
+2026-05-28 16:03:39 [INFO] tools.people_name_finder:     LinkUp returned: 'Regina M.' (from 'Regina M. - Tmigen Media | LinkedIn')
+2026-05-28 16:03:39 [INFO] tools.people_name_finder:   [CEO] Found: 'Regina M.'
+2026-05-28 16:03:39 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'Regina Maria'
+2026-05-28 16:03:40 [INFO] tools.people_name_finder:     LinkUp returned: 'Sisca Suhendra' (from 'Sisca Suhendra')
+2026-05-28 16:03:40 [INFO] tools.people_name_finder:   [CFO] Found: 'Sisca Suhendra'
+2026-05-28 16:03:40 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'Regina Maria'
+2026-05-28 16:03:44 [INFO] tools.people_name_finder:     LinkUp returned: 'Cosmin Panaete' (from 'Cosmin Panaete - Business Processes Director at Regina Maria, Reteaua de sanatate | LinkedIn')
+2026-05-28 16:03:44 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Cosmin Panaete'
+[2026-05-28 13:03:44] [INFO]     -> CEO: Regina M.
+[2026-05-28 13:03:44] [INFO]     -> CFO: Sisca Suhendra
+[2026-05-28 13:03:44] [INFO]     -> Director General: Cosmin Panaete
+[2026-05-28 13:03:44] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:03:47] [INFO]   [16/19] Searching for executives at: 'CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI'
+2026-05-28 16:03:47 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:03:47 [INFO] tools.people_name_finder: Finding people names for: 'CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI'
+2026-05-28 16:03:47 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:03:47 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI'
+2026-05-28 16:03:49 [INFO] tools.people_name_finder:     LinkUp returned: 'N A' (from 'N A - Chief Executive Officer at CEO | LinkedIn')
+2026-05-28 16:03:49 [INFO] tools.people_name_finder:   [CEO] Found: 'N A'
+2026-05-28 16:03:49 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI'
+2026-05-28 16:03:52 [INFO] tools.people_name_finder:     LinkUp returned no matching profile
+2026-05-28 16:03:52 [INFO] tools.people_name_finder:   Fallback 2 [LLM knowledge]: CFO for 'CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI'
+2026-05-28 16:03:53 [INFO] tools.people_name_finder:     LLM does not know
+2026-05-28 16:03:53 [INFO] tools.people_name_finder:   [CFO] Not found
+2026-05-28 16:03:53 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI'
+2026-05-28 16:03:54 [INFO] tools.people_name_finder:     LinkUp returned: 'Baran Horoz' (from 'Baran Horoz')
+2026-05-28 16:03:54 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Baran Horoz'
+[2026-05-28 13:03:54] [INFO]     -> CEO: N A
+[2026-05-28 13:03:54] [INFO]     -> CFO: (not found)
+[2026-05-28 13:03:54] [INFO]     -> Director General: Baran Horoz
+[2026-05-28 13:03:54] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:03:57] [INFO]   [17/19] Searching for executives at: 'SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS'
+2026-05-28 16:03:57 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:03:57 [INFO] tools.people_name_finder: Finding people names for: 'SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS'
+2026-05-28 16:03:57 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:03:57 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS'
+2026-05-28 16:03:59 [INFO] tools.people_name_finder:     LinkUp returned: 'Solomon Dan' (from 'Solomon Dan - Consilier juridic - Societatea Civila ...')
+2026-05-28 16:03:59 [INFO] tools.people_name_finder:   [CEO] Found: 'Solomon Dan'
+2026-05-28 16:03:59 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS'
+2026-05-28 16:04:02 [INFO] tools.people_name_finder:     LinkUp returned no matching profile
+2026-05-28 16:04:02 [INFO] tools.people_name_finder:   Fallback 2 [LLM knowledge]: CFO for 'SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS'
+2026-05-28 16:04:03 [INFO] tools.people_name_finder:     LLM does not know
+2026-05-28 16:04:03 [INFO] tools.people_name_finder:   [CFO] Not found
+2026-05-28 16:04:03 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS'
+2026-05-28 16:04:05 [INFO] tools.people_name_finder:     LinkUp returned: 'Solomon Dan' (from 'Solomon Dan - Consilier juridic - Societatea Civila ...')
+2026-05-28 16:04:05 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Solomon Dan'
+[2026-05-28 13:04:05] [INFO]     -> CEO: Solomon Dan
+[2026-05-28 13:04:05] [INFO]     -> CFO: (not found)
+[2026-05-28 13:04:05] [INFO]     -> Director General: Solomon Dan
+[2026-05-28 13:04:05] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:04:08] [INFO]   [18/19] Searching for executives at: 'Blu Residence Project S.R.L.'
+2026-05-28 16:04:08 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:04:08 [INFO] tools.people_name_finder: Finding people names for: 'Blu Residence Project S.R.L.'
+2026-05-28 16:04:08 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:04:08 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'Blu Residence Project S.R.L.'
+2026-05-28 16:04:09 [INFO] tools.people_name_finder:     LinkUp returned: 'Arq Mdd Mca' (from 'Arq Mdd Mca')
+2026-05-28 16:04:09 [INFO] tools.people_name_finder:   [CEO] Found: 'Arq Mdd Mca'
+2026-05-28 16:04:09 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'Blu Residence Project S.R.L.'
+2026-05-28 16:04:13 [INFO] tools.people_name_finder:     LinkUp returned: 'Carolina Rolim' (from 'Carolina Rolim - BLU Products | LinkedIn')
+2026-05-28 16:04:13 [INFO] tools.people_name_finder:   [CFO] Found: 'Carolina Rolim'
+2026-05-28 16:04:13 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'Blu Residence Project S.R.L.'
+2026-05-28 16:04:15 [INFO] tools.people_name_finder:     LinkUp returned: 'Matthew Schulte' (from 'Matthew Schulte - Projects Team Manager - Blu Homes')
+2026-05-28 16:04:15 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Matthew Schulte'
+[2026-05-28 13:04:15] [INFO]     -> CEO: Arq Mdd Mca
+[2026-05-28 13:04:15] [INFO]     -> CFO: Carolina Rolim
+[2026-05-28 13:04:15] [INFO]     -> Director General: Matthew Schulte
+[2026-05-28 13:04:15] [DEBUG]   Waiting 3.0s before next company ...
+[2026-05-28 13:04:18] [INFO]   [19/19] Searching for executives at: 'Pantofiori.ro'
+2026-05-28 16:04:18 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:04:18 [INFO] tools.people_name_finder: Finding people names for: 'Pantofiori.ro'
+2026-05-28 16:04:18 [INFO] tools.people_name_finder: ============================================================
+2026-05-28 16:04:18 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CEO for 'Pantofiori.ro'
+2026-05-28 16:04:23 [INFO] tools.people_name_finder:     LinkUp returned: 'Mihai Pătrașcu' (from 'Mihai Pătrașcu - Entrepreneur, Chief Executive Officer at ...')
+2026-05-28 16:04:23 [INFO] tools.people_name_finder:   [CEO] Found: 'Mihai Pătrașcu'
+2026-05-28 16:04:23 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: CFO for 'Pantofiori.ro'
+2026-05-28 16:04:24 [INFO] tools.people_name_finder:     LinkUp returned: 'Sonia Mariana Wisner Domé' (from 'Sonia Mariana Wisner Domé - CFO | Chief Financial Officer | Finance Director | Finance and Administration Manager | Controller LATAM | Financial Strategy, Governance & Risk | Growth and Transformation | Trilingual (English, Portuguese, Spanish) | LinkedIn')
+2026-05-28 16:04:24 [INFO] tools.people_name_finder:   [CFO] Found: 'Sonia Mariana Wisner Domé'
+2026-05-28 16:04:24 [INFO] tools.people_name_finder:   Fallback 1 [LinkUp]: DIRECTOR_GENERAL for 'Pantofiori.ro'
+2026-05-28 16:04:30 [INFO] tools.people_name_finder:     LinkUp returned: 'Magazinul Gospodarului.ro' (from 'Magazinul Gospodarului.ro - Director & General Manager la Magazinul Gospodarului | LinkedIn')
+2026-05-28 16:04:30 [INFO] tools.people_name_finder:   [DIRECTOR_GENERAL] Found: 'Magazinul Gospodarului.ro'
+[2026-05-28 13:04:30] [INFO]     -> CEO: Mihai Pătrașcu
+[2026-05-28 13:04:30] [INFO]     -> CFO: Sonia Mariana Wisner Domé
+[2026-05-28 13:04:30] [INFO]     -> Director General: Magazinul Gospodarului.ro
+[2026-05-28 13:04:30] [INFO] 
+[2026-05-28 13:04:30] [INFO] ======================================================================
+[2026-05-28 13:04:30] [INFO]   PHASE: Phase 5: LinkedIn Profile Discovery
+[2026-05-28 13:04:30] [INFO] ======================================================================
+[2026-05-28 13:04:30] [INFO]   Processing profiles for: 'HORNBACH' (1 job source(s))
+[2026-05-28 13:04:30] [INFO]     LinkedIn company URL: https://www.linkedin.com/company/hornbach
+2026-05-28 16:04:30 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:04:30 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for HORNBACH
+2026-05-28 16:04:30 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:04:30 [INFO] tools.people_profile_finder: Bulk employee lookup via linkedin-scraper for https://www.linkedin.com/company/hornbach
+2026-05-28 16:04:30 [INFO] tools.people_profile_finder:   Running linkedin-scraper for https://www.linkedin.com/company/hornbach ...
+2026-05-28 16:04:31 [WARNING] tools.people_profile_finder:   linkedin-scraper exited with code 1
+2026-05-28 16:04:31 [WARNING] tools.people_profile_finder:   stderr: Traceback (most recent call last):
+  File "/var/folders/65/3gbbhkgs37l5ww8z3_8wcgsh0000gn/T/linkedin_runner_ont0noxy.py", line 14, in <module>
+    linkedin.paginateResults(company_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/cristianolaru/Desktop/Markus/linkedin-scraper/Leade_generation.py", line 69, in paginateResults
+    'Csrf-Token': re.findall(r'JSESSIONID="(.+?)"', cookies)[0],
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+2026-05-28 16:04:31 [INFO] tools.people_profile_finder:   Found 0 employees via bulk lookup
+2026-05-28 16:04:31 [INFO] tools.people_profile_finder:   Looking up: Abdullah S (CEO) at HORNBACH
+2026-05-28 16:04:31 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Abdullah S / HORNBACH
+2026-05-28 16:04:33 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/abdullahs1
+2026-05-28 16:04:34 [INFO] tools.people_profile_finder:     LLM Validation: YES for Abdullah S -> https://www.linkedin.com/in/abdullahs1
+2026-05-28 16:04:34 [INFO] tools.people_profile_finder:     [OK] Abdullah S -> https://www.linkedin.com/in/abdullahs1
+2026-05-28 16:04:34 [INFO] tools.people_profile_finder:   Looking up: Laurentiu Simene (CFO) at HORNBACH
+2026-05-28 16:04:34 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Laurentiu Simene / HORNBACH
+2026-05-28 16:04:36 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/laurentiu-simene
+2026-05-28 16:04:37 [INFO] tools.people_profile_finder:     LLM Validation: YES for Laurentiu Simene -> https://www.linkedin.com/in/laurentiu-simene
+2026-05-28 16:04:37 [INFO] tools.people_profile_finder:     [OK] Laurentiu Simene -> https://www.linkedin.com/in/laurentiu-simene
+2026-05-28 16:04:37 [INFO] tools.people_profile_finder:   Looking up: Thierry Cordonier – Managing Director at Hornbach ... (Director General) at HORNBACH
+2026-05-28 16:04:37 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Thierry Cordonier – Managing Director at Hornbach ... / HORNBACH
+2026-05-28 16:04:38 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/thierry-cordonier-257915124
+2026-05-28 16:04:39 [INFO] tools.people_profile_finder:     LLM Validation: YES for Thierry Cordonier – Managing Director at Hornbach ... -> https://www.linkedin.com/in/thierry-cordonier-257915124
+2026-05-28 16:04:39 [INFO] tools.people_profile_finder:     [OK] Thierry Cordonier – Managing Director at Hornbach ... -> https://www.linkedin.com/in/thierry-cordonier-257915124
+[2026-05-28 13:04:39] [INFO]     -> CEO profile: https://www.linkedin.com/in/abdullahs1
+[2026-05-28 13:04:39] [INFO]     -> CFO profile: https://www.linkedin.com/in/laurentiu-simene
+[2026-05-28 13:04:39] [INFO]     -> Director General profile: https://www.linkedin.com/in/thierry-cordonier-257915124
+[2026-05-28 13:04:42] [INFO]   Processing profiles for: 'Credit Online IFN S.A.' (1 job source(s))
+[2026-05-28 13:04:42] [INFO]     LinkedIn company URL: https://www.linkedin.com/company/credit-online-ifn-s-a
+2026-05-28 16:04:42 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:04:42 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for Credit Online IFN S.A.
+2026-05-28 16:04:42 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:04:42 [INFO] tools.people_profile_finder: Bulk employee lookup via linkedin-scraper for https://www.linkedin.com/company/credit-online-ifn-s-a
+2026-05-28 16:04:42 [INFO] tools.people_profile_finder:   Running linkedin-scraper for https://www.linkedin.com/company/credit-online-ifn-s-a ...
+2026-05-28 16:04:43 [WARNING] tools.people_profile_finder:   linkedin-scraper exited with code 1
+2026-05-28 16:04:43 [WARNING] tools.people_profile_finder:   stderr: Traceback (most recent call last):
+  File "/var/folders/65/3gbbhkgs37l5ww8z3_8wcgsh0000gn/T/linkedin_runner_vod1wvej.py", line 14, in <module>
+    linkedin.paginateResults(company_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/cristianolaru/Desktop/Markus/linkedin-scraper/Leade_generation.py", line 69, in paginateResults
+    'Csrf-Token': re.findall(r'JSESSIONID="(.+?)"', cookies)[0],
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+2026-05-28 16:04:43 [INFO] tools.people_profile_finder:   Found 0 employees via bulk lookup
+2026-05-28 16:04:43 [INFO] tools.people_profile_finder:   Looking up: RALUCA STEFANIA ANDREICA (CEO) at Credit Online IFN S.A.
+2026-05-28 16:04:43 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: RALUCA STEFANIA ANDREICA / Credit Online IFN S.A.
+2026-05-28 16:04:44 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/raluca-stefania-andreica-19965624
+2026-05-28 16:04:45 [INFO] tools.people_profile_finder:     LLM Validation: YES for RALUCA STEFANIA ANDREICA -> https://www.linkedin.com/in/raluca-stefania-andreica-19965624
+2026-05-28 16:04:45 [INFO] tools.people_profile_finder:     [OK] RALUCA STEFANIA ANDREICA -> https://www.linkedin.com/in/raluca-stefania-andreica-19965624
+2026-05-28 16:04:45 [INFO] tools.people_profile_finder:   Looking up: Alina Iftimi (CFO) at Credit Online IFN S.A.
+2026-05-28 16:04:45 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Alina Iftimi / Credit Online IFN S.A.
+2026-05-28 16:04:46 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/alina-iftimi-4172b2130
+2026-05-28 16:04:47 [INFO] tools.people_profile_finder:     LLM Validation: YES for Alina Iftimi -> https://www.linkedin.com/in/alina-iftimi-4172b2130
+2026-05-28 16:04:47 [INFO] tools.people_profile_finder:     [OK] Alina Iftimi -> https://www.linkedin.com/in/alina-iftimi-4172b2130
+2026-05-28 16:04:47 [INFO] tools.people_profile_finder:   Looking up: Laurentiu Ionut Stan (Director General) at Credit Online IFN S.A.
+2026-05-28 16:04:47 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Laurentiu Ionut Stan / Credit Online IFN S.A.
+2026-05-28 16:04:47 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/laurentiu-ionut-stan-b98b461
+2026-05-28 16:04:48 [INFO] tools.people_profile_finder:     LLM Validation: YES for Laurentiu Ionut Stan -> https://www.linkedin.com/in/laurentiu-ionut-stan-b98b461
+2026-05-28 16:04:48 [INFO] tools.people_profile_finder:     [OK] Laurentiu Ionut Stan -> https://www.linkedin.com/in/laurentiu-ionut-stan-b98b461
+[2026-05-28 13:04:48] [INFO]     -> CEO profile: https://www.linkedin.com/in/raluca-stefania-andreica-19965624
+[2026-05-28 13:04:48] [INFO]     -> CFO profile: https://www.linkedin.com/in/alina-iftimi-4172b2130
+[2026-05-28 13:04:48] [INFO]     -> Director General profile: https://www.linkedin.com/in/laurentiu-ionut-stan-b98b461
+[2026-05-28 13:04:51] [INFO]   Processing profiles for: 'CERTSIGN S.A.' (1 job source(s))
+[2026-05-28 13:04:51] [INFO]     LinkedIn company URL: https://www.linkedin.com/company/certsign
+2026-05-28 16:04:51 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:04:51 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for CERTSIGN S.A.
+2026-05-28 16:04:51 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:04:51 [INFO] tools.people_profile_finder: Bulk employee lookup via linkedin-scraper for https://www.linkedin.com/company/certsign
+2026-05-28 16:04:51 [INFO] tools.people_profile_finder:   Running linkedin-scraper for https://www.linkedin.com/company/certsign ...
+2026-05-28 16:04:52 [WARNING] tools.people_profile_finder:   linkedin-scraper exited with code 1
+2026-05-28 16:04:52 [WARNING] tools.people_profile_finder:   stderr: Traceback (most recent call last):
+  File "/var/folders/65/3gbbhkgs37l5ww8z3_8wcgsh0000gn/T/linkedin_runner_6339upgz.py", line 14, in <module>
+    linkedin.paginateResults(company_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/cristianolaru/Desktop/Markus/linkedin-scraper/Leade_generation.py", line 69, in paginateResults
+    'Csrf-Token': re.findall(r'JSESSIONID="(.+?)"', cookies)[0],
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+2026-05-28 16:04:52 [INFO] tools.people_profile_finder:   Found 0 employees via bulk lookup
+2026-05-28 16:04:52 [INFO] tools.people_profile_finder:   Looking up: Marek Krajčov (CEO) at CERTSIGN S.A.
+2026-05-28 16:04:52 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Marek Krajčov / CERTSIGN S.A.
+2026-05-28 16:04:55 [INFO] tools.people_profile_finder:     LinkUp returned: https://linkedin.com/in/marek-krzeminski-8844093a/connections
+2026-05-28 16:04:56 [INFO] tools.people_profile_finder:     LLM Validation: NO for Marek Krajčov -> https://linkedin.com/in/marek-krzeminski-8844093a/connections
+2026-05-28 16:04:56 [INFO] tools.people_profile_finder:   Fallback 2 [LLM knowledge]: Marek Krajčov / CERTSIGN S.A.
+2026-05-28 16:04:57 [INFO] tools.people_profile_finder:     [FAIL] No LinkedIn profile found for Marek Krajčov
+2026-05-28 16:04:57 [INFO] tools.people_profile_finder:   Looking up: Ryan Dowling (CFO) at CERTSIGN S.A.
+2026-05-28 16:04:57 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Ryan Dowling / CERTSIGN S.A.
+2026-05-28 16:04:59 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/ryan-dowling-3073863
+2026-05-28 16:05:00 [INFO] tools.people_profile_finder:     LLM Validation: YES for Ryan Dowling -> https://www.linkedin.com/in/ryan-dowling-3073863
+2026-05-28 16:05:00 [INFO] tools.people_profile_finder:     [OK] Ryan Dowling -> https://www.linkedin.com/in/ryan-dowling-3073863
+2026-05-28 16:05:00 [INFO] tools.people_profile_finder:   Looking up: Emilian Dragan (Director General) at CERTSIGN S.A.
+2026-05-28 16:05:00 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Emilian Dragan / CERTSIGN S.A.
+2026-05-28 16:05:02 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/emilian-dragan-9736501bb
+2026-05-28 16:05:03 [INFO] tools.people_profile_finder:     LLM Validation: YES for Emilian Dragan -> https://www.linkedin.com/in/emilian-dragan-9736501bb
+2026-05-28 16:05:03 [INFO] tools.people_profile_finder:     [OK] Emilian Dragan -> https://www.linkedin.com/in/emilian-dragan-9736501bb
+[2026-05-28 13:05:03] [INFO]     -> CEO profile: (not found)
+[2026-05-28 13:05:03] [INFO]     -> CFO profile: https://www.linkedin.com/in/ryan-dowling-3073863
+[2026-05-28 13:05:03] [INFO]     -> Director General profile: https://www.linkedin.com/in/emilian-dragan-9736501bb
+[2026-05-28 13:05:06] [INFO]   Processing profiles for: 'TELEPERFORMANCE ROMANIA' (1 job source(s))
+[2026-05-28 13:05:06] [INFO]     LinkedIn company URL: https://www.linkedin.com/company/teleperformance-romania
+2026-05-28 16:05:06 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:05:06 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for TELEPERFORMANCE ROMANIA
+2026-05-28 16:05:06 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:05:06 [INFO] tools.people_profile_finder: Bulk employee lookup via linkedin-scraper for https://www.linkedin.com/company/teleperformance-romania
+2026-05-28 16:05:06 [INFO] tools.people_profile_finder:   Running linkedin-scraper for https://www.linkedin.com/company/teleperformance-romania ...
+2026-05-28 16:05:07 [WARNING] tools.people_profile_finder:   linkedin-scraper exited with code 1
+2026-05-28 16:05:07 [WARNING] tools.people_profile_finder:   stderr: Traceback (most recent call last):
+  File "/var/folders/65/3gbbhkgs37l5ww8z3_8wcgsh0000gn/T/linkedin_runner_4frp9ebx.py", line 14, in <module>
+    linkedin.paginateResults(company_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/cristianolaru/Desktop/Markus/linkedin-scraper/Leade_generation.py", line 69, in paginateResults
+    'Csrf-Token': re.findall(r'JSESSIONID="(.+?)"', cookies)[0],
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+2026-05-28 16:05:07 [INFO] tools.people_profile_finder:   Found 0 employees via bulk lookup
+2026-05-28 16:05:07 [INFO] tools.people_profile_finder:   Looking up: Daniel Julien (CEO) at TELEPERFORMANCE ROMANIA
+2026-05-28 16:05:07 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Daniel Julien / TELEPERFORMANCE ROMANIA
+2026-05-28 16:05:09 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/danieljulientp
+2026-05-28 16:05:11 [INFO] tools.people_profile_finder:     LLM Validation: YES for Daniel Julien -> https://www.linkedin.com/in/danieljulientp
+2026-05-28 16:05:11 [INFO] tools.people_profile_finder:     [OK] Daniel Julien -> https://www.linkedin.com/in/danieljulientp
+2026-05-28 16:05:11 [INFO] tools.people_profile_finder:   Looking up: Oana Coman (CFO) at TELEPERFORMANCE ROMANIA
+2026-05-28 16:05:11 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Oana Coman / TELEPERFORMANCE ROMANIA
+2026-05-28 16:05:12 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/oana-coman-ab851642
+2026-05-28 16:05:12 [INFO] tools.people_profile_finder:     LLM Validation: YES for Oana Coman -> https://www.linkedin.com/in/oana-coman-ab851642
+2026-05-28 16:05:12 [INFO] tools.people_profile_finder:     [OK] Oana Coman -> https://www.linkedin.com/in/oana-coman-ab851642
+2026-05-28 16:05:12 [INFO] tools.people_profile_finder:   Looking up: Laurent Dolivet (Director General) at TELEPERFORMANCE ROMANIA
+2026-05-28 16:05:12 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Laurent Dolivet / TELEPERFORMANCE ROMANIA
+2026-05-28 16:05:14 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/laurent-dolivet-b807a6a9
+2026-05-28 16:05:15 [INFO] tools.people_profile_finder:     LLM Validation: YES for Laurent Dolivet -> https://www.linkedin.com/in/laurent-dolivet-b807a6a9
+2026-05-28 16:05:15 [INFO] tools.people_profile_finder:     [OK] Laurent Dolivet -> https://www.linkedin.com/in/laurent-dolivet-b807a6a9
+[2026-05-28 13:05:15] [INFO]     -> CEO profile: https://www.linkedin.com/in/danieljulientp
+[2026-05-28 13:05:15] [INFO]     -> CFO profile: https://www.linkedin.com/in/oana-coman-ab851642
+[2026-05-28 13:05:15] [INFO]     -> Director General profile: https://www.linkedin.com/in/laurent-dolivet-b807a6a9
+[2026-05-28 13:05:18] [INFO]   Processing profiles for: 'TELUS Digital' (2 job source(s))
+[2026-05-28 13:05:18] [INFO]     LinkedIn company URL: https://www.linkedin.com/company/telus-digital
+2026-05-28 16:05:18 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:05:18 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for TELUS Digital
+2026-05-28 16:05:18 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:05:18 [INFO] tools.people_profile_finder: Bulk employee lookup via linkedin-scraper for https://www.linkedin.com/company/telus-digital
+2026-05-28 16:05:18 [INFO] tools.people_profile_finder:   Running linkedin-scraper for https://www.linkedin.com/company/telus-digital ...
+2026-05-28 16:05:18 [WARNING] tools.people_profile_finder:   linkedin-scraper exited with code 1
+2026-05-28 16:05:18 [WARNING] tools.people_profile_finder:   stderr: Traceback (most recent call last):
+  File "/var/folders/65/3gbbhkgs37l5ww8z3_8wcgsh0000gn/T/linkedin_runner_vp4ky0x2.py", line 14, in <module>
+    linkedin.paginateResults(company_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/cristianolaru/Desktop/Markus/linkedin-scraper/Leade_generation.py", line 69, in paginateResults
+    'Csrf-Token': re.findall(r'JSESSIONID="(.+?)"', cookies)[0],
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+2026-05-28 16:05:18 [INFO] tools.people_profile_finder:   Found 0 employees via bulk lookup
+2026-05-28 16:05:18 [INFO] tools.people_profile_finder:   Looking up: Tobias Dengel (CEO) at TELUS Digital
+2026-05-28 16:05:18 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Tobias Dengel / TELUS Digital
+2026-05-28 16:05:19 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/tobiasdengel
+2026-05-28 16:05:20 [INFO] tools.people_profile_finder:     LLM Validation: YES for Tobias Dengel -> https://www.linkedin.com/in/tobiasdengel
+2026-05-28 16:05:20 [INFO] tools.people_profile_finder:     [OK] Tobias Dengel -> https://www.linkedin.com/in/tobiasdengel
+2026-05-28 16:05:20 [INFO] tools.people_profile_finder:   Looking up: Gopi Chande, FCPA, FCA (CFO) at TELUS Digital
+2026-05-28 16:05:20 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Gopi Chande, FCPA, FCA / TELUS Digital
+2026-05-28 16:05:22 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/gopi-chande-fcpa-0a4b2632
+2026-05-28 16:05:23 [INFO] tools.people_profile_finder:     LLM Validation: YES for Gopi Chande, FCPA, FCA -> https://www.linkedin.com/in/gopi-chande-fcpa-0a4b2632
+2026-05-28 16:05:23 [INFO] tools.people_profile_finder:     [OK] Gopi Chande, FCPA, FCA -> https://www.linkedin.com/in/gopi-chande-fcpa-0a4b2632
+2026-05-28 16:05:23 [INFO] tools.people_profile_finder:   Looking up: Tobias Dengel (Director General) at TELUS Digital
+2026-05-28 16:05:23 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Tobias Dengel / TELUS Digital
+2026-05-28 16:05:24 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/tobiasdengel
+2026-05-28 16:05:25 [INFO] tools.people_profile_finder:     LLM Validation: YES for Tobias Dengel -> https://www.linkedin.com/in/tobiasdengel
+2026-05-28 16:05:25 [INFO] tools.people_profile_finder:     [OK] Tobias Dengel -> https://www.linkedin.com/in/tobiasdengel
+[2026-05-28 13:05:25] [INFO]     -> CEO profile: https://www.linkedin.com/in/tobiasdengel
+[2026-05-28 13:05:25] [INFO]     -> CFO profile: https://www.linkedin.com/in/gopi-chande-fcpa-0a4b2632
+[2026-05-28 13:05:25] [INFO]     -> Director General profile: https://www.linkedin.com/in/tobiasdengel
+[2026-05-28 13:05:28] [INFO]   Processing profiles for: 'MOOD MEDIA ROMANIA SRL' (1 job source(s))
+[2026-05-28 13:05:28] [INFO]     LinkedIn company URL: https://www.linkedin.com/company/mood-media-romania
+2026-05-28 16:05:28 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:05:28 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for MOOD MEDIA ROMANIA SRL
+2026-05-28 16:05:28 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:05:28 [INFO] tools.people_profile_finder: Bulk employee lookup via linkedin-scraper for https://www.linkedin.com/company/mood-media-romania
+2026-05-28 16:05:28 [INFO] tools.people_profile_finder:   Running linkedin-scraper for https://www.linkedin.com/company/mood-media-romania ...
+2026-05-28 16:05:29 [WARNING] tools.people_profile_finder:   linkedin-scraper exited with code 1
+2026-05-28 16:05:29 [WARNING] tools.people_profile_finder:   stderr: Traceback (most recent call last):
+  File "/var/folders/65/3gbbhkgs37l5ww8z3_8wcgsh0000gn/T/linkedin_runner_isz8ibzv.py", line 14, in <module>
+    linkedin.paginateResults(company_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/cristianolaru/Desktop/Markus/linkedin-scraper/Leade_generation.py", line 69, in paginateResults
+    'Csrf-Token': re.findall(r'JSESSIONID="(.+?)"', cookies)[0],
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+2026-05-28 16:05:29 [INFO] tools.people_profile_finder:   Found 0 employees via bulk lookup
+2026-05-28 16:05:29 [INFO] tools.people_profile_finder:   Looking up: Ioana Comsa (CEO) at MOOD MEDIA ROMANIA SRL
+2026-05-28 16:05:29 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Ioana Comsa / MOOD MEDIA ROMANIA SRL
+2026-05-28 16:05:30 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/ioana-comsa
+2026-05-28 16:05:32 [INFO] tools.people_profile_finder:     LLM Validation: YES for Ioana Comsa -> https://www.linkedin.com/in/ioana-comsa
+2026-05-28 16:05:32 [INFO] tools.people_profile_finder:     [OK] Ioana Comsa -> https://www.linkedin.com/in/ioana-comsa
+2026-05-28 16:05:32 [INFO] tools.people_profile_finder:   Looking up: Emilian Dascalescu (CFO) at MOOD MEDIA ROMANIA SRL
+2026-05-28 16:05:32 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Emilian Dascalescu / MOOD MEDIA ROMANIA SRL
+2026-05-28 16:05:34 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/emilian-dascalescu-b88b4b172
+2026-05-28 16:05:35 [INFO] tools.people_profile_finder:     LLM Validation: YES for Emilian Dascalescu -> https://www.linkedin.com/in/emilian-dascalescu-b88b4b172
+2026-05-28 16:05:35 [INFO] tools.people_profile_finder:     [OK] Emilian Dascalescu -> https://www.linkedin.com/in/emilian-dascalescu-b88b4b172
+2026-05-28 16:05:35 [INFO] tools.people_profile_finder:   Looking up: Ioana Comsa (Director General) at MOOD MEDIA ROMANIA SRL
+2026-05-28 16:05:35 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Ioana Comsa / MOOD MEDIA ROMANIA SRL
+2026-05-28 16:05:36 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/ioana-comsa
+2026-05-28 16:05:36 [INFO] tools.people_profile_finder:     LLM Validation: YES for Ioana Comsa -> https://www.linkedin.com/in/ioana-comsa
+2026-05-28 16:05:36 [INFO] tools.people_profile_finder:     [OK] Ioana Comsa -> https://www.linkedin.com/in/ioana-comsa
+[2026-05-28 13:05:36] [INFO]     -> CEO profile: https://www.linkedin.com/in/ioana-comsa
+[2026-05-28 13:05:36] [INFO]     -> CFO profile: https://www.linkedin.com/in/emilian-dascalescu-b88b4b172
+[2026-05-28 13:05:36] [INFO]     -> Director General profile: https://www.linkedin.com/in/ioana-comsa
+[2026-05-28 13:05:39] [INFO]   Processing profiles for: 'Cegedim Service Center' (1 job source(s))
+[2026-05-28 13:05:39] [INFO]     LinkedIn company URL: https://www.linkedin.com/company/cegedim-service-center
+2026-05-28 16:05:39 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:05:39 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for Cegedim Service Center
+2026-05-28 16:05:39 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:05:39 [INFO] tools.people_profile_finder: Bulk employee lookup via linkedin-scraper for https://www.linkedin.com/company/cegedim-service-center
+2026-05-28 16:05:39 [INFO] tools.people_profile_finder:   Running linkedin-scraper for https://www.linkedin.com/company/cegedim-service-center ...
+2026-05-28 16:05:40 [WARNING] tools.people_profile_finder:   linkedin-scraper exited with code 1
+2026-05-28 16:05:40 [WARNING] tools.people_profile_finder:   stderr: Traceback (most recent call last):
+  File "/var/folders/65/3gbbhkgs37l5ww8z3_8wcgsh0000gn/T/linkedin_runner_s7x73dwc.py", line 14, in <module>
+    linkedin.paginateResults(company_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/cristianolaru/Desktop/Markus/linkedin-scraper/Leade_generation.py", line 69, in paginateResults
+    'Csrf-Token': re.findall(r'JSESSIONID="(.+?)"', cookies)[0],
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+2026-05-28 16:05:40 [INFO] tools.people_profile_finder:   Found 0 employees via bulk lookup
+2026-05-28 16:05:40 [INFO] tools.people_profile_finder:   [CEO] No name provided, skipping
+2026-05-28 16:05:40 [INFO] tools.people_profile_finder:   Looking up: Sonia Mariana Wisner Domé (CFO) at Cegedim Service Center
+2026-05-28 16:05:40 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Sonia Mariana Wisner Domé / Cegedim Service Center
+2026-05-28 16:05:41 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/soniawisnerdome
+2026-05-28 16:05:42 [INFO] tools.people_profile_finder:     LLM Validation: YES for Sonia Mariana Wisner Domé -> https://www.linkedin.com/in/soniawisnerdome
+2026-05-28 16:05:42 [INFO] tools.people_profile_finder:     [OK] Sonia Mariana Wisner Domé -> https://www.linkedin.com/in/soniawisnerdome
+2026-05-28 16:05:42 [INFO] tools.people_profile_finder:   Looking up: Anthony Cercleux (Director General) at Cegedim Service Center
+2026-05-28 16:05:42 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Anthony Cercleux / Cegedim Service Center
+2026-05-28 16:05:43 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/anthonycercleux
+2026-05-28 16:05:44 [INFO] tools.people_profile_finder:     LLM Validation: YES for Anthony Cercleux -> https://www.linkedin.com/in/anthonycercleux
+2026-05-28 16:05:44 [INFO] tools.people_profile_finder:     [OK] Anthony Cercleux -> https://www.linkedin.com/in/anthonycercleux
+[2026-05-28 13:05:44] [INFO]     -> CEO profile: (not found)
+[2026-05-28 13:05:44] [INFO]     -> CFO profile: https://www.linkedin.com/in/soniawisnerdome
+[2026-05-28 13:05:44] [INFO]     -> Director General profile: https://www.linkedin.com/in/anthonycercleux
+[2026-05-28 13:05:47] [INFO]   Processing profiles for: 'GRAWE ROMANIA ASIGURARE SA' (1 job source(s))
+[2026-05-28 13:05:47] [INFO]     LinkedIn company URL: https://www.linkedin.com/company/grawe-romania-asigurare-sa
+2026-05-28 16:05:47 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:05:47 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for GRAWE ROMANIA ASIGURARE SA
+2026-05-28 16:05:47 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:05:47 [INFO] tools.people_profile_finder: Bulk employee lookup via linkedin-scraper for https://www.linkedin.com/company/grawe-romania-asigurare-sa
+2026-05-28 16:05:47 [INFO] tools.people_profile_finder:   Running linkedin-scraper for https://www.linkedin.com/company/grawe-romania-asigurare-sa ...
+2026-05-28 16:05:48 [WARNING] tools.people_profile_finder:   linkedin-scraper exited with code 1
+2026-05-28 16:05:48 [WARNING] tools.people_profile_finder:   stderr: Traceback (most recent call last):
+  File "/var/folders/65/3gbbhkgs37l5ww8z3_8wcgsh0000gn/T/linkedin_runner_w3j1vwn4.py", line 14, in <module>
+    linkedin.paginateResults(company_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/cristianolaru/Desktop/Markus/linkedin-scraper/Leade_generation.py", line 69, in paginateResults
+    'Csrf-Token': re.findall(r'JSESSIONID="(.+?)"', cookies)[0],
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+2026-05-28 16:05:48 [INFO] tools.people_profile_finder:   Found 0 employees via bulk lookup
+2026-05-28 16:05:48 [INFO] tools.people_profile_finder:   Looking up: Cornelia Eremia (CEO) at GRAWE ROMANIA ASIGURARE SA
+2026-05-28 16:05:48 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Cornelia Eremia / GRAWE ROMANIA ASIGURARE SA
+2026-05-28 16:05:48 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/cornelia-eremia-53b6b787
+2026-05-28 16:05:49 [INFO] tools.people_profile_finder:     LLM Validation: YES for Cornelia Eremia -> https://www.linkedin.com/in/cornelia-eremia-53b6b787
+2026-05-28 16:05:49 [INFO] tools.people_profile_finder:     [OK] Cornelia Eremia -> https://www.linkedin.com/in/cornelia-eremia-53b6b787
+2026-05-28 16:05:49 [INFO] tools.people_profile_finder:   Looking up: Ramona Toma (CFO) at GRAWE ROMANIA ASIGURARE SA
+2026-05-28 16:05:49 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Ramona Toma / GRAWE ROMANIA ASIGURARE SA
+2026-05-28 16:05:50 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/ramona-toma-a2b93759
+2026-05-28 16:05:51 [INFO] tools.people_profile_finder:     LLM Validation: YES for Ramona Toma -> https://www.linkedin.com/in/ramona-toma-a2b93759
+2026-05-28 16:05:51 [INFO] tools.people_profile_finder:     [OK] Ramona Toma -> https://www.linkedin.com/in/ramona-toma-a2b93759
+2026-05-28 16:05:51 [INFO] tools.people_profile_finder:   Looking up: Ramona Toma (Director General) at GRAWE ROMANIA ASIGURARE SA
+2026-05-28 16:05:51 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Ramona Toma / GRAWE ROMANIA ASIGURARE SA
+2026-05-28 16:05:51 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/ramona-toma-a2b93759
+2026-05-28 16:05:52 [INFO] tools.people_profile_finder:     LLM Validation: YES for Ramona Toma -> https://www.linkedin.com/in/ramona-toma-a2b93759
+2026-05-28 16:05:52 [INFO] tools.people_profile_finder:     [OK] Ramona Toma -> https://www.linkedin.com/in/ramona-toma-a2b93759
+[2026-05-28 13:05:52] [INFO]     -> CEO profile: https://www.linkedin.com/in/cornelia-eremia-53b6b787
+[2026-05-28 13:05:52] [INFO]     -> CFO profile: https://www.linkedin.com/in/ramona-toma-a2b93759
+[2026-05-28 13:05:52] [INFO]     -> Director General profile: https://www.linkedin.com/in/ramona-toma-a2b93759
+[2026-05-28 13:05:55] [INFO]   Processing profiles for: 'DKV Mobility Romania' (1 job source(s))
+2026-05-28 16:05:55 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:05:55 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for DKV Mobility Romania
+2026-05-28 16:05:55 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:05:55 [INFO] tools.people_profile_finder:   Looking up: Liliana Bogdan (CEO) at DKV Mobility Romania
+2026-05-28 16:05:55 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Liliana Bogdan / DKV Mobility Romania
+2026-05-28 16:05:58 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/liliana-bogdan-6481a8a
+2026-05-28 16:05:58 [INFO] tools.people_profile_finder:     LLM Validation: YES for Liliana Bogdan -> https://www.linkedin.com/in/liliana-bogdan-6481a8a
+2026-05-28 16:05:58 [INFO] tools.people_profile_finder:     [OK] Liliana Bogdan -> https://www.linkedin.com/in/liliana-bogdan-6481a8a
+2026-05-28 16:05:58 [INFO] tools.people_profile_finder:   Looking up: Liliana Bogdan (CFO) at DKV Mobility Romania
+2026-05-28 16:05:58 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Liliana Bogdan / DKV Mobility Romania
+2026-05-28 16:05:59 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/liliana-bogdan-6481a8a
+2026-05-28 16:06:00 [INFO] tools.people_profile_finder:     LLM Validation: YES for Liliana Bogdan -> https://www.linkedin.com/in/liliana-bogdan-6481a8a
+2026-05-28 16:06:00 [INFO] tools.people_profile_finder:     [OK] Liliana Bogdan -> https://www.linkedin.com/in/liliana-bogdan-6481a8a
+2026-05-28 16:06:00 [INFO] tools.people_profile_finder:   Looking up: Cătălin Constantinescu (Director General) at DKV Mobility Romania
+2026-05-28 16:06:00 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Cătălin Constantinescu / DKV Mobility Romania
+2026-05-28 16:06:01 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/catalinconstantinescu
+2026-05-28 16:06:02 [INFO] tools.people_profile_finder:     LLM Validation: YES for Cătălin Constantinescu -> https://www.linkedin.com/in/catalinconstantinescu
+2026-05-28 16:06:02 [INFO] tools.people_profile_finder:     [OK] Cătălin Constantinescu -> https://www.linkedin.com/in/catalinconstantinescu
+[2026-05-28 13:06:02] [INFO]     -> CEO profile: https://www.linkedin.com/in/liliana-bogdan-6481a8a
+[2026-05-28 13:06:02] [INFO]     -> CFO profile: https://www.linkedin.com/in/liliana-bogdan-6481a8a
+[2026-05-28 13:06:02] [INFO]     -> Director General profile: https://www.linkedin.com/in/catalinconstantinescu
+[2026-05-28 13:06:05] [INFO]   Processing profiles for: 'AKTEK' (1 job source(s))
+[2026-05-28 13:06:05] [INFO]     LinkedIn company URL: https://www.linkedin.com/company/aktek-inc
+2026-05-28 16:06:05 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:06:05 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for AKTEK
+2026-05-28 16:06:05 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:06:05 [INFO] tools.people_profile_finder: Bulk employee lookup via linkedin-scraper for https://www.linkedin.com/company/aktek-inc
+2026-05-28 16:06:05 [INFO] tools.people_profile_finder:   Running linkedin-scraper for https://www.linkedin.com/company/aktek-inc ...
+2026-05-28 16:06:06 [WARNING] tools.people_profile_finder:   linkedin-scraper exited with code 1
+2026-05-28 16:06:06 [WARNING] tools.people_profile_finder:   stderr: Traceback (most recent call last):
+  File "/var/folders/65/3gbbhkgs37l5ww8z3_8wcgsh0000gn/T/linkedin_runner_f4w5d1ak.py", line 14, in <module>
+    linkedin.paginateResults(company_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/cristianolaru/Desktop/Markus/linkedin-scraper/Leade_generation.py", line 69, in paginateResults
+    'Csrf-Token': re.findall(r'JSESSIONID="(.+?)"', cookies)[0],
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+2026-05-28 16:06:06 [INFO] tools.people_profile_finder:   Found 0 employees via bulk lookup
+2026-05-28 16:06:06 [INFO] tools.people_profile_finder:   Looking up: Aditya Tallapragada (CEO) at AKTEK
+2026-05-28 16:06:06 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Aditya Tallapragada / AKTEK
+2026-05-28 16:06:08 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/adityakt
+2026-05-28 16:06:09 [INFO] tools.people_profile_finder:     LLM Validation: YES for Aditya Tallapragada -> https://www.linkedin.com/in/adityakt
+2026-05-28 16:06:09 [INFO] tools.people_profile_finder:     [OK] Aditya Tallapragada -> https://www.linkedin.com/in/adityakt
+2026-05-28 16:06:09 [INFO] tools.people_profile_finder:   Looking up: Jon Purdy (CFO) at AKTEK
+2026-05-28 16:06:09 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Jon Purdy / AKTEK
+2026-05-28 16:06:11 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/jondpurdy
+2026-05-28 16:06:12 [INFO] tools.people_profile_finder:     LLM Validation: YES for Jon Purdy -> https://www.linkedin.com/in/jondpurdy
+2026-05-28 16:06:12 [INFO] tools.people_profile_finder:     [OK] Jon Purdy -> https://www.linkedin.com/in/jondpurdy
+2026-05-28 16:06:12 [INFO] tools.people_profile_finder:   Looking up: Semih Gür (Director General) at AKTEK
+2026-05-28 16:06:12 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Semih Gür / AKTEK
+2026-05-28 16:06:13 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/semihgur
+2026-05-28 16:06:14 [INFO] tools.people_profile_finder:     LLM Validation: YES for Semih Gür -> https://www.linkedin.com/in/semihgur
+2026-05-28 16:06:14 [INFO] tools.people_profile_finder:     [OK] Semih Gür -> https://www.linkedin.com/in/semihgur
+[2026-05-28 13:06:14] [INFO]     -> CEO profile: https://www.linkedin.com/in/adityakt
+[2026-05-28 13:06:14] [INFO]     -> CFO profile: https://www.linkedin.com/in/jondpurdy
+[2026-05-28 13:06:14] [INFO]     -> Director General profile: https://www.linkedin.com/in/semihgur
+[2026-05-28 13:06:17] [INFO]   Processing profiles for: 'KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL' (1 job source(s))
+[2026-05-28 13:06:17] [INFO]     LinkedIn company URL: https://www.linkedin.com/company/karl-heinz-dietrich-international-exped-s-r-l-
+2026-05-28 16:06:17 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:06:17 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL
+2026-05-28 16:06:17 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:06:17 [INFO] tools.people_profile_finder: Bulk employee lookup via linkedin-scraper for https://www.linkedin.com/company/karl-heinz-dietrich-international-exped-s-r-l-
+2026-05-28 16:06:17 [INFO] tools.people_profile_finder:   Running linkedin-scraper for https://www.linkedin.com/company/karl-heinz-dietrich-international-exped-s-r-l- ...
+2026-05-28 16:06:18 [WARNING] tools.people_profile_finder:   linkedin-scraper exited with code 1
+2026-05-28 16:06:18 [WARNING] tools.people_profile_finder:   stderr: Traceback (most recent call last):
+  File "/var/folders/65/3gbbhkgs37l5ww8z3_8wcgsh0000gn/T/linkedin_runner_56hlfs1t.py", line 14, in <module>
+    linkedin.paginateResults(company_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/cristianolaru/Desktop/Markus/linkedin-scraper/Leade_generation.py", line 69, in paginateResults
+    'Csrf-Token': re.findall(r'JSESSIONID="(.+?)"', cookies)[0],
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+2026-05-28 16:06:18 [INFO] tools.people_profile_finder:   Found 0 employees via bulk lookup
+2026-05-28 16:06:18 [INFO] tools.people_profile_finder:   Looking up: Dietrich Wanke (CEO) at KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL
+2026-05-28 16:06:18 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Dietrich Wanke / KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL
+2026-05-28 16:06:20 [INFO] tools.people_profile_finder:     LinkUp returned no matching profile
+2026-05-28 16:06:20 [INFO] tools.people_profile_finder:   Fallback 2 [LLM knowledge]: Dietrich Wanke / KARL HEINZ DIETRICH INTERNATIONAL EXPED SRL
+2026-05-28 16:06:21 [INFO] tools.people_profile_finder:     [FAIL] No LinkedIn profile found for Dietrich Wanke
+2026-05-28 16:06:21 [INFO] tools.people_profile_finder:   [CFO] No name provided, skipping
+2026-05-28 16:06:21 [INFO] tools.people_profile_finder:   [DIRECTOR_GENERAL] No name provided, skipping
+[2026-05-28 13:06:21] [INFO]     -> CEO profile: (not found)
+[2026-05-28 13:06:21] [INFO]     -> CFO profile: (not found)
+[2026-05-28 13:06:21] [INFO]     -> Director General profile: (not found)
+[2026-05-28 13:06:24] [INFO]   Processing profiles for: 'INTERSNACK ROMANIA' (1 job source(s))
+[2026-05-28 13:06:24] [INFO]     LinkedIn company URL: https://www.linkedin.com/company/intersnack-romania
+2026-05-28 16:06:24 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:06:24 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for INTERSNACK ROMANIA
+2026-05-28 16:06:24 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:06:24 [INFO] tools.people_profile_finder: Bulk employee lookup via linkedin-scraper for https://www.linkedin.com/company/intersnack-romania
+2026-05-28 16:06:24 [INFO] tools.people_profile_finder:   Running linkedin-scraper for https://www.linkedin.com/company/intersnack-romania ...
+2026-05-28 16:06:25 [WARNING] tools.people_profile_finder:   linkedin-scraper exited with code 1
+2026-05-28 16:06:25 [WARNING] tools.people_profile_finder:   stderr: Traceback (most recent call last):
+  File "/var/folders/65/3gbbhkgs37l5ww8z3_8wcgsh0000gn/T/linkedin_runner_irt2ndy9.py", line 14, in <module>
+    linkedin.paginateResults(company_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/cristianolaru/Desktop/Markus/linkedin-scraper/Leade_generation.py", line 69, in paginateResults
+    'Csrf-Token': re.findall(r'JSESSIONID="(.+?)"', cookies)[0],
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+2026-05-28 16:06:25 [INFO] tools.people_profile_finder:   Found 0 employees via bulk lookup
+2026-05-28 16:06:25 [INFO] tools.people_profile_finder:   Looking up: Cătălin Georgescu (CEO) at INTERSNACK ROMANIA
+2026-05-28 16:06:25 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Cătălin Georgescu / INTERSNACK ROMANIA
+2026-05-28 16:06:26 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/cătălin-georgescu-b989733b
+2026-05-28 16:06:26 [INFO] tools.people_profile_finder:     LLM Validation: YES for Cătălin Georgescu -> https://www.linkedin.com/in/cătălin-georgescu-b989733b
+2026-05-28 16:06:26 [INFO] tools.people_profile_finder:     [OK] Cătălin Georgescu -> https://www.linkedin.com/in/cătălin-georgescu-b989733b
+2026-05-28 16:06:26 [INFO] tools.people_profile_finder:   Looking up: Petre Matea (CFO) at INTERSNACK ROMANIA
+2026-05-28 16:06:26 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Petre Matea / INTERSNACK ROMANIA
+2026-05-28 16:06:28 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/petre-matea-621414a1
+2026-05-28 16:06:28 [INFO] tools.people_profile_finder:     LLM Validation: YES for Petre Matea -> https://www.linkedin.com/in/petre-matea-621414a1
+2026-05-28 16:06:28 [INFO] tools.people_profile_finder:     [OK] Petre Matea -> https://www.linkedin.com/in/petre-matea-621414a1
+2026-05-28 16:06:28 [INFO] tools.people_profile_finder:   Looking up: Petre Matea (Director General) at INTERSNACK ROMANIA
+2026-05-28 16:06:28 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Petre Matea / INTERSNACK ROMANIA
+2026-05-28 16:06:29 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/petre-matea-621414a1
+2026-05-28 16:06:29 [INFO] tools.people_profile_finder:     LLM Validation: YES for Petre Matea -> https://www.linkedin.com/in/petre-matea-621414a1
+2026-05-28 16:06:29 [INFO] tools.people_profile_finder:     [OK] Petre Matea -> https://www.linkedin.com/in/petre-matea-621414a1
+[2026-05-28 13:06:29] [INFO]     -> CEO profile: https://www.linkedin.com/in/cătălin-georgescu-b989733b
+[2026-05-28 13:06:29] [INFO]     -> CFO profile: https://www.linkedin.com/in/petre-matea-621414a1
+[2026-05-28 13:06:29] [INFO]     -> Director General profile: https://www.linkedin.com/in/petre-matea-621414a1
+[2026-05-28 13:06:32] [INFO]   Processing profiles for: 'MSN Life Services' (1 job source(s))
+2026-05-28 16:06:32 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:06:32 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for MSN Life Services
+2026-05-28 16:06:32 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:06:32 [INFO] tools.people_profile_finder:   Looking up: Bo Trotter (CEO) at MSN Life Services
+2026-05-28 16:06:32 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Bo Trotter / MSN Life Services
+2026-05-28 16:06:34 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/bo-trotter-28981a2a
+2026-05-28 16:06:35 [INFO] tools.people_profile_finder:     LLM Validation: YES for Bo Trotter -> https://www.linkedin.com/in/bo-trotter-28981a2a
+2026-05-28 16:06:35 [INFO] tools.people_profile_finder:     [OK] Bo Trotter -> https://www.linkedin.com/in/bo-trotter-28981a2a
+2026-05-28 16:06:35 [INFO] tools.people_profile_finder:   Looking up: LinkedIn India: Log In or Sign Up (CFO) at MSN Life Services
+2026-05-28 16:06:35 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: LinkedIn India: Log In or Sign Up / MSN Life Services
+2026-05-28 16:06:37 [INFO] tools.people_profile_finder:     LinkUp returned no matching profile
+2026-05-28 16:06:37 [INFO] tools.people_profile_finder:   Fallback 2 [LLM knowledge]: LinkedIn India: Log In or Sign Up / MSN Life Services
+2026-05-28 16:06:38 [INFO] tools.people_profile_finder:     [FAIL] No LinkedIn profile found for LinkedIn India: Log In or Sign Up
+2026-05-28 16:06:38 [INFO] tools.people_profile_finder:   Looking up: Eli Arnett (Director General) at MSN Life Services
+2026-05-28 16:06:38 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Eli Arnett / MSN Life Services
+2026-05-28 16:06:40 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/eli-arnett-38209866
+2026-05-28 16:06:41 [INFO] tools.people_profile_finder:     LLM Validation: YES for Eli Arnett -> https://www.linkedin.com/in/eli-arnett-38209866
+2026-05-28 16:06:41 [INFO] tools.people_profile_finder:     [OK] Eli Arnett -> https://www.linkedin.com/in/eli-arnett-38209866
+[2026-05-28 13:06:41] [INFO]     -> CEO profile: https://www.linkedin.com/in/bo-trotter-28981a2a
+[2026-05-28 13:06:41] [INFO]     -> CFO profile: (not found)
+[2026-05-28 13:06:41] [INFO]     -> Director General profile: https://www.linkedin.com/in/eli-arnett-38209866
+[2026-05-28 13:06:44] [INFO]   Processing profiles for: 'NMC STIL DISTRIBUTION SRL' (1 job source(s))
+2026-05-28 16:06:44 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:06:44 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for NMC STIL DISTRIBUTION SRL
+2026-05-28 16:06:44 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:06:44 [INFO] tools.people_profile_finder:   Looking up: Nigel Isaacs (CEO) at NMC STIL DISTRIBUTION SRL
+2026-05-28 16:06:44 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Nigel Isaacs / NMC STIL DISTRIBUTION SRL
+2026-05-28 16:06:46 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/nigel-isaacs-12357473
+2026-05-28 16:06:47 [INFO] tools.people_profile_finder:     LLM Validation: YES for Nigel Isaacs -> https://www.linkedin.com/in/nigel-isaacs-12357473
+2026-05-28 16:06:47 [INFO] tools.people_profile_finder:     [OK] Nigel Isaacs -> https://www.linkedin.com/in/nigel-isaacs-12357473
+2026-05-28 16:06:47 [INFO] tools.people_profile_finder:   Looking up: Stefano Sartoretti (CFO) at NMC STIL DISTRIBUTION SRL
+2026-05-28 16:06:47 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Stefano Sartoretti / NMC STIL DISTRIBUTION SRL
+2026-05-28 16:06:48 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/stefano-sartoretti
+2026-05-28 16:06:49 [INFO] tools.people_profile_finder:     LLM Validation: YES for Stefano Sartoretti -> https://www.linkedin.com/in/stefano-sartoretti
+2026-05-28 16:06:49 [INFO] tools.people_profile_finder:     [OK] Stefano Sartoretti -> https://www.linkedin.com/in/stefano-sartoretti
+2026-05-28 16:06:49 [INFO] tools.people_profile_finder:   Looking up: Constantin Alan (Director General) at NMC STIL DISTRIBUTION SRL
+2026-05-28 16:06:49 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Constantin Alan / NMC STIL DISTRIBUTION SRL
+2026-05-28 16:06:51 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/constantin-alan-728245178
+2026-05-28 16:06:51 [INFO] tools.people_profile_finder:     LLM Validation: YES for Constantin Alan -> https://www.linkedin.com/in/constantin-alan-728245178
+2026-05-28 16:06:51 [INFO] tools.people_profile_finder:     [OK] Constantin Alan -> https://www.linkedin.com/in/constantin-alan-728245178
+[2026-05-28 13:06:51] [INFO]     -> CEO profile: https://www.linkedin.com/in/nigel-isaacs-12357473
+[2026-05-28 13:06:51] [INFO]     -> CFO profile: https://www.linkedin.com/in/stefano-sartoretti
+[2026-05-28 13:06:51] [INFO]     -> Director General profile: https://www.linkedin.com/in/constantin-alan-728245178
+[2026-05-28 13:06:54] [INFO]   Processing profiles for: 'Regina Maria' (1 job source(s))
+[2026-05-28 13:06:54] [INFO]     LinkedIn company URL: https://www.linkedin.com/company/regina-maria
+2026-05-28 16:06:54 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:06:54 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for Regina Maria
+2026-05-28 16:06:54 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:06:54 [INFO] tools.people_profile_finder: Bulk employee lookup via linkedin-scraper for https://www.linkedin.com/company/regina-maria
+2026-05-28 16:06:54 [INFO] tools.people_profile_finder:   Running linkedin-scraper for https://www.linkedin.com/company/regina-maria ...
+2026-05-28 16:06:56 [WARNING] tools.people_profile_finder:   linkedin-scraper exited with code 1
+2026-05-28 16:06:56 [WARNING] tools.people_profile_finder:   stderr: Traceback (most recent call last):
+  File "/var/folders/65/3gbbhkgs37l5ww8z3_8wcgsh0000gn/T/linkedin_runner_tmgjhfjb.py", line 14, in <module>
+    linkedin.paginateResults(company_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/cristianolaru/Desktop/Markus/linkedin-scraper/Leade_generation.py", line 69, in paginateResults
+    'Csrf-Token': re.findall(r'JSESSIONID="(.+?)"', cookies)[0],
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+2026-05-28 16:06:56 [INFO] tools.people_profile_finder:   Found 0 employees via bulk lookup
+2026-05-28 16:06:56 [INFO] tools.people_profile_finder:   Looking up: Regina M. (CEO) at Regina Maria
+2026-05-28 16:06:56 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Regina M. / Regina Maria
+2026-05-28 16:06:58 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/maria-regina-7a846275
+2026-05-28 16:07:00 [INFO] tools.people_profile_finder:     LLM Validation: NO for Regina M. -> https://www.linkedin.com/in/maria-regina-7a846275
+2026-05-28 16:07:00 [INFO] tools.people_profile_finder:   Fallback 2 [LLM knowledge]: Regina M. / Regina Maria
+2026-05-28 16:07:01 [INFO] tools.people_profile_finder:     [FAIL] No LinkedIn profile found for Regina M.
+2026-05-28 16:07:01 [INFO] tools.people_profile_finder:   Looking up: Sisca Suhendra (CFO) at Regina Maria
+2026-05-28 16:07:01 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Sisca Suhendra / Regina Maria
+2026-05-28 16:07:02 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/sisca-suhendra-92119250
+2026-05-28 16:07:03 [INFO] tools.people_profile_finder:     LLM Validation: YES for Sisca Suhendra -> https://www.linkedin.com/in/sisca-suhendra-92119250
+2026-05-28 16:07:03 [INFO] tools.people_profile_finder:     [OK] Sisca Suhendra -> https://www.linkedin.com/in/sisca-suhendra-92119250
+2026-05-28 16:07:03 [INFO] tools.people_profile_finder:   Looking up: Cosmin Panaete (Director General) at Regina Maria
+2026-05-28 16:07:03 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Cosmin Panaete / Regina Maria
+2026-05-28 16:07:04 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/cosminpanaete
+2026-05-28 16:07:05 [INFO] tools.people_profile_finder:     LLM Validation: YES for Cosmin Panaete -> https://www.linkedin.com/in/cosminpanaete
+2026-05-28 16:07:05 [INFO] tools.people_profile_finder:     [OK] Cosmin Panaete -> https://www.linkedin.com/in/cosminpanaete
+[2026-05-28 13:07:05] [INFO]     -> CEO profile: (not found)
+[2026-05-28 13:07:05] [INFO]     -> CFO profile: https://www.linkedin.com/in/sisca-suhendra-92119250
+[2026-05-28 13:07:05] [INFO]     -> Director General profile: https://www.linkedin.com/in/cosminpanaete
+[2026-05-28 13:07:08] [INFO]   Processing profiles for: 'CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI' (1 job source(s))
+2026-05-28 16:07:08 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:07:08 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI
+2026-05-28 16:07:08 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:07:08 [INFO] tools.people_profile_finder:   Looking up: N A (CEO) at CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI
+2026-05-28 16:07:08 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: N A / CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI
+2026-05-28 16:07:09 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/baran-horoz-349824111
+2026-05-28 16:07:10 [INFO] tools.people_profile_finder:     LLM Validation: NO for N A -> https://www.linkedin.com/in/baran-horoz-349824111
+2026-05-28 16:07:10 [INFO] tools.people_profile_finder:   Fallback 2 [LLM knowledge]: N A / CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI
+2026-05-28 16:07:11 [INFO] tools.people_profile_finder:     [FAIL] No LinkedIn profile found for N A
+2026-05-28 16:07:11 [INFO] tools.people_profile_finder:   [CFO] No name provided, skipping
+2026-05-28 16:07:11 [INFO] tools.people_profile_finder:   Looking up: Baran Horoz (Director General) at CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI
+2026-05-28 16:07:11 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Baran Horoz / CCN ALTYAPI YATIRIMLARI VE INȘAAT ANONIM ȘIRKETI ANKARA SUCURSALA BUCURESTI
+2026-05-28 16:07:11 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/baran-horoz-349824111
+2026-05-28 16:07:12 [INFO] tools.people_profile_finder:     LLM Validation: YES for Baran Horoz -> https://www.linkedin.com/in/baran-horoz-349824111
+2026-05-28 16:07:12 [INFO] tools.people_profile_finder:     [OK] Baran Horoz -> https://www.linkedin.com/in/baran-horoz-349824111
+[2026-05-28 13:07:12] [INFO]     -> CEO profile: (not found)
+[2026-05-28 13:07:12] [INFO]     -> CFO profile: (not found)
+[2026-05-28 13:07:12] [INFO]     -> Director General profile: https://www.linkedin.com/in/baran-horoz-349824111
+[2026-05-28 13:07:15] [INFO]   Processing profiles for: 'SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS' (1 job source(s))
+2026-05-28 16:07:15 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:07:15 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS
+2026-05-28 16:07:15 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:07:15 [INFO] tools.people_profile_finder:   Looking up: Solomon Dan (CEO) at SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS
+2026-05-28 16:07:15 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Solomon Dan / SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS
+2026-05-28 16:07:16 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/aurelian-tudorache-6277909
+2026-05-28 16:07:17 [INFO] tools.people_profile_finder:     LLM Validation: NO for Solomon Dan -> https://www.linkedin.com/in/aurelian-tudorache-6277909
+2026-05-28 16:07:17 [INFO] tools.people_profile_finder:   Fallback 2 [LLM knowledge]: Solomon Dan / SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS
+2026-05-28 16:07:18 [INFO] tools.people_profile_finder:     [FAIL] No LinkedIn profile found for Solomon Dan
+2026-05-28 16:07:18 [INFO] tools.people_profile_finder:   [CFO] No name provided, skipping
+2026-05-28 16:07:18 [INFO] tools.people_profile_finder:   Looking up: Solomon Dan (Director General) at SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS
+2026-05-28 16:07:18 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Solomon Dan / SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS
+2026-05-28 16:07:18 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/aurelian-tudorache-6277909
+2026-05-28 16:07:19 [INFO] tools.people_profile_finder:     LLM Validation: NO for Solomon Dan -> https://www.linkedin.com/in/aurelian-tudorache-6277909
+2026-05-28 16:07:19 [INFO] tools.people_profile_finder:   Fallback 2 [LLM knowledge]: Solomon Dan / SOCIETATEA CIVILA PROFESIONALA DE EXECUTORI JUDECATORESTI MAZILU SI AS
+2026-05-28 16:07:20 [INFO] tools.people_profile_finder:     [FAIL] No LinkedIn profile found for Solomon Dan
+[2026-05-28 13:07:20] [INFO]     -> CEO profile: (not found)
+[2026-05-28 13:07:20] [INFO]     -> CFO profile: (not found)
+[2026-05-28 13:07:20] [INFO]     -> Director General profile: (not found)
+[2026-05-28 13:07:23] [INFO]   Processing profiles for: 'Blu Residence Project S.R.L.' (1 job source(s))
+2026-05-28 16:07:23 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:07:23 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for Blu Residence Project S.R.L.
+2026-05-28 16:07:23 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:07:23 [INFO] tools.people_profile_finder:   Looking up: Arq Mdd Mca (CEO) at Blu Residence Project S.R.L.
+2026-05-28 16:07:23 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Arq Mdd Mca / Blu Residence Project S.R.L.
+2026-05-28 16:07:25 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/arq-mdd-mca-pm-b744a026
+2026-05-28 16:07:25 [INFO] tools.people_profile_finder:     LLM Validation: NO for Arq Mdd Mca -> https://www.linkedin.com/in/arq-mdd-mca-pm-b744a026
+2026-05-28 16:07:25 [INFO] tools.people_profile_finder:   Fallback 2 [LLM knowledge]: Arq Mdd Mca / Blu Residence Project S.R.L.
+2026-05-28 16:07:26 [INFO] tools.people_profile_finder:     [FAIL] No LinkedIn profile found for Arq Mdd Mca
+2026-05-28 16:07:26 [INFO] tools.people_profile_finder:   Looking up: Carolina Rolim (CFO) at Blu Residence Project S.R.L.
+2026-05-28 16:07:26 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Carolina Rolim / Blu Residence Project S.R.L.
+2026-05-28 16:07:29 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/carolinaprolim
+2026-05-28 16:07:29 [INFO] tools.people_profile_finder:     LLM Validation: YES for Carolina Rolim -> https://www.linkedin.com/in/carolinaprolim
+2026-05-28 16:07:29 [INFO] tools.people_profile_finder:     [OK] Carolina Rolim -> https://www.linkedin.com/in/carolinaprolim
+2026-05-28 16:07:29 [INFO] tools.people_profile_finder:   Looking up: Matthew Schulte (Director General) at Blu Residence Project S.R.L.
+2026-05-28 16:07:29 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Matthew Schulte / Blu Residence Project S.R.L.
+2026-05-28 16:07:32 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/matthew-schulte-03a649b6
+2026-05-28 16:07:33 [INFO] tools.people_profile_finder:     LLM Validation: NO for Matthew Schulte -> https://www.linkedin.com/in/matthew-schulte-03a649b6
+2026-05-28 16:07:33 [INFO] tools.people_profile_finder:   Fallback 2 [LLM knowledge]: Matthew Schulte / Blu Residence Project S.R.L.
+2026-05-28 16:07:34 [INFO] tools.people_profile_finder:     [FAIL] No LinkedIn profile found for Matthew Schulte
+[2026-05-28 13:07:34] [INFO]     -> CEO profile: (not found)
+[2026-05-28 13:07:34] [INFO]     -> CFO profile: https://www.linkedin.com/in/carolinaprolim
+[2026-05-28 13:07:34] [INFO]     -> Director General profile: (not found)
+[2026-05-28 13:07:37] [INFO]   Processing profiles for: 'Pantofiori.ro' (1 job source(s))
+[2026-05-28 13:07:37] [INFO]     LinkedIn company URL: https://www.linkedin.com/company/pantofioriveseli-ro
+2026-05-28 16:07:37 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:07:37 [INFO] tools.people_profile_finder: Finding LinkedIn profiles for Pantofiori.ro
+2026-05-28 16:07:37 [INFO] tools.people_profile_finder: ============================================================
+2026-05-28 16:07:37 [INFO] tools.people_profile_finder: Bulk employee lookup via linkedin-scraper for https://www.linkedin.com/company/pantofioriveseli-ro
+2026-05-28 16:07:37 [INFO] tools.people_profile_finder:   Running linkedin-scraper for https://www.linkedin.com/company/pantofioriveseli-ro ...
+2026-05-28 16:07:38 [WARNING] tools.people_profile_finder:   linkedin-scraper exited with code 1
+2026-05-28 16:07:38 [WARNING] tools.people_profile_finder:   stderr: Traceback (most recent call last):
+  File "/var/folders/65/3gbbhkgs37l5ww8z3_8wcgsh0000gn/T/linkedin_runner_h070it36.py", line 14, in <module>
+    linkedin.paginateResults(company_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/cristianolaru/Desktop/Markus/linkedin-scraper/Leade_generation.py", line 69, in paginateResults
+    'Csrf-Token': re.findall(r'JSESSIONID="(.+?)"', cookies)[0],
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+2026-05-28 16:07:38 [INFO] tools.people_profile_finder:   Found 0 employees via bulk lookup
+2026-05-28 16:07:38 [INFO] tools.people_profile_finder:   Looking up: Mihai Pătrașcu (CEO) at Pantofiori.ro
+2026-05-28 16:07:38 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Mihai Pătrașcu / Pantofiori.ro
+2026-05-28 16:07:40 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/mihaipatrascu
+2026-05-28 16:07:41 [INFO] tools.people_profile_finder:     LLM Validation: NO for Mihai Pătrașcu -> https://www.linkedin.com/in/mihaipatrascu
+2026-05-28 16:07:41 [INFO] tools.people_profile_finder:   Fallback 2 [LLM knowledge]: Mihai Pătrașcu / Pantofiori.ro
+2026-05-28 16:07:42 [INFO] tools.people_profile_finder:     [FAIL] No LinkedIn profile found for Mihai Pătrașcu
+2026-05-28 16:07:42 [INFO] tools.people_profile_finder:   Looking up: Sonia Mariana Wisner Domé (CFO) at Pantofiori.ro
+2026-05-28 16:07:42 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Sonia Mariana Wisner Domé / Pantofiori.ro
+2026-05-28 16:07:43 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/soniawisnerdome
+2026-05-28 16:07:43 [INFO] tools.people_profile_finder:     LLM Validation: NO for Sonia Mariana Wisner Domé -> https://www.linkedin.com/in/soniawisnerdome
+2026-05-28 16:07:43 [INFO] tools.people_profile_finder:   Fallback 2 [LLM knowledge]: Sonia Mariana Wisner Domé / Pantofiori.ro
+2026-05-28 16:07:44 [INFO] tools.people_profile_finder:     [FAIL] No LinkedIn profile found for Sonia Mariana Wisner Domé
+2026-05-28 16:07:44 [INFO] tools.people_profile_finder:   Looking up: Magazinul Gospodarului.ro (Director General) at Pantofiori.ro
+2026-05-28 16:07:44 [INFO] tools.people_profile_finder:   Fallback 1 [LinkUp]: Magazinul Gospodarului.ro / Pantofiori.ro
+2026-05-28 16:07:45 [INFO] tools.people_profile_finder:     LinkUp returned: https://www.linkedin.com/in/magazinul-gospodarului-ro-85075869
+2026-05-28 16:07:46 [INFO] tools.people_profile_finder:     LLM Validation: NO for Magazinul Gospodarului.ro -> https://www.linkedin.com/in/magazinul-gospodarului-ro-85075869
+2026-05-28 16:07:46 [INFO] tools.people_profile_finder:   Fallback 2 [LLM knowledge]: Magazinul Gospodarului.ro / Pantofiori.ro
+2026-05-28 16:07:46 [INFO] tools.people_profile_finder:     [FAIL] No LinkedIn profile found for Magazinul Gospodarului.ro
+[2026-05-28 13:07:46] [INFO]     -> CEO profile: (not found)
+[2026-05-28 13:07:46] [INFO]     -> CFO profile: (not found)
+[2026-05-28 13:07:46] [INFO]     -> Director General profile: (not found)
+[2026-05-28 13:07:46] [INFO] Phase 5 complete: 20 records built
+[2026-05-28 13:07:46] [INFO] 
+[2026-05-28 13:07:46] [INFO] ======================================================================
+[2026-05-28 13:07:46] [INFO]   PHASE: Phase 6: Writing to Spreadsheet
+[2026-05-28 13:07:46] [INFO] ======================================================================
+2026-05-28 16:07:46 [INFO] tools.writer: Appended 20 records to output.csv
+[2026-05-28 13:07:46] [INFO] Write result: Successfully wrote 20 records to output.csv
+[2026-05-28 13:07:46] [INFO] 
+[2026-05-28 13:07:46] [INFO] ======================================================================
+[2026-05-28 13:07:46] [INFO]   PHASE: EXECUTION COMPLETE
+[2026-05-28 13:07:46] [INFO] ======================================================================
+[2026-05-28 13:07:46] [INFO] Summary:
+[2026-05-28 13:07:46] [INFO]   Jobs scraped:      40
+[2026-05-28 13:07:46] [INFO]   Companies found:   19
+[2026-05-28 13:07:46] [INFO]   LinkedIn found:    13
+[2026-05-28 13:07:46] [INFO]   Records written:   20
+[2026-05-28 13:07:46] [INFO]   Errors:            20
+[2026-05-28 13:07:46] [WARN] Error log:
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/agent-vanzari-callcenter-bucuresti/1960372: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/call-center-officer-perioada-determinata/1959366: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/consultant-vanzari-call-center-telefonie-mobila/1954709: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/ofiter-call-center-suport-clienti/1955998: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/consultant-call-center/1956074: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/consultant-vanzari-call-center-sales-support-clienti-bb/1954243: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/consultant-credite-call-center/1953900: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/agent-call-center-reprezentant-vanzari/1956981: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/call-center-with-advanced-english-june-class/1956741: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/agent-call-center/1960253: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/specialist-procese-si-sisteme-craiova/1960405: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/operator-transferuri-si-administrare-date/1960398: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/ai-ml-engineer/1960411: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/operator-introducere-si-validare-date/1960335: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/operator-introducere-date-contabil-junior/1958325: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/operator-introducere-validare-si-prelucrare-date/1958875: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/operator-facturare/1960349: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/operator-introducere-si-prelucrare-date/1956378: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/operator-introducere-date-asistent-manager/1953103: Unknown company
+[2026-05-28 13:07:46] [WARN]   [extract] https://www.ejobs.ro/locuri-de-munca/operator-facturare/1960348: Unknown company
+
+============================================================
+AGENT EXECUTION SUMMARY
+============================================================
+Keywords searched: call center, operator introducere date
+Jobs scraped:      40
+Companies found:   19
+LinkedIn companies: 19 found, 0 not found
+Records written:   20
+Errors encountered: 20
+------------------------------------------------------------
+ERROR LOG:
+  [extract] https://www.ejobs.ro/locuri-de-munca/agent-vanzari-callcenter-bucuresti/1960372: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/call-center-officer-perioada-determinata/1959366: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/consultant-vanzari-call-center-telefonie-mobila/1954709: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/ofiter-call-center-suport-clienti/1955998: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/consultant-call-center/1956074: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/consultant-vanzari-call-center-sales-support-clienti-bb/1954243: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/consultant-credite-call-center/1953900: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/agent-call-center-reprezentant-vanzari/1956981: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/call-center-with-advanced-english-june-class/1956741: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/agent-call-center/1960253: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/specialist-procese-si-sisteme-craiova/1960405: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/operator-transferuri-si-administrare-date/1960398: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/ai-ml-engineer/1960411: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/operator-introducere-si-validare-date/1960335: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/operator-introducere-date-contabil-junior/1958325: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/operator-introducere-validare-si-prelucrare-date/1958875: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/operator-facturare/1960349: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/operator-introducere-si-prelucrare-date/1956378: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/operator-introducere-date-asistent-manager/1953103: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/operator-facturare/1960348: Unknown company
+------------------------------------------------------------
+============================================================
+2026-05-28 16:07:46 [INFO] __main__: Shutting down persistent browser ...
+2026-05-28 16:07:47 [INFO] tools.browser_manager: Persistent headed browser closed
+
+============================================================
+AGENT EXECUTION SUMMARY
+============================================================
+Keywords searched: call center, operator introducere date
+Jobs scraped:      40
+Companies found:   19
+LinkedIn companies: 19 found, 0 not found
+Records written:   20
+Errors encountered: 20
+------------------------------------------------------------
+ERROR LOG:
+  [extract] https://www.ejobs.ro/locuri-de-munca/agent-vanzari-callcenter-bucuresti/1960372: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/call-center-officer-perioada-determinata/1959366: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/consultant-vanzari-call-center-telefonie-mobila/1954709: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/ofiter-call-center-suport-clienti/1955998: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/consultant-call-center/1956074: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/consultant-vanzari-call-center-sales-support-clienti-bb/1954243: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/consultant-credite-call-center/1953900: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/agent-call-center-reprezentant-vanzari/1956981: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/call-center-with-advanced-english-june-class/1956741: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/agent-call-center/1960253: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/specialist-procese-si-sisteme-craiova/1960405: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/operator-transferuri-si-administrare-date/1960398: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/ai-ml-engineer/1960411: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/operator-introducere-si-validare-date/1960335: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/operator-introducere-date-contabil-junior/1958325: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/operator-introducere-validare-si-prelucrare-date/1958875: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/operator-facturare/1960349: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/operator-introducere-si-prelucrare-date/1956378: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/operator-introducere-date-asistent-manager/1953103: Unknown company
+  [extract] https://www.ejobs.ro/locuri-de-munca/operator-facturare/1960348: Unknown company
+------------------------------------------------------------
+============================================================
