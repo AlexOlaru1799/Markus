@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
 from pathlib import Path
+
+from markus_mcp.credentials_store import is_configured, read_values
+from markus_mcp.paths import credentials_file
 
 
 @dataclass(frozen=True)
@@ -13,33 +15,29 @@ class SagaCredentials:
 
 
 def credentials_path() -> Path:
-    configured = os.getenv("SAGA_CREDENTIALS_FILE", "").strip()
-    if configured:
-        return Path(configured)
-
-    # Host-friendly fallbacks for local runs outside Docker.
-    for candidate in (
-        Path("/app/private.data"),
-        Path.cwd() / "private.data",
-        Path(__file__).resolve().parents[4] / "private.data",
-    ):
-        if candidate.exists():
-            return candidate
-    return Path("/app/private.data")
+    return credentials_file()
 
 
 def load_credentials() -> SagaCredentials:
     path = credentials_path()
     if not path.exists():
         raise FileNotFoundError(
-            f"SAGA credentials file not found at {path}. "
-            "Create private.data with username on line 1 and password on line 2."
+            f"SAGA credentials file not found at {path}. Create it with:\n"
+            "saga_username = 'you@example.com'\n"
+            "saga_password = 'your-password'\n"
+            "(or set SAGA_CREDENTIALS_FILE). Run: markus-mcp --setup"
         )
 
-    lines = [line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
-    if len(lines) < 2:
+    values = read_values(path)
+    if not is_configured(values, "saga_username", "saga_password"):
         raise ValueError(
-            f"SAGA credentials file {path} must contain username on line 1 and password on line 2."
+            f"SAGA credentials are not set in {path}. Add:\n"
+            "saga_username = 'you@example.com'\n"
+            "saga_password = 'your-password'"
         )
 
-    return SagaCredentials(username=lines[0], password=lines[1], source_file=str(path))
+    return SagaCredentials(
+        username=values["saga_username"],
+        password=values["saga_password"],
+        source_file=str(path),
+    )

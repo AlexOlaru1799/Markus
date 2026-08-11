@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from typing import Any
 
@@ -17,6 +18,14 @@ from markus_mcp.tools.saga import session as saga_session
 
 HOST = os.getenv("MARKUS_MCP_HOST", "0.0.0.0")
 PORT = int(os.getenv("MARKUS_MCP_PORT", "8000"))
+TRANSPORT = os.getenv("MARKUS_MCP_TRANSPORT", "stdio").strip().lower()
+
+
+def active_transport() -> str:
+    if TRANSPORT in {"http", "streamable-http"}:
+        return "streamable-http"
+    return "stdio"
+
 
 mcp = MCPServer(
     name="markus-mcp",
@@ -40,7 +49,7 @@ mcp = MCPServer(
         "in the SAGA email (not 'Autentificare fără autorizare'), then saga_login again. "
         "Only use saga_login(allow_otp_without_authorization=true) when the user explicitly "
         "wants a one-time OTP path. If needs_otp=true, ask for the 6-digit email code and "
-        "call saga_submit_otp. Keep ./data/saga-session; do not call saga_reset_session "
+        "call saga_submit_otp. Keep ~/.markus/data/saga-session; do not call saga_reset_session "
         "with delete_profile=true unless asked. Partner/client tools: saga_list_partners, "
         "saga_search_partners, saga_get_partner, saga_create_partner, saga_update_partner, "
         "saga_remove_partner. FX sales (IesiriValuta): saga_iesiri_valuta_fields, "
@@ -307,13 +316,40 @@ def saga_add_iesiri_valuta(
 
 
 def main() -> None:
-    mcp.run(
-        transport="streamable-http",
-        host=HOST,
-        port=PORT,
-        streamable_http_path="/mcp",
-    )
+    import sys
+
+    argv = sys.argv[1:]
+    if "--set-credentials" in argv:
+        from markus_mcp.bootstrap import set_credentials_cli
+
+        raise SystemExit(set_credentials_cli())
+
+    if "--register-cursor" in argv or "--setup" in argv:
+        from markus_mcp.bootstrap import bootstrap
+        from markus_mcp.cursor_install import merge_markus_mcp
+
+        install_browser = "--skip-browser" not in argv
+        setup_result = bootstrap(install_browser=install_browser)
+        binary = None
+        if getattr(sys, "frozen", False):
+            from pathlib import Path
+
+            binary = Path(sys.executable)
+        merge = merge_markus_mcp(binary=binary)
+        print(json.dumps({"setup": setup_result, "cursor": merge}, indent=2))
+        return
+
+    if active_transport() == "streamable-http":
+        mcp.run(
+            transport="streamable-http",
+            host=HOST,
+            port=PORT,
+            streamable_http_path="/mcp",
+        )
+        return
+    mcp.run(transport="stdio")
 
 
 if __name__ == "__main__":
     main()
+

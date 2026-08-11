@@ -3,9 +3,9 @@ name: import-fx-invoice-to-saga
 description: >-
   Import a readable PDF sales invoice into SAGA WEB foreign invoices (IesiriValuta)
   via Markus MCP: detect currency, extract fields, ensure partner exists, create FX
-  invoice, summarize steps, then WhatsApp-notify Laurentiu Gusu. Use when the user
-  gives a PDF path and asks to put/add/import that invoice into SAGA (foreign /
-  FX / IesiriValuta / valuta).
+  invoice, summarize steps, then WhatsApp-notify Eu. Use when the user gives a PDF
+  path and asks to put/add/import that invoice into SAGA (foreign / FX /
+  IesiriValuta / valuta).
 ---
 
 # Import FX invoice PDF into SAGA
@@ -25,12 +25,12 @@ create, and the WhatsApp notify at the end. Still call mutations with a
 ```
 - [ ] 1. Read PDF → currency RON vs foreign
 - [ ] 2. If foreign → extract SAGA FX fields
-- [ ] 3. saga_status / saga_login if needed
+- [ ] 3. saga_status / saga_login (pause for email auth / OTP if needed)
 - [ ] 4. Find partner (search/get)
 - [ ] 5. Create partner if missing
 - [ ] 6. saga_add_iesiri_valuta
 - [ ] 7. Short chat summary of tools + steps
-- [ ] 8. WhatsApp Laurentiu Gusu
+- [ ] 8. WhatsApp Eu
 ```
 
 ## Step 1 — Read PDF and detect currency
@@ -71,8 +71,35 @@ Do not invent optional fields. Map only what the PDF supports (+ `Cont` default)
 
 1. Call `saga_status`.
 2. If not logged in / firm not selected → `saga_login`.
-3. If `needs_browser_authorization` or `needs_otp` → follow Markus SAGA auth
-   instructions and wait for the user; then continue.
+3. Handle auth pauses (do **not** abandon the import; resume from step 4 after login
+   succeeds):
+
+### 3a — Browser authorization (`needs_browser_authorization=true`)
+
+This is the preferred path (3-month browser trust).
+
+1. **Stop tool calls** and message the user clearly:
+   - SAGA sent an authorization email (include `authorization_request_id` if
+     present, e.g. `AUTH-…`).
+   - Open that email and click **Autorizează browser**.
+   - Do **not** click **Autentificare fără autorizare** (that forces OTP every
+     login).
+   - Reply here when done (e.g. “done” / “authorized”).
+2. **Wait** for the user’s reply. Do not call `saga_login` again until they
+   confirm, and do not ask them to paste passwords into chat.
+3. After they confirm → call `saga_login` again.
+4. If still unauthorized → remind them and wait again. If they explicitly ask for
+   the one-time OTP path → `saga_login(allow_otp_without_authorization=true)` and
+   follow 3b.
+5. When `logged_in` / firm-ready → continue the checklist from step 4 with the
+   fields already extracted in step 2 (no need to re-read the PDF unless the
+   conversation lost that context).
+
+### 3b — OTP (`needs_otp=true`)
+
+1. Ask the user for the 6-digit code from the SAGA email.
+2. Wait for their reply, then `saga_submit_otp`.
+3. On success → continue from step 4.
 
 ## Step 4 — Find partner
 
@@ -113,12 +140,12 @@ After success, reply with a **short** summary:
 - MCP tools used (in order)
 - WhatsApp notify status (step 8)
 
-## Step 8 — WhatsApp notify Laurentiu Gusu
+## Step 8 — WhatsApp notify Eu
 
 WhatsApp is assumed paired and ready.
 
 1. `send_whatsapp_message` with:
-   - `to_name`: `Laurentiu Gusu` (exact; never a near match)
+   - `to_name`: `Eu` (exact; never a near match)
    - `message`: short note that an invoice from **{company}** was added to
      foreign invoices (IesiriValuta) in SAGA (include `NrDoc` / currency if known)
    - `confirm_send=false`
@@ -135,6 +162,8 @@ Salut — am adăugat în SAGA (IesiriValuta) factura de la {Company} ({NrDoc}, 
 - Stop on RON-only invoices (this skill).
 - Stop if PDF cannot be read as text.
 - Stop if partner match is ambiguous.
-- Stop if SAGA auth blocks (OTP / browser authorize) until the user unblocks.
+- On SAGA auth (`needs_browser_authorization` / `needs_otp`): pause, guide the
+  user (step 3a/3b), wait for their reply, then continue the same import — do not
+  treat auth as a hard failure or restart from scratch.
 - If WhatsApp send fails after invoice success, still report SAGA success and the
   WhatsApp error separately.

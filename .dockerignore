@@ -1,9 +1,0 @@
-.git
-.codex
-data
-__pycache__
-*.py[cod]
-.venv
-.DS_Store
-private.data
-.env

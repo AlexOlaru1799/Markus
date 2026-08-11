@@ -1,0 +1,52 @@
+name: Build Markus installers
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build binary
+        run: |
+          chmod +x packaging/build_binary.sh packaging/macos/make_dmg.sh
+          packaging/build_binary.sh
+      - name: Make DMG
+        run: packaging/macos/make_dmg.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: markus-macos-dmg
+          path: packaging/dist/Markus-*-macos.dmg
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build binary
+        shell: pwsh
+        run: .\packaging\build_binary.ps1
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $env:ISCC = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          .\packaging\windows\build_installer.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: markus-windows-setup
+          path: packaging/dist/MarkusSetup-*-win64.exe

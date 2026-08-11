@@ -8,11 +8,10 @@ import os
 import time
 from pathlib import Path
 
-os.environ.setdefault("MARKUS_DATA_DIR", "/data")
-os.environ.setdefault("MARKUS_HOST_DATA_DIR", "/Users/cristianolaru/Desktop/Markus/data")
-os.environ.setdefault("SAGA_CREDENTIALS_FILE", "/app/private.data")
-os.environ.setdefault("SAGA_HEADLESS", "false")
-os.environ.setdefault("DISPLAY", os.environ.get("DISPLAY", ":99"))
+os.environ.setdefault("MARKUS_DATA_DIR", str(Path.home() / ".markus" / "data"))
+os.environ.setdefault("MARKUS_HOST_DATA_DIR", str(Path.home() / ".markus" / "data"))
+os.environ.setdefault("SAGA_CREDENTIALS_FILE", str(Path.home() / ".markus" / "private.data"))
+os.environ.setdefault("SAGA_HEADLESS", "true")
 
 from markus_mcp.tools.saga import session as saga_session  # noqa: E402
 

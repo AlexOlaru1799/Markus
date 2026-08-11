@@ -594,7 +594,7 @@ Throwaway-record discipline: every screen gets a `MARKUS-TEST-<timestamp>` recor
 | **7 — e-Factura (read side)** | list/download inbound, import status, error queues | inbound invoices downloadable; submit remains human-gated |
 | **8 — Gated screens** | Bilant, Inchidere luna, Salariati/StateSalarii, declarations, Administrare | read-only + hard-gated execute paths, with explicit user confirmation text |
 
-Each wave ends with: `pyproject.toml` version bump, `tools/catalog.py` updated in the same commit as `server.py`, Docker rebuild, and a smoke run of `list_tools`.
+Each wave ends with: `pyproject.toml` version bump, `tools/catalog.py` updated in the same commit as `server.py`, and a smoke run of `list_tools`.
 
 ---
 

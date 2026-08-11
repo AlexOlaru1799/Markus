@@ -17,11 +17,12 @@ from urllib.parse import urljoin
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
+from markus_mcp.paths import data_dir, host_data_dir
 from markus_mcp.tools.saga.credentials import load_credentials
 
 
-DATA_DIR = Path(os.getenv("MARKUS_DATA_DIR", "/data"))
-HOST_DATA_DIR = Path(os.getenv("MARKUS_HOST_DATA_DIR", str(DATA_DIR)))
+DATA_DIR = data_dir()
+HOST_DATA_DIR = host_data_dir()
 SESSION_DIR = DATA_DIR / "saga-session"
 ARTIFACT_DIR = DATA_DIR / "saga"
 BASE_URL = os.getenv("SAGA_BASE_URL", "https://web.sagasoft.ro").rstrip("/")
@@ -64,11 +65,11 @@ class SagaSessionState:
     url: str
 
 
-def _host_path(container_path: Path) -> str:
+def _host_path(path: Path) -> str:
     try:
-        relative_path = container_path.relative_to(DATA_DIR)
+        relative_path = path.relative_to(DATA_DIR)
     except ValueError:
-        return str(container_path)
+        return str(path)
     return str(HOST_DATA_DIR / relative_path)
 
 

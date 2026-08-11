@@ -15,10 +15,13 @@ from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
 
-DATA_DIR = Path(os.getenv("MARKUS_DATA_DIR", "/data"))
-HOST_DATA_DIR = Path(os.getenv("MARKUS_HOST_DATA_DIR", str(DATA_DIR)))
+from markus_mcp.paths import data_dir, host_data_dir, screenshot_dir
+
+
+DATA_DIR = data_dir()
+HOST_DATA_DIR = host_data_dir()
 SESSION_DIR = DATA_DIR / "whatsapp-session"
-SCREENSHOT_DIR = DATA_DIR / "screenshots"
+SCREENSHOT_DIR = screenshot_dir()
 LATEST_QR_PATH = SCREENSHOT_DIR / "whatsapp-qr-latest.png"
 HEADLESS = os.getenv("WHATSAPP_HEADLESS", "true").lower() not in {"0", "false", "no"}
 WHATSAPP_URL = "https://web.whatsapp.com"
@@ -50,11 +53,11 @@ class WhatsAppPageState:
     details: str
 
 
-def _host_path(container_path: Path) -> str:
+def _host_path(path: Path) -> str:
     try:
-        relative_path = container_path.relative_to(DATA_DIR)
+        relative_path = path.relative_to(DATA_DIR)
     except ValueError:
-        return str(container_path)
+        return str(path)
     return str(HOST_DATA_DIR / relative_path)
 
 
@@ -104,7 +107,7 @@ def _close_browser() -> None:
 
 
 def _clear_stale_profile_locks() -> None:
-    """Remove leftover Chromium singleton locks after container restarts."""
+    """Remove leftover Chromium singleton locks after process restarts."""
     for name in ("SingletonLock", "SingletonCookie", "SingletonSocket"):
         path = SESSION_DIR / name
         try:
@@ -183,10 +186,24 @@ def _detect_state(page) -> WhatsAppPageState:
         )
 
     # Strict paired signals only — generic contenteditables cause false positives on load screens.
+    # Keep several selectors: WhatsApp Web UI changes often, and an open search panel can hide
+    # the default chat-list test id even while the session is fully paired.
     chat_list = page.locator('div[data-testid="chat-list"]')
-    search = page.locator('div[contenteditable="true"][data-tab="3"]')
+    search = page.locator(
+        'div[contenteditable="true"][data-tab="3"], '
+        '[data-testid="chat-list-search"] div[contenteditable="true"], '
+        'div[aria-label*="Search"][contenteditable="true"]'
+    )
     side = page.locator("#side, #pane-side")
-    if chat_list.count() > 0 or (search.count() > 0 and side.count() > 0):
+    chat_titles = page.locator("#pane-side span[title], #side span[title]")
+    conversation = page.locator("#main header")
+    if (
+        chat_list.count() > 0
+        or (search.count() > 0 and side.count() > 0)
+        or (side.count() > 0 and chat_titles.count() > 0)
+        or (side.count() > 0 and conversation.count() > 0)
+        or "search or start a new chat" in lowered
+    ):
         return WhatsAppPageState(
             paired=True,
             needs_pairing=False,
@@ -485,12 +502,57 @@ def _find_search_box(page):
     return page.locator('div[contenteditable="true"][data-tab="3"]').first
 
 
+def _current_chat_title(page) -> str | None:
+    for selector in (
+        '#main header span[title]',
+        '#main header [data-testid="conversation-info-header"] span[title]',
+        '#main header div[role="button"] span[title]',
+    ):
+        loc = page.locator(selector)
+        if loc.count() == 0:
+            continue
+        title = (loc.first.get_attribute("title") or "").strip()
+        if title:
+            return title
+    return None
+
+
+def _clear_search_box(page, search) -> None:
+    """Clear WhatsApp's contenteditable search reliably (select-all is flaky there)."""
+    search.click()
+    page.wait_for_timeout(150)
+    try:
+        search.evaluate(
+            """(el) => {
+                el.focus();
+                el.textContent = '';
+                el.innerHTML = '';
+                el.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'deleteContentBackward' }));
+            }"""
+        )
+    except Exception:
+        pass
+    page.keyboard.press("Meta+A")
+    page.keyboard.press("Backspace")
+    page.keyboard.press("Control+A")
+    page.keyboard.press("Backspace")
+    page.wait_for_timeout(150)
+
+
 def _open_chat_by_exact_name(page, to_name: str) -> dict[str, object]:
     requested = to_name.strip()
     if not requested:
         return {"ok": False, "error": "to_name cannot be empty."}
 
     normalized = _normalize_name(requested)
+    already = _current_chat_title(page)
+    if already and _normalize_name(already) == normalized:
+        return {"ok": True, "matched_name": already, "requested_name": requested}
+
+    # Reset any leftover search text from a previous preview/send attempt.
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(300)
+
     search = _find_search_box(page)
     try:
         search.wait_for(state="visible", timeout=30_000)
@@ -504,10 +566,7 @@ def _open_chat_by_exact_name(page, to_name: str) -> dict[str, object]:
             "debug_screenshot": _save_debug_screenshot(page, "whatsapp-search-missing.png"),
         }
 
-    search.click()
-    page.keyboard.press("Meta+A")
-    page.keyboard.press("Control+A")
-    page.keyboard.press("Backspace")
+    _clear_search_box(page, search)
     page.keyboard.type(requested, delay=40)
     page.wait_for_timeout(2_500)
 

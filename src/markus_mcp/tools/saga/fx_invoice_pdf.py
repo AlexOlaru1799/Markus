@@ -9,12 +9,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from markus_mcp.paths import data_dir, host_data_dir
 from markus_mcp.tools.saga import iesiri_valuta as fx
 from markus_mcp.tools.saga import session as saga_session
 
 
-DATA_DIR = Path(os.getenv("MARKUS_DATA_DIR", "/data"))
-HOST_DATA_DIR = Path(os.getenv("MARKUS_HOST_DATA_DIR", str(DATA_DIR)))
+DATA_DIR = data_dir()
+HOST_DATA_DIR = host_data_dir()
 
 CURRENCY_CODES = (
     "EUR",
@@ -81,8 +82,8 @@ _SIMPLE_AMOUNT_LINE_RE = re.compile(
 )
 
 
-def _host_to_container_path(path: Path) -> Path:
-    """Map a host path under MARKUS_HOST_DATA_DIR to the container DATA_DIR mount."""
+def _resolve_under_data_dir(path: Path) -> Path:
+    """If path is under HOST_DATA_DIR, also try the equivalent under DATA_DIR."""
     try:
         relative = path.resolve().relative_to(HOST_DATA_DIR.resolve())
         return DATA_DIR / relative
@@ -91,19 +92,19 @@ def _host_to_container_path(path: Path) -> Path:
 
 
 def resolve_pdf_path(pdf_path: str) -> dict[str, Any]:
-    """Resolve a PDF path usable inside the Markus container."""
+    """Resolve a PDF path on the local filesystem."""
     raw = (pdf_path or "").strip()
     if not raw:
         return {
             "ok": False,
             "error": "pdf_path is required.",
-            "hint": "Put the file under ./data/invoices/ and pass that path (host or /data/...).",
+            "hint": "Pass an absolute PDF path, or place the file under ~/.markus/data/invoices/.",
         }
 
     candidates: list[Path] = []
     given = Path(raw).expanduser()
     candidates.append(given)
-    candidates.append(_host_to_container_path(given))
+    candidates.append(_resolve_under_data_dir(given))
     if not given.is_absolute():
         candidates.append(DATA_DIR / given)
         candidates.append(DATA_DIR / "invoices" / given.name)
@@ -126,8 +127,8 @@ def resolve_pdf_path(pdf_path: str) -> dict[str, Any]:
         "error": f"PDF not found: {raw}",
         "tried": [str(p) for p in candidates[:8]],
         "hint": (
-            "Copy the invoice into ./data/invoices/ (mounted as /data/invoices in Docker), "
-            "then pass e.g. /data/invoices/invoice.pdf or ./data/invoices/invoice.pdf."
+            "Pass an absolute path to the PDF, or copy it into ~/.markus/data/invoices/ "
+            "and pass the filename or that path."
         ),
     }
 

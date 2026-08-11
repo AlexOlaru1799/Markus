@@ -1,7 +1,7 @@
 [project]
 name = "markus-mcp"
-version = "0.6.1"
-description = "A local Python MCP server for Codex."
+version = "0.7.0"
+description = "Local Cursor MCP for SAGA WEB and WhatsApp Web automation."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -10,8 +10,14 @@ dependencies = [
   "pypdf>=5.0.0",
 ]
 
+[project.optional-dependencies]
+packaging = [
+  "pyinstaller>=6.0.0",
+]
+
 [project.scripts]
 markus-mcp = "markus_mcp.server:main"
+markus-mcp-setup = "markus_mcp.bootstrap:main"
 
 [build-system]
 requires = ["hatchling"]
