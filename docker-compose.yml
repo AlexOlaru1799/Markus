@@ -1,0 +1,20 @@
+services:
+  markus-mcp:
+    build: .
+    container_name: markus-mcp
+    env_file:
+      - .env
+    environment:
+      DISPLAY: ":99"
+    ports:
+      - "${MARKUS_MCP_PORT:-8000}:8000"
+    volumes:
+      - ./data:/data
+      - ./private.data:/app/private.data:ro
+    restart: unless-stopped
+    command:
+      [
+        "sh",
+        "-c",
+        "rm -f /tmp/.X99-lock /tmp/.X11-unix/X99; Xvfb :99 -screen 0 1280x1024x24 -nolisten tcp & sleep 0.5; exec markus-mcp",
+      ]

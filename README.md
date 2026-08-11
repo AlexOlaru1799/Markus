@@ -1,224 +1,164 @@
-# Job Search Agent
+# Markus MCP
 
-An AI-powered agentic system that automates searching Romanian job boards, extracting hiring companies, finding their LinkedIn profiles, identifying key executives (CEO, CFO, Director General), and writing the results to a CSV spreadsheet.
+A local Python MCP server for Cursor (and Codex), hosted in Docker on this Mac.
 
-## Architecture
+## Tools
 
-```
-                        ┌──────────────────────┐
-                        │   DeepSeek LLM Agent  │
-                        │   (ReAct Loop)        │
-                        └──────┬───────┬───────┘
-                               │       │
-            ┌──────────────────┘       └──────────────────┐
-            ▼                                               ▼
-    ┌───────────────┐                               ┌───────────────┐
-    │  crawl4AI      │                               │  External APIs │
-    │  (scraping)    │                               │  Linkup        │
-    │  - ejobs.ro    │                               │  linkedin-     │
-    │  - bestjobs.eu │                               │  scraper-no-   │
-    │  - Google      │                               │  selenium      │
-    └───────────────┘                               └───────────────┘
-                                                           │
-                                                           ▼
-                                                  ┌───────────────┐
-                                                  │  output.csv   │
-                                                  └───────────────┘
-```
+- `health_check`: Returns server status, version, and transport details.
+- `list_tools`: Returns the tools exposed by `markus-mcp`.
+- `whatsapp_web_status`: Checks whether the single WhatsApp Web session is paired.
+- `whatsapp_web_pair`: Keeps WhatsApp Web open and waits for a **live** QR scan.
+- `whatsapp_web_pairing_screenshot`: Deprecated; prefer `whatsapp_web_pair`.
+- `whatsapp_web_reset_session`: Closes the live browser; optionally deletes the profile.
+- `send_whatsapp_message`: Sends via exact chat name (or phone) after confirmation.
+- `saga_status` / `saga_login` / `saga_submit_otp` / `saga_reset_session`
+- `saga_list_partners` / `saga_search_partners` / `saga_get_partner`
+- `saga_create_partner` / `saga_update_partner` (require `confirm_write=true`)
 
-### 6-Phase Decision Graph
-
-1. **SEARCH** — Scrape ejobs.ro and bestjobs.eu for job listings matching keywords
-2. **EXTRACT COMPANY** — Use LLM to extract hiring company names from job content
-3. **FIND LINKEDIN COMPANY** — Fallback chain: Google → Linkup → LLM knowledge
-4. **FIND PEOPLE NAMES** — Search internet for CEO/CFO/Director General names per company
-5. **FIND PEOPLE PROFILES** — Fallback chain: Google → linkedin-scraper-no-selenium (bulk employee lookup) → Linkup → LLM knowledge
-6. **WRITE** — Append all results to CSV
-
-Each successful result in phases 3 and 5 is **validated by the LLM** before being accepted. If validation fails, the next fallback method is tried.
-
-## Features
-
-- **Automated job board scraping** — ejobs.ro and bestjobs.eu via crawl4AI
-- **Intelligent company extraction** — DeepSeek LLM parses job postings
-- **Multi-layered LinkedIn search** — Fallback chains for finding company pages and people profiles
-- **LLM validation** — every candidate URL is verified before acceptance
-- **LLM direct knowledge fallback** — LLM may know URLs from training data
-- **Verbose logging** — all decisions logged with timestamps and full context
-- **CAPTCHA handling** — pauses and requests human input when detected
-- **CSV output** — structured results ready for analysis
-
-## Requirements
-
-- Python 3.10+
-- DeepSeek API key (or any OpenAI-compatible LLM API)
-- Linkup API key
-- LinkedIn session cookies (for linkedin-scraper-no-selenium employee lookups):
-  - `li_at` cookie value
-  - `JSESSIONID` cookie value
-
-## Installation
-
-```bash
-# Clone the repository
-cd /path/to/project
-
-# Create a virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-## Configuration
-
-Copy `.env.example` to `.env` and fill in your API keys and credentials:
+## Run
 
 ```bash
 cp .env.example .env
+# Create private.data with SAGA email on line 1 and password on line 2
+docker compose up --build
 ```
 
-Edit `.env`:
+The MCP endpoint will be available at:
 
-```ini
-# Required
-LLM_API_KEY=sk-your-deepseek-api-key
-LINKUP_API_KEY=your-linkup-api-key
-
-# LinkedIn session cookies (for employee lookups via linkedin-scraper-no-selenium)
-# How to get these:
-# 1. Log in to https://www.linkedin.com in Chrome
-# 2. Open DevTools → Application → Storage → Cookies → linkedin.com
-# 3. Copy the "li_at" value → paste below
-# 4. Copy the "JSESSIONID" value → paste below
-LINKEDIN_LI_AT=
-LINKEDIN_JSESSIONID=
-
-# Optional (shown with defaults)
-# LLM_MODEL=deepseek-chat
-# LLM_BASE_URL=https://api.deepseek.com/v1
-# OUTPUT_SHEET=output.csv
-# CRAWL4AI_DELAY=1.0
+```text
+http://localhost:8000/mcp
 ```
 
-## Usage
+`private.data` is gitignored and mounted read-only into the container as
+`/app/private.data` (`SAGA_CREDENTIALS_FILE`).
 
-### Basic usage
+## Project Shape
+
+`server.py` is the MCP router. It owns server creation and tool registration.
+Tool implementation code lives under `src/markus_mcp/tools/`.
+SAGA WEB helpers live under `src/markus_mcp/tools/saga/`.
+
+## Cursor Config
+
+Add Markus to your Cursor MCP config (`~/.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "markus": {
+      "url": "http://localhost:8000/mcp"
+    }
+  }
+}
+```
+
+Restart Cursor (or reload MCP servers) after editing.
+
+Then ask the agent to call `health_check` or `list_tools` to confirm connectivity.
+
+## Codex Config
+
+Add this to a Codex config file, such as project-scoped `.codex/config.toml`:
+
+```toml
+[mcp_servers.markus]
+url = "http://localhost:8000/mcp"
+startup_timeout_sec = 20
+tool_timeout_sec = 240
+enabled = true
+default_tools_approval_mode = "writes"
+```
+
+After adding the config, restart Codex or open a new task in this project. In
+Codex, use `/mcp` to confirm the `markus` server is connected, then ask Codex
+to call the `health_check` or `list_tools` tool.
+
+## WhatsApp Web
+
+This uses one persisted WhatsApp Web browser session inside Docker. The Chromium
+process stays alive across tool calls so QR pairing and sending share the same
+live session.
+
+Set these values in `.env`:
 
 ```bash
-python main.py
+MARKUS_DATA_DIR=/data
+MARKUS_HOST_DATA_DIR=/Users/cristianolaru/Desktop/Markus/data
+WHATSAPP_HEADLESS=false
+WHATSAPP_PAIR_TIMEOUT_SEC=180
 ```
 
-This searches for _"call center"_ and _"operator introducere date"_ on both job boards.
+`/data` is the path inside the Docker container. It is mounted to the local
+`./data` folder by `docker-compose.yml`, so browser login state and QR
+screenshots survive container restarts:
 
-### Custom keywords
+```text
+./data/whatsapp-session              # persisted WhatsApp Web browser profile
+./data/screenshots/whatsapp-qr-latest.png  # live QR screenshot while pairing
+```
+
+Restart the container after changing `.env`:
 
 ```bash
-python main.py --keywords "software developer" "data entry"
+docker compose up -d --build
 ```
 
-### Custom output file
+### Pairing (important)
+
+`whatsapp_web_pair` returns quickly with a QR screenshot. The Chromium session stays
+open in the background and refreshes `whatsapp-qr-latest.png` while unpaired.
+
+1. Ask the agent to call `whatsapp_web_pair`.
+2. Open the returned `screenshot_path` (usually `.../data/screenshots/whatsapp-qr-latest.png`).
+3. Scan that QR with your phone (the browser is still running server-side).
+4. Ask the agent to poll `whatsapp_web_status` until `paired: true`.
+5. If the QR looks stale, call `whatsapp_web_pair` again to refresh, or wait ~15s for the auto refresh.
+
+If pairing is stuck, call `whatsapp_web_reset_session` with `delete_profile=true` and pair again.
+
+### Sending
+
+1. Ask something like: “Message Roberta and tell her I love her.”
+2. The agent calls `send_whatsapp_message` with `to_name="Roberta"`, `confirm_send=false`.
+3. Markus searches chats/contacts and accepts only a **100% exact** name match
+   (trim + case-insensitive). Near matches are refused and nothing is sent.
+4. The agent shows you the preview and waits for an explicit “yes, send it.”
+5. Only then it calls again with `confirm_send=true`.
+
+Optional: pass `to_phone_number` with country code when you want to skip name search.
+
+## SAGA WEB
+
+SAGA WEB has no public API. Markus keeps a **persistent Chromium profile** under
+`./data/saga-session` (same browser for up to ~3 months after email authorization).
 
 ```bash
-python main.py --output results.csv
+SAGA_CREDENTIALS_FILE=/app/private.data
+SAGA_BASE_URL=https://web.sagasoft.ro
+SAGA_HEADLESS=false
 ```
 
-### Full options
+### Login (prefer 3-month browser trust)
 
-```bash
-python main.py --help
-```
+1. Ask the agent to call `saga_login`.
+2. If `needs_browser_authorization=true`, open the SAGA email and click
+   **Autorizează browser** (not “Autentificare fără autorizare”). That trust lasts ~3 months
+   for this profile. Then call `saga_login` again.
+3. Only if you explicitly want a one-time OTP every login, use
+   `saga_login(allow_otp_without_authorization=true)` and then `saga_submit_otp`.
+4. Confirm with `saga_status` (`logged_in=true`, ideally `firm_selected=true`).
 
-## Output Format
+Do **not** delete `./data/saga-session` and avoid `saga_reset_session(delete_profile=true)`
+unless you intentionally want a new browser identity. Container rebuilds keep the profile
+as long as the `./data` bind mount remains.
 
-The CSV contains the following columns:
+### Partners / clients
 
-| Column | Description |
-|---|---|
-| `company_name` | Hiring company name |
-| `ceo_name` | CEO's full name |
-| `ceo_linkedin_url` | CEO's LinkedIn profile URL |
-| `cfo_name` | CFO's full name |
-| `cfo_linkedin_url` | CFO's LinkedIn profile URL |
-| `director_general_name` | Director General's full name |
-| `director_general_linkedin_url` | Director General's LinkedIn profile URL |
-| `job_source_url` | Original job posting URL |
-| `search_keyword` | Keyword used to find the job |
-
-## Fallback Chains
-
-### LinkedIn Company Search (Phase 3)
-
-> linkedin-scraper-no-selenium is NOT used here — it requires a LinkedIn company URL
-> as input, so it cannot help find one.
-
-1. **Linkup API** — enterprise API for company data
-2. **LLM direct knowledge** — ask the DeepSeek LLM directly
-
-After each successful result → **LLM Validation** → If rejected, try next fallback.
-
-### LinkedIn Profile Search (Phase 5)
-
-**Bulk employee lookup** runs FIRST if the LinkedIn company URL was found in Phase 3:
-1. **linkedin-scraper-no-selenium** — clones the GitHub repo and runs it as a
-   subprocess with your LinkedIn session cookies to fetch ALL employees.
-   The results are filtered to match the target names (CEO, CFO, Director General).
-
-If the bulk lookup doesn't find a match, individual fallbacks are tried:
-1. **Linkup API** — enterprise API for people data
-2. **LLM direct knowledge** — ask the DeepSeek LLM directly
-
-After each successful result → **LLM Validation** → If rejected, try next fallback.
-
-## Project Structure
-
-```
-├── main.py                   # Entry point
-├── agent.py                  # ReAct agent loop with verbose logging
-├── config.py                 # Environment variable loading
-├── state.py                  # AgentState dataclass
-├── llm.py                    # DeepSeek LLM client wrapper
-├── tools/
-│   ├── scraper.py            # crawl4AI job board + Google search
-│   ├── company_extractor.py  # LLM-based company name extraction
-│   ├── linkedin_finder.py    # LinkedIn company URL finder
-│   ├── people_name_finder.py # Internet search for executive names
-│   ├── people_profile_finder.py  # LinkedIn profile URL finder
-│   └── writer.py             # CSV output
-├── .env.example              # Environment variable template
-├── requirements.txt          # Python dependencies
-└── README.md                 # This file
-```
-
-## Logging
-
-The agent provides verbose, real-time logging of all operations:
-
-```
-[2026-05-26 21:30:01] [INFO] ======================================================================
-[2026-05-26 21:30:01] [INFO]   PHASE: Phase 1: Job Search
-[2026-05-26 21:30:01] [INFO] ======================================================================
-[2026-05-26 21:30:01] [INFO] Scraping job boards for keywords: ['call center', 'operator introducere date']
-[2026-05-26 21:30:01] [INFO] ==================================================
-[2026-05-26 21:30:01] [INFO] Searching for keyword: 'call center'
-[2026-05-26 21:30:01] [INFO] ==================================================
-[2026-05-26 21:30:01] [INFO] Scraping ejobs for keyword 'call center': https://www.ejobs.ro/locuri-de-munca/call+center
-[2026-05-26 21:30:05] [INFO]   ejobs returned 12 job entries
-[2026-05-26 21:30:05] [INFO] ===== Phase 2: Company Name Extraction =====
-[2026-05-26 21:30:05] [INFO]   [1/12] Extracting company from: Customer Support Agent
-[2026-05-26 21:30:06] [INFO]     -> New company: 'TechCorp SRL'
-```
-
-## Error Handling
-
-- **Non-fatal errors** are logged and stored; the agent continues processing
-- **Failed job boards** are skipped; other boards are still scraped
-- **LinkedIn lookups** try all 4 fallbacks before marking as not found
-- **LLM call failures** retry up to 3 times with exponential backoff
-- **CAPTCHA detection** pauses for human intervention
-- A **final summary** shows total companies processed, successes, failures, and all errors
-
-## License
-
-MIT
+- `saga_list_partners` / `saga_search_partners` / `saga_get_partner` are read-only.
+- `saga_partner_fields` lists writable Clienti columns and aliases.
+- `saga_create_partner` / `saga_update_partner` accept **only the fields you specify**;
+  unspecified fields stay blank (create) or unchanged (update). Use either SAGA names
+  (`Denumire`, `CodFiscal`, `Judet`, …) or aliases (`denumire`, `cui`, `judet`, …).
+- Mutations require a preview call with `confirm_write=false`, then an explicit
+  confirmation and `confirm_write=true`.
+- Updates require an exact partner id/cod/CUI/name match (no near matches).

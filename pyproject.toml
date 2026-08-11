@@ -1,0 +1,21 @@
+[project]
+name = "markus-mcp"
+version = "0.6.1"
+description = "A local Python MCP server for Codex."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "mcp>=1.13.0",
+  "playwright>=1.49.0",
+  "pypdf>=5.0.0",
+]
+
+[project.scripts]
+markus-mcp = "markus_mcp.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/markus_mcp"]
