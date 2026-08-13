@@ -21,11 +21,18 @@ binaries = []
 hiddenimports = collect_submodules("markus_mcp")
 
 # playwright must ship its node driver so `--setup` can install Chromium without pip.
-for pkg in ("mcp", "playwright", "pypdf"):
+for pkg in ("mcp", "playwright", "pypdf", "xlrd"):
     pkg_datas, pkg_binaries, pkg_hidden = collect_all(pkg, filter_submodules=keep_submodule)
     datas += pkg_datas
     binaries += pkg_binaries
     hiddenimports += pkg_hidden
+
+datas.append(
+    (
+        os.path.join(SRC, "markus_mcp", "agent_skills"),
+        os.path.join("markus_mcp", "agent_skills"),
+    )
+)
 
 a = Analysis(
     [os.path.join(SRC, "markus_mcp", "__main__.py")],
@@ -37,6 +44,7 @@ a = Analysis(
         "markus_mcp.server",
         "markus_mcp.bootstrap",
         "markus_mcp.cursor_install",
+        "markus_mcp.cursor_skills",
         "markus_mcp.paths",
         "markus_mcp.tools.catalog",
         "markus_mcp.tools.health",
@@ -46,6 +54,16 @@ a = Analysis(
         "markus_mcp.tools.saga.partners",
         "markus_mcp.tools.saga.iesiri_valuta",
         "markus_mcp.tools.saga.fx_invoice_pdf",
+        "markus_mcp.tools.saga.import_date",
+        "markus_mcp.tools.saga.wipe",
+        "markus_mcp.tools.smartbill",
+        "markus_mcp.tools.smartbill.credentials",
+        "markus_mcp.tools.smartbill.status",
+        "markus_mcp.tools.smartbill.client",
+        "markus_mcp.tools.smartbill.cloud",
+        "markus_mcp.tools.smartbill.supplier_docs",
+        "markus_mcp.tools.smartbill.saga_xml",
+        "markus_mcp.tools.smartbill.xls_read",
     ],
     hookspath=[],
     hooksconfig={},

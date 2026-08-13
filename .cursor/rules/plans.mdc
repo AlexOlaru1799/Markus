@@ -1,0 +1,14 @@
+---
+description: Save all plans under .cursor/plans
+alwaysApply: true
+---
+
+# Plans live under `.cursor/plans`
+
+When writing, updating, or saving a plan, design doc, or implementation plan:
+
+- Put it in `.cursor/plans/` (create the folder if needed)
+- Use a kebab-case markdown filename, e.g. `.cursor/plans/rebuild-installers.md`
+- Do **not** write plans to repo-root `plans/`, `docs/plans/`, or chat-only files meant to persist
+
+If an older plan still lives under `plans/`, move it into `.cursor/plans/` when you next edit it.

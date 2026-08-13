@@ -141,6 +141,52 @@ TOOL_CATALOG: tuple[ToolInfo, ...] = (
         description="Add IesiriValuta foreign-currency sales doc (header + lines); requires confirm_write.",
         read_only=False,
     ),
+    ToolInfo(
+        name="saga_import_xml",
+        title="SAGA import XML",
+        description=(
+            "Upload a Facturi XML on SAGA Import date and import it; requires confirm_write."
+        ),
+        read_only=False,
+    ),
+    ToolInfo(
+        name="saga_wipe_data",
+        title="SAGA wipe data",
+        description=(
+            "Delete Intrări/Ieșiri (cu/fără valută) then Furnizori/Clienți on the "
+            "connected firm; requires confirm_write."
+        ),
+        read_only=False,
+    ),
+    ToolInfo(
+        name="smartbill_status",
+        title="SmartBill status",
+        description=(
+            "Check whether the SmartBill API token is stored and probe the public API "
+            "when email and CIF are present."
+        ),
+        read_only=True,
+    ),
+    ToolInfo(
+        name="smartbill_list_supplier_invoices",
+        title="SmartBill list supplier invoices",
+        description="List Documente furnizori for a date range or this_month/last_month.",
+        read_only=True,
+    ),
+    ToolInfo(
+        name="smartbill_export_supplier_invoices_xls",
+        title="SmartBill export supplier invoices Excel",
+        description="Export Documente furnizori to Excel under ~/.markus/data/smartbill/.",
+        read_only=True,
+    ),
+    ToolInfo(
+        name="smartbill_invoices_to_saga_xml",
+        title="SmartBill invoices to SAGA XML",
+        description=(
+            "Convert Documente furnizori XLS to SAGA Facturi XML (NIR required, skip RO CIF)."
+        ),
+        read_only=True,
+    ),
 )
 
 

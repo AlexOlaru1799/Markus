@@ -13,7 +13,10 @@ from markus_mcp.tools.health import health_check as run_health_check
 from markus_mcp.tools import whatsapp_web
 from markus_mcp.tools.saga import partners as saga_partners
 from markus_mcp.tools.saga import iesiri_valuta as saga_iesiri_valuta
+from markus_mcp.tools.saga import import_date as saga_import_date
+from markus_mcp.tools.saga import wipe as saga_wipe
 from markus_mcp.tools.saga import session as saga_session
+from markus_mcp.tools import smartbill as smartbill_tools
 
 
 HOST = os.getenv("MARKUS_MCP_HOST", "0.0.0.0")
@@ -56,10 +59,27 @@ mcp = MCPServer(
         "saga_add_iesiri_valuta (header + lines). "
         "Use saga_partner_fields / saga_iesiri_valuta_fields to see writable columns. For create/update, "
         "pass only fields the user specified — never invent optional values. Mutations "
-        "(create/update/remove/add_iesiri_valuta) require confirm_write=false preview first, then "
+        "(create/update/remove/add_iesiri_valuta/import_xml/wipe_data) require confirm_write=false preview first, then "
         "confirm_write=true after explicit user OK. "
         "PDF FX imports: agent reads the PDF, ensures partner exists, then saga_add_iesiri_valuta; "
-        "WhatsApp notify per the import-fx-invoice-to-saga skill."
+        "WhatsApp notify per the import-fx-invoice-to-saga skill. "
+        "XML Import date: saga_import_xml with xml_path to a SAGA Facturi XML "
+        "(typically F_<cif>_<dd>_<mm>_<yyyy>.xml). Opens "
+        "https://web2.sagasoft.ro/sagac/ImportDate, uploads, then ImportFactura. "
+        "Same confirm_write preview then explicit user OK. "
+        "Wipe current firm data: saga_wipe_data. Default targets are Intrări valută, "
+        "Intrări, Ieșiri valută, Ieșiri, Furnizori, Clienți (documents first, then partners). "
+        "Does not wipe plan de conturi, salarii, închidere lună, or company config. "
+        "Preview shows firm name, interval, and counts — only confirm_write=true after "
+        "the user explicitly OK's that firm. Optional targets= comma-separated keys. "
+        "SmartBill: token (and optional username/CIF) from private.data. "
+        "Call smartbill_status to verify. Username falls back to saga_username. "
+        "Supplier invoices (Documente furnizori): smartbill_list_supplier_invoices then "
+        "smartbill_export_supplier_invoices_xls then smartbill_invoices_to_saga_xml. "
+        "Pass date_from/date_to as YYYY-MM-DD or period=this_month|last_month. "
+        "The XML converter keeps rows with NIR and skips Romanian CIF (RO…). "
+        "To load that XML into SAGA, saga_import_xml after the user confirms. "
+        "Cloud UI login uses smartbill_password or saga_password."
     ),
 )
 
@@ -313,6 +333,118 @@ def saga_add_iesiri_valuta(
     confirm_write: bool = False,
 ) -> dict[str, Any]:
     return saga_iesiri_valuta.create_fx_invoice(header, lines, confirm_write=confirm_write)
+
+
+@mcp.tool(
+    title="SAGA import XML",
+    description=(
+        "Upload a SAGA Facturi XML on Import date "
+        "(https://web2.sagasoft.ro/sagac/ImportDate) and import it. "
+        "Preview with confirm_write=false, then confirm_write=true after explicit user OK."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
+)
+def saga_import_xml(xml_path: str, confirm_write: bool = False) -> dict[str, Any]:
+    return saga_import_date.import_xml(xml_path, confirm_write=confirm_write)
+
+
+@mcp.tool(
+    title="SAGA wipe data",
+    description=(
+        "Permanently delete SAGA rows on the connected firm: Intrări / Ieșiri "
+        "(with and without valută), then Furnizori and Clienți. Does not wipe "
+        "plan de conturi, salarii, închidere lună, or config. Preview with "
+        "confirm_write=false, then confirm_write=true after explicit user OK. "
+        "Optional targets is a comma-separated list of: "
+        "intrari_valuta,intrari,iesiri_valuta,iesiri,furnizori,clienti."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, openWorldHint=True),
+)
+def saga_wipe_data(confirm_write: bool = False, targets: str = "") -> dict[str, Any]:
+    return saga_wipe.wipe_data(confirm_write=confirm_write, targets=targets)
+
+
+@mcp.tool(
+    title="SmartBill status",
+    description=(
+        "Check whether the SmartBill API token is stored in private.data and, when "
+        "email and CIF are also present, probe GET /series."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def smartbill_status() -> dict[str, Any]:
+    return smartbill_tools.status()
+
+
+@mcp.tool(
+    title="SmartBill list supplier invoices",
+    description=(
+        "List SmartBill Documente furnizori (supplier invoices) for a period. "
+        "Pass date_from and date_to as YYYY-MM-DD, or period=this_month / last_month."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def smartbill_list_supplier_invoices(
+    date_from: str | None = None,
+    date_to: str | None = None,
+    period: str | None = None,
+    section: str = "all",
+    limit: int = 200,
+) -> dict[str, Any]:
+    return smartbill_tools.list_supplier_invoices(
+        date_from=date_from,
+        date_to=date_to,
+        period=period,
+        section=section,
+        limit=limit,
+    )
+
+
+@mcp.tool(
+    title="SmartBill export supplier invoices Excel",
+    description=(
+        "Export SmartBill Documente furnizori for a period to Excel under ~/.markus/data/smartbill/. "
+        "Prefers SmartBill's own Export Excel; otherwise writes .xlsx from the listed rows."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def smartbill_export_supplier_invoices_xls(
+    date_from: str | None = None,
+    date_to: str | None = None,
+    period: str | None = None,
+    section: str = "all",
+) -> dict[str, Any]:
+    return smartbill_tools.export_supplier_invoices_xls(
+        date_from=date_from,
+        date_to=date_to,
+        period=period,
+        section=section,
+    )
+
+
+@mcp.tool(
+    title="SmartBill invoices to SAGA XML",
+    description=(
+        "Convert a SmartBill Documente furnizori spreadsheet into SAGA Facturi XML. "
+        "Pass xls_path to convert an existing file, or period/date_from/date_to to export "
+        "first then convert. Keeps rows with NIR; skips invoices whose CIF starts with RO."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def smartbill_invoices_to_saga_xml(
+    xls_path: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+    period: str | None = None,
+    section: str = "all",
+) -> dict[str, Any]:
+    return smartbill_tools.invoices_to_saga_xml(
+        xls_path=xls_path,
+        date_from=date_from,
+        date_to=date_to,
+        period=period,
+        section=section,
+    )
 
 
 def main() -> None:

@@ -32,5 +32,5 @@ Name: "{group}\Uninstall Markus"; Filename: "{uninstallexe}"
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Parameters: "--setup"; StatusMsg: "Setting up Markus and downloading its browser (about 150 MB)…"; Flags: runhidden waituntilterminated
-Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File ""{app}\prompt-credentials.ps1"" -Exe ""{app}\{#MyAppExeName}"""; StatusMsg: "Asking for your SAGA credentials…"; Flags: waituntilterminated skipifsilent
+Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File ""{app}\prompt-credentials.ps1"" -Exe ""{app}\{#MyAppExeName}"""; StatusMsg: "Asking for SAGA credentials and optional SmartBill token…"; Flags: waituntilterminated skipifsilent
 Filename: "{app}\repair-cursor-mcp.bat"; Description: "Open repair / finish notes"; Flags: postinstall skipifsilent unchecked

@@ -1,4 +1,4 @@
-# Collect SAGA credentials and hand them to markus-mcp.exe on stdin.
+# Collect SAGA credentials and an optional SmartBill API token; hand them to markus-mcp.exe on stdin.
 param([Parameter(Mandatory = $true)][string]$Exe)
 
 Add-Type -AssemblyName System.Windows.Forms
@@ -6,7 +6,7 @@ Add-Type -AssemblyName System.Drawing
 
 $form = New-Object System.Windows.Forms.Form
 $form.Text = 'Markus setup'
-$form.Size = New-Object System.Drawing.Size(420, 220)
+$form.Size = New-Object System.Drawing.Size(420, 300)
 $form.StartPosition = 'CenterScreen'
 $form.FormBorderStyle = 'FixedDialog'
 $form.MaximizeBox = $false
@@ -37,16 +37,21 @@ $passBox = New-Box 93
 $passBox.UseSystemPasswordChar = $true
 $form.Controls.Add($passBox)
 
+$form.Controls.Add((New-Label 'SmartBill API token (optional):' 125))
+$tokenBox = New-Box 148
+$tokenBox.UseSystemPasswordChar = $true
+$form.Controls.Add($tokenBox)
+
 $ok = New-Object System.Windows.Forms.Button
 $ok.Text = 'Save'
-$ok.Location = New-Object System.Drawing.Point(215, 135)
+$ok.Location = New-Object System.Drawing.Point(215, 215)
 $ok.DialogResult = [System.Windows.Forms.DialogResult]::OK
 $form.Controls.Add($ok)
 $form.AcceptButton = $ok
 
 $skip = New-Object System.Windows.Forms.Button
 $skip.Text = 'Skip'
-$skip.Location = New-Object System.Drawing.Point(305, 135)
+$skip.Location = New-Object System.Drawing.Point(305, 215)
 $skip.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
 $form.Controls.Add($skip)
 $form.CancelButton = $skip
@@ -54,13 +59,23 @@ $form.CancelButton = $skip
 $form.Add_Shown({ $userBox.Focus() })
 $result = $form.ShowDialog()
 
-if ($result -ne [System.Windows.Forms.DialogResult]::OK -or
-    [string]::IsNullOrWhiteSpace($userBox.Text) -or
-    [string]::IsNullOrWhiteSpace($passBox.Text)) {
+$hasSaga = -not [string]::IsNullOrWhiteSpace($userBox.Text) -and
+    -not [string]::IsNullOrWhiteSpace($passBox.Text)
+$hasToken = -not [string]::IsNullOrWhiteSpace($tokenBox.Text)
+
+if ($result -ne [System.Windows.Forms.DialogResult]::OK -or (-not $hasSaga -and -not $hasToken)) {
     Write-Output "Skipped credentials. Add them later in $env:USERPROFILE\.markus\private.data"
     exit 0
 }
 
-# Piped on stdin so the password never appears in the process list.
-$payload = "saga_username=$($userBox.Text)`nsaga_password=$($passBox.Text)"
+# Piped on stdin so secrets never appear in the process list.
+$lines = @()
+if ($hasSaga) {
+    $lines += "saga_username=$($userBox.Text)"
+    $lines += "saga_password=$($passBox.Text)"
+}
+if ($hasToken) {
+    $lines += "smartbill_token=$($tokenBox.Text.Trim())"
+}
+$payload = $lines -join "`n"
 $payload | & $Exe --set-credentials

@@ -9,10 +9,12 @@ Employees should install from a **closed `.dmg` / `.exe`** — not from this sou
 
 1. Get `Markus-*-macos.dmg` or `MarkusSetup-*-win64.exe` from your admin.
 2. Run the installer (`Install Markus.command` on macOS) and enter your SAGA email
-   and password when prompted.
+   and password when prompted. The SmartBill API token field is optional.
 3. Restart Cursor → **Reload MCP servers**.
 4. In Agent chat, ask for `health_check`.
 5. Pair WhatsApp: ask for `whatsapp_web_pair`, open the QR screenshot path, scan with your phone.
+
+Setup also copies Markus **agent skills** into `~/.cursor/skills/` (SmartBill → SAGA, XML import, FX invoice). Restart Cursor so those skills load in any project.
 
 To change credentials later, rerun the installer or edit `~/.markus/private.data`.
 
@@ -67,7 +69,10 @@ Code signing (Apple Developer ID / Authenticode) is recommended before wide empl
 
 - Health: `health_check`, `list_tools`
 - WhatsApp: `whatsapp_web_status`, `whatsapp_web_pair`, `send_whatsapp_message`, …
-- SAGA: `saga_login`, `saga_submit_otp`, partners CRUD, `saga_add_iesiri_valuta`, …
+- SAGA: `saga_login`, `saga_submit_otp`, partners CRUD, `saga_add_iesiri_valuta`, `saga_import_xml`, `saga_wipe_data`, …
+- SmartBill: `smartbill_status`, `smartbill_list_supplier_invoices`, `smartbill_export_supplier_invoices_xls`, `smartbill_invoices_to_saga_xml`
+
+Client workflows (installed to `~/.cursor/skills/` on `--setup`): `smartbill-to-saga-import`, `export-smartbill-supplier-invoices`, `import-xml-to-saga`, `import-fx-invoice-to-saga`, `wipe-saga-data`. Source of truth: `src/markus_mcp/agent_skills/`. Developer-only skills stay in `.cursor/skills/` (this repo).
 
 ## Data layout
 
@@ -79,6 +84,8 @@ Code signing (Apple Developer ID / Authenticode) is recommended before wide empl
     saga-session/       # SAGA WEB profile
     screenshots/        # QR images
     saga/               # SAGA screenshots / captures
+    smartbill-session/  # SmartBill Cloud profile
+    smartbill/          # supplier invoice XLS / SAGA XML exports
 ```
 
 ## WhatsApp / SAGA

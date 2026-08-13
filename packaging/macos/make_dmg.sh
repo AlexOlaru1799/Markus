@@ -26,6 +26,8 @@ rm -rf "$STAGE"
 mkdir -p "$STAGE/Markus"
 cp "$BIN" "$STAGE/Markus/markus-mcp"
 chmod +x "$STAGE/Markus/markus-mcp"
+xattr -cr "$STAGE/Markus/markus-mcp" 2>/dev/null || true
+codesign --force --sign - "$STAGE/Markus/markus-mcp"
 cp "$ROOT/packaging/macos/Install Markus.command" "$STAGE/Markus/Install Markus.command"
 chmod +x "$STAGE/Markus/Install Markus.command"
 
@@ -34,13 +36,15 @@ Markus MCP ${VERSION}
 
 1. Double-click "Install Markus.command"
 2. Enter your SAGA email and password when prompted
-3. Restart Cursor and reload MCP servers
-4. Ask the agent: health_check
-5. Pair WhatsApp via whatsapp_web_pair
+3. Optionally enter your SmartBill API token (Contul Meu > Integrari)
+4. Restart Cursor and reload MCP servers
+5. Ask the agent: health_check
+6. Pair WhatsApp via whatsapp_web_pair
 
 To change credentials later, edit ~/.markus/private.data:
   saga_username = 'you@example.com'
   saga_password = 'your-password'
+  smartbill_token = 'your-api-token'
 
 No source code or Docker required.
 EOF

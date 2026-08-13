@@ -11,3 +11,11 @@ packaging/dist/
 packaging/build/
 *.dmg
 *.spec.bak
+
+# Client skills live in src/markus_mcp/agent_skills/. Local Cursor aliases are
+# symlinks; git cannot add files beyond them.
+.cursor/skills/export-smartbill-supplier-invoices
+.cursor/skills/import-fx-invoice-to-saga
+.cursor/skills/import-xml-to-saga
+.cursor/skills/smartbill-to-saga-import
+.cursor/skills/wipe-saga-data

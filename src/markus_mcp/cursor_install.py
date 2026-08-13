@@ -7,6 +7,7 @@ import os
 import sys
 from pathlib import Path
 
+from markus_mcp.cursor_skills import install_cursor_skills
 from markus_mcp.paths import ensure_markus_dirs, markus_home
 
 
@@ -74,4 +75,5 @@ def merge_markus_mcp(*, binary: Path | None = None, mcp_json: Path | None = None
         "mcp_json": str(mcp_path),
         "markus_home": str(markus_home()),
         "entry": entry,
+        "skills": install_cursor_skills(),
     }

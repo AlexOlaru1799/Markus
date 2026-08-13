@@ -31,14 +31,8 @@ def credentials_file() -> Path:
     configured = os.getenv("SAGA_CREDENTIALS_FILE", "").strip()
     if configured:
         return Path(configured).expanduser().resolve()
-
-    home_cred = markus_home() / "private.data"
-    cwd_cred = Path.cwd() / "private.data"
-    if home_cred.exists():
-        return home_cred.resolve()
-    if cwd_cred.exists():
-        return cwd_cred.resolve()
-    return home_cred
+    # Always the per-user home file. Do not pick up a checkout's private.data via cwd.
+    return markus_home() / "private.data"
 
 
 def screenshot_dir() -> Path:
@@ -55,6 +49,8 @@ def ensure_markus_dirs() -> dict[str, str]:
     (data / "whatsapp-session").mkdir(parents=True, exist_ok=True)
     (data / "saga-session").mkdir(parents=True, exist_ok=True)
     (data / "saga").mkdir(parents=True, exist_ok=True)
+    (data / "smartbill-session").mkdir(parents=True, exist_ok=True)
+    (data / "smartbill").mkdir(parents=True, exist_ok=True)
     return {
         "markus_home": str(home),
         "data_dir": str(data),

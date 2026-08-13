@@ -20,7 +20,14 @@ HEADER = (
 )
 
 # Order used when rewriting the file, so generated files stay readable.
-KEY_ORDER = ("saga_username", "saga_password")
+KEY_ORDER = (
+    "saga_username",
+    "saga_password",
+    "smartbill_username",
+    "smartbill_password",
+    "smartbill_token",
+    "smartbill_cif",
+)
 
 # Every file Markus writes contains at least one of these; add new keys here as services grow.
 KNOWN_KEYS = frozenset(KEY_ORDER)

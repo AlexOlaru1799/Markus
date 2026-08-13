@@ -12,6 +12,7 @@ from markus_mcp.credentials_store import (
     update_values,
     write_values,
 )
+from markus_mcp.cursor_skills import install_cursor_skills
 from markus_mcp.paths import credentials_file, ensure_markus_dirs, markus_home
 
 
@@ -30,6 +31,10 @@ def ensure_credentials_template() -> dict[str, object]:
             {
                 "saga_username": values.get("saga_username", ""),
                 "saga_password": values.get("saga_password", ""),
+                "smartbill_username": values.get("smartbill_username", ""),
+                "smartbill_password": values.get("smartbill_password", ""),
+                "smartbill_token": values.get("smartbill_token", ""),
+                "smartbill_cif": values.get("smartbill_cif", ""),
             },
         )
 
@@ -40,6 +45,9 @@ def ensure_credentials_template() -> dict[str, object]:
             "1. private.data holds credentials as `key = value`, for example:\n"
             "     saga_username = 'you@example.com'\n"
             "     saga_password = 'your-password'\n"
+            "     smartbill_token = 'your-api-token'\n"
+            "     smartbill_username = 'you@example.com'  # optional; defaults to saga_username\n"
+            "     smartbill_cif = 'RO12345678'            # optional until a live API call needs it\n"
             "2. In Cursor, reload MCP servers, then ask for health_check.\n"
             "3. Pair WhatsApp with whatsapp_web_pair and scan the QR screenshot.\n",
             encoding="utf-8",
@@ -97,7 +105,12 @@ def prompt_credentials() -> dict[str, str]:
 
     username = input("SAGA email / username: ").strip()
     password = getpass.getpass("SAGA password: ")
-    return {"saga_username": username, "saga_password": password}
+    token = getpass.getpass("SmartBill API token (optional, Enter to skip): ")
+    return {
+        "saga_username": username,
+        "saga_password": password,
+        "smartbill_token": token.strip(),
+    }
 
 
 def set_credentials_cli() -> int:
@@ -111,11 +124,12 @@ def set_credentials_cli() -> int:
     else:
         values = prompt_credentials()
 
-    if not values.get("saga_username") or not values.get("saga_password"):
+    payload = {k: v for k, v in values.items() if v}
+    if not payload:
         print("No credentials provided; private.data was left unchanged.")
         return 1
 
-    result = set_credentials(values)
+    result = set_credentials(payload)
     print(f"Saved {', '.join(result['keys_written'])} to {result['path']}")
     return 0
 
@@ -123,6 +137,7 @@ def set_credentials_cli() -> int:
 def bootstrap(*, install_browser: bool = True) -> dict[str, object]:
     dirs = ensure_markus_dirs()
     creds = ensure_credentials_template()
+    skills = install_cursor_skills()
     browser: dict[str, object] = {"skipped": True}
     if install_browser:
         browser = install_chromium()
@@ -130,6 +145,7 @@ def bootstrap(*, install_browser: bool = True) -> dict[str, object]:
         "ok": True,
         "dirs": dirs,
         "credentials": creds,
+        "skills": skills,
         "chromium": browser,
         "next_steps": [
             f"Edit SAGA credentials: {creds['path']}",
@@ -161,6 +177,11 @@ def main(argv: list[str] | None = None) -> int:
     creds = result["credentials"]
     state = "configured" if creds["configured"] else "needs saga_username / saga_password"
     print(f"Credentials: {creds['path']} ({state})")
+    skills = result.get("skills") or {}
+    if skills.get("ok"):
+        print(f"Skills:      {skills.get('skills_dir')} ({len(skills.get('installed') or [])} installed)")
+    elif skills:
+        print(f"Skills:      FAILED missing {skills.get('missing')}")
     chromium = result.get("chromium") or {}
     if chromium.get("skipped"):
         print("Chromium:    skipped")

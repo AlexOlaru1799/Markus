@@ -533,7 +533,7 @@ All of these are the same tool with different parameters. Build **one** `saga_ru
 | Situatie comenzi | `Rapoarte/SetDataRaportAnexaComanda` | R | |
 | Contracte | `Contracte` | A | `GenerareFacturi` is a **write with financial impact** → `confirm_write` + preview of what would be invoiced |
 | Cheltuieli / venituri în avans | `InregistrareCheltuieliVenituri` | A | `Home/GetViewInregistrareCheltuieliVenituri` |
-| Import date | `ImportDate` | H | `UploadXMLFiles`/`ImportFactura` can corrupt ledgers |
+| Import date | `ImportDate` | ✓ | `saga_import_xml` — `UploadXMLFiles` then `ImportFactura`; `confirm_write` gate |
 | Diurne | probe | A | per-diem grid; `OrdinDeDeplasarePDF` |
 | e-Transport | `eTransport` | H | ANAF portal |
 | REVISAL | `REVISAL` | H | labour registry filing |
@@ -572,7 +572,7 @@ Throwaway-record discipline: every screen gets a `MARKUS-TEST-<timestamp>` recor
 - **Preview-then-confirm on every mutation.** Same contract as today: call with `confirm_write=false` → returns `{requires_confirmation: true, preview, mapped_fields}`; only `confirm_write=true` writes. Applies to create/update/delete, document creation, `ExecutaValidare`, `Contracte/GenerareFacturi`, e-Factura submit.
 - **Never auto-answer a `Choice`.** A `Choice` is SAGA asking a human a question. Auto-answering is only allowed when the user already confirmed the write, and the question text must be echoed in the tool result.
 - **Never invent field values.** Only send keys the caller supplied, plus documented SAGA defaults, and always report which values were auto-filled and why (existing `iesiri_valuta` behaviour for `Tip`/`Curs`/`NrDoc` is the model).
-- **Human-only list** (tools may read, must not write unattended): `Inchidere luna`, `State salarii`, `Configurare salarii/societati`, `Utilizatori`, `Intretinere BD`, `Import date`, `Declaratia 406/205/Intrastat`, `e-Transport`, `REVISAL`, `Dezmembrari`, `Operatii speciale`, `Reglari descarcare`, e-Factura ANAF submit/cancel.
+- **Human-only list** (tools may read, must not write unattended): `Inchidere luna`, `State salarii`, `Configurare salarii/societati`, `Utilizatori`, `Intretinere BD`, `Declaratia 406/205/Intrastat`, `e-Transport`, `REVISAL`, `Dezmembrari`, `Operatii speciale`, `Reglari descarcare`, e-Factura ANAF submit/cancel. `Import date` is `saga_import_xml` with `confirm_write`.
 - **Rights-aware.** Check `LoadDrepturiEcrane` before offering a screen; return a clear "your SAGA user lacks rights for X" instead of a cryptic HTTP failure.
 - **Period-aware.** Refuse writes dated inside a closed period; surface `InchidereLuna/GetInchidereCurenta`.
 - **Every mutating tool returns** endpoint, request payload, full response chain, screenshot path and network capture path. Debuggability is part of the contract.
