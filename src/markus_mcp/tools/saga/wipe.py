@@ -1,11 +1,16 @@
-"""Delete SAGA documents and partners on the connected firm.
+"""Delete SAGA documents, bank journal, and partners on the connected firm.
 
-Scope is the operational grids the user asked for: Intrări / Ieșiri with and
-without valută, then Furnizori and Clienți. Chart of accounts, salaries,
-month-close, and company config are not touched.
+Scope is the operational grids the user asked for: Jurnal de bancă (including
+Import extrase staging), Intrări / Ieșiri with and without valută (lines and
+receipt allocations first), then Furnizori and Clienți. Chart of accounts,
+salaries, month-close, and company config are not touched.
 
-Documents are removed first (FK), after devalidating locked rows. Mutations
-use the same confirm_write preview gate as the other SAGA write tools.
+Bank journal is removed first so associated receipts do not block invoice
+delete. Day entries (intrări din zi) go before day headers — SAGA refuses
+Solduri delete with "Stergeti intai intrarile din zi". Document child rows
+(IesiriDetalii / Iesiri_Incasari and the Intrări / valută equivalents) are
+deleted before the header. Mutations use the same confirm_write preview gate
+as the other SAGA write tools.
 """
 
 from __future__ import annotations
@@ -28,10 +33,24 @@ _DELETE_METHODS = ("POST", "GET")
 
 
 @dataclass(frozen=True)
+class JournalLayer:
+    """One grid in Jurnal de bancă (days / day entries / invoice allocations)."""
+
+    get_data: str
+    delete: str
+    pk_fields: tuple[str, ...]
+    label_fields: tuple[str, ...]
+    parent_id_fields: tuple[str, ...] = ()
+    ins_mod_table: str | None = None
+    get_data_alt: tuple[str, ...] = ()
+    delete_alt: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
 class WipeTarget:
     key: str
     title: str
-    kind: str  # "document" | "partner"
+    kind: str  # "document" | "partner" | "journal"
     route: str
     table: str
     get_data: str
@@ -40,10 +59,136 @@ class WipeTarget:
     pk_fields: tuple[str, ...]
     label_fields: tuple[str, ...]
     ins_mod_table: str
+    journal_days: JournalLayer | None = None
+    journal_entries: JournalLayer | None = None
+    journal_lines: JournalLayer | None = None
+    child_layers: tuple[JournalLayer, ...] = ()
 
 
-# Documents first so partners are not blocked by remaining invoices.
+# Jurnal de bancă: Solduri (day) is blocked until Casa (intrări din zi) is empty.
+_JURNAL_BANCA_DAYS = JournalLayer(
+    get_data="JurnalDeBanca/GetData_Solduri",
+    delete="RegistruCasa/Delete_Solduri",
+    pk_fields=("Data", "data", "PK", "pk"),
+    label_fields=(
+        "Data",
+        "data",
+        "Incasari",
+        "incasari",
+        "Incasari_Val",
+        "incasari_Val",
+        "Plati",
+        "plati",
+        "Sold_Final_zi",
+        "sold_Final_zi",
+        "PK",
+        "pk",
+    ),
+)
+_JURNAL_BANCA_ENTRIES = JournalLayer(
+    get_data="JurnalDeBanca/GetData_Casa",
+    delete="RegistruCasa/Delete_Casa",
+    pk_fields=("IdNota", "idNota"),
+    label_fields=(
+        "NrDoc",
+        "nrDoc",
+        "nrDocNrFactura",
+        "Explicatie",
+        "explicatie",
+        "Suma",
+        "suma",
+        "Cont_D",
+        "cont_D",
+        "Cont_C",
+        "cont_C",
+        "Data",
+        "data",
+        "IdNota",
+        "idNota",
+    ),
+    parent_id_fields=("Data", "data"),
+    ins_mod_table="REGISTRU_AC",
+)
+_JURNAL_BANCA_LINES = JournalLayer(
+    get_data="RegistruCasa/GetData_CasaDetalii",
+    delete="RegistruCasa/Delete_CasaDetalii",
+    pk_fields=("PK", "pk", "Id", "ID", "IdFactura", "idFactura"),
+    label_fields=("NrFactura", "nrFactura", "IdFactura", "idFactura", "PK", "pk"),
+    parent_id_fields=("IdNota", "idNota", "PK", "pk"),
+)
+
+_INTRARI_VALUTA_DETAILS = JournalLayer(
+    get_data="IntrariValuta/GetData_IntrariValutaDetalii",
+    delete="IntrariValuta/Delete_IntrariValutaDetalii",
+    pk_fields=("ID_IntrareDet", "Id", "ID", "PK", "pk"),
+    label_fields=("Denumire", "DenumireArticolServiciu", "Total", "Cont"),
+    parent_id_fields=("ID_Intrare", "Id", "ID"),
+    get_data_alt=("IntrariValutaDetalii/GetData_IntrariValutaDetalii",),
+    delete_alt=("IntrariValutaDetalii/Delete_IntrariValutaDetalii",),
+)
+_INTRARI_DETAILS = JournalLayer(
+    get_data="Intrari/GetData_IntrariDetalii",
+    delete="Intrari/Delete_IntrariDetalii",
+    pk_fields=("ID_IntrareDet", "Id", "ID", "PK", "pk"),
+    label_fields=("Denumire", "DenumireArticolServiciu", "Total", "Cont"),
+    parent_id_fields=("ID_Intrare", "Id", "ID"),
+    get_data_alt=("IntrariDetalii/GetData_IntrariDetalii",),
+    delete_alt=("IntrariDetalii/Delete_IntrariDetalii",),
+)
+_IESIRI_VALUTA_ALLOCATIONS = JournalLayer(
+    get_data="IesiriValuta/GetData_Iesiri_Incasari",
+    delete="IesiriValuta/Delete_Iesiri_Incasari",
+    pk_fields=("IdNota", "idNota", "IdFactura", "idFactura", "PK", "pk", "Id", "ID"),
+    label_fields=("NrDoc", "nrDoc", "Suma", "suma", "Explicatie"),
+    parent_id_fields=("ID_Iesire", "Id", "ID"),
+    get_data_alt=("Iesiri/GetData_Iesiri_Incasari",),
+    delete_alt=("Iesiri/Delete_Iesiri_Incasari",),
+)
+_IESIRI_VALUTA_DETAILS = JournalLayer(
+    get_data="IesiriValuta/GetData_IesiriValutaDetalii",
+    delete="IesiriValuta/Delete_IesiriValutaDetalii",
+    pk_fields=("ID_IesireDet", "Id", "ID", "PK", "pk"),
+    label_fields=("Denumire", "DenumireArticolServiciu", "Total", "Cont"),
+    parent_id_fields=("ID_Iesire", "Id", "ID"),
+    get_data_alt=("IesiriValutaDetalii/GetData_IesiriValutaDetalii",),
+    delete_alt=("IesiriValutaDetalii/Delete_IesiriValutaDetalii",),
+)
+_IESIRI_ALLOCATIONS = JournalLayer(
+    get_data="Iesiri/GetData_Iesiri_Incasari",
+    delete="Iesiri/Delete_Iesiri_Incasari",
+    pk_fields=("IdNota", "idNota", "IdFactura", "idFactura", "PK", "pk", "Id", "ID"),
+    label_fields=("NrDoc", "nrDoc", "Suma", "suma", "Explicatie"),
+    parent_id_fields=("ID_Iesire", "Id", "ID"),
+)
+_IESIRI_DETAILS = JournalLayer(
+    get_data="Iesiri/GetData_IesiriDetalii",
+    delete="Iesiri/Delete_IesiriDetalii",
+    pk_fields=("ID_IesireDet", "Id", "ID", "PK", "pk"),
+    label_fields=("Denumire", "DenumireArticolServiciu", "Total", "Cont"),
+    parent_id_fields=("ID_Iesire", "Id", "ID"),
+    get_data_alt=("IesiriDetalii/GetData_IesiriDetalii",),
+    delete_alt=("IesiriDetalii/Delete_IesiriDetalii",),
+)
+
+# Bank journal first so associated receipts do not block invoice delete.
+# Documents next (child rows, then headers) so partners are not blocked.
 WIPE_TARGETS: tuple[WipeTarget, ...] = (
+    WipeTarget(
+        key="jurnal_banca",
+        title="Jurnal de bancă",
+        kind="journal",
+        route="JurnalDeBanca",
+        table="Solduri",
+        get_data="JurnalDeBanca/GetData_Solduri",
+        delete="RegistruCasa/Delete_Solduri",
+        devalidate=None,
+        pk_fields=("Data", "data", "PK", "pk"),
+        label_fields=("Data", "data", "Incasari_Val", "incasari_Val", "Plati_Val", "plati_Val"),
+        ins_mod_table="REGISTRU_AC",
+        journal_days=_JURNAL_BANCA_DAYS,
+        journal_entries=_JURNAL_BANCA_ENTRIES,
+        journal_lines=_JURNAL_BANCA_LINES,
+    ),
     WipeTarget(
         key="intrari_valuta",
         title="Intrări valută",
@@ -56,6 +201,7 @@ WIPE_TARGETS: tuple[WipeTarget, ...] = (
         pk_fields=("ID_Intrare", "Id", "ID"),
         label_fields=("NrDoc", "Furnizor", "Client", "Data", "Moneda", "Total", "Validat"),
         ins_mod_table="INTRD",
+        child_layers=(_INTRARI_VALUTA_DETAILS,),
     ),
     WipeTarget(
         key="intrari",
@@ -69,6 +215,7 @@ WIPE_TARGETS: tuple[WipeTarget, ...] = (
         pk_fields=("ID_Intrare", "Id", "ID"),
         label_fields=("NrDoc", "Furnizor", "Client", "Data", "Total", "Validat"),
         ins_mod_table="FACTURI",
+        child_layers=(_INTRARI_DETAILS,),
     ),
     WipeTarget(
         key="iesiri_valuta",
@@ -82,6 +229,7 @@ WIPE_TARGETS: tuple[WipeTarget, ...] = (
         pk_fields=("ID_Iesire", "Id", "ID"),
         label_fields=("NrDoc", "Client", "Data", "Valuta", "Total", "Validat"),
         ins_mod_table="EXPORT",
+        child_layers=(_IESIRI_VALUTA_ALLOCATIONS, _IESIRI_VALUTA_DETAILS),
     ),
     WipeTarget(
         key="iesiri",
@@ -95,6 +243,7 @@ WIPE_TARGETS: tuple[WipeTarget, ...] = (
         pk_fields=("ID_Iesire", "Id", "ID"),
         label_fields=("NrDoc", "Client", "Data", "Total", "Validat"),
         ins_mod_table="IESIRI",
+        child_layers=(_IESIRI_ALLOCATIONS, _IESIRI_DETAILS),
     ),
     WipeTarget(
         key="furnizori",
@@ -155,6 +304,9 @@ def wipe_data(*, confirm_write: bool = False, targets: str = "") -> dict[str, An
                 f"connected firm ({preview.get('firm_name') or 'unknown'}, "
                 f"CodFirma {preview.get('firm_code') or '?'}). "
                 "Does not wipe plan de conturi, salarii, închidere lună, or config. "
+                "Order: Jurnal de bancă (clears Import extrase staging, then day "
+                "entries before day headers), then Intrări/Ieșiri including valută "
+                "(allocations and lines before headers), then partners. "
                 "Ask the user to confirm the firm and counts, then call again with "
                 "confirm_write=true."
             ),
@@ -200,7 +352,11 @@ def _build_preview(page, selected: list[WipeTarget]) -> dict[str, Any]:
     grids: list[dict[str, Any]] = []
     total = 0
     for target in selected:
-        listed = _list_rows(page, target)
+        if target.kind == "journal":
+            _open_screen(page, target)
+            listed = _list_journal(page, target)
+        else:
+            listed = _list_rows(page, target)
         count = int(listed.get("count") or 0)
         total += count
         grids.append(
@@ -208,6 +364,8 @@ def _build_preview(page, selected: list[WipeTarget]) -> dict[str, Any]:
                 "target": target.key,
                 "title": target.title,
                 "count": count,
+                "days_count": listed.get("days_count"),
+                "entry_count": listed.get("entry_count"),
                 "validated_count": listed.get("validated_count", 0),
                 "sample": listed.get("sample") or [],
                 "error": listed.get("error"),
@@ -233,7 +391,10 @@ def _build_preview(page, selected: list[WipeTarget]) -> dict[str, Any]:
         "note": (
             "Wipe lists rows visible in the current SAGA toolbar interval "
             f"({firm.get('interval_start') or '?'} – {firm.get('interval_end') or '?'}). "
-            "Documents outside that interval are not deleted."
+            "Documents outside that interval are not deleted. "
+            "Jurnal de bancă is wiped first (Import extrase cache, then each day's "
+            "entries before the day header). Ieșiri / Ieșiri valută delete receipt "
+            "allocations and lines before the invoice header."
         ),
         "url": page.url,
         "screenshot_path": saga_session._save_screenshot(page, "saga-wipe-preview.png"),
@@ -249,18 +410,35 @@ def _wipe_confirmed(page, selected: list[WipeTarget], preview: dict[str, Any]) -
 
     for target in selected:
         opened = _open_screen(page, target)
-        listed = _list_rows(page, target)
-        rows = listed.get("rows") or []
-        deleted = 0
-        failed: list[dict[str, Any]] = []
-        for row in rows:
-            outcome = _wipe_row(page, target, row)
-            if outcome.get("ok"):
-                deleted += 1
-            else:
-                failed.append(outcome)
-        remaining_listed = _list_rows(page, target)
-        remaining = int(remaining_listed.get("count") or 0)
+        journal_extra: dict[str, Any] = {}
+        if target.kind == "journal":
+            outcome = _wipe_journal(page, target)
+            deleted = int(outcome.get("deleted") or 0)
+            failed = outcome.get("failed") or []
+            remaining = int(outcome.get("remaining") or 0)
+            listed_error = outcome.get("list_error")
+            attempted = int(outcome.get("attempted") or 0)
+            remaining_sample = outcome.get("remaining_sample") or []
+            journal_extra = {
+                "days_deleted": outcome.get("days_deleted"),
+                "entries_deleted": outcome.get("entries_deleted"),
+            }
+        else:
+            listed = _list_rows(page, target)
+            rows = listed.get("rows") or []
+            deleted = 0
+            failed = []
+            for row in rows:
+                row_outcome = _wipe_row(page, target, row)
+                if row_outcome.get("ok"):
+                    deleted += 1
+                else:
+                    failed.append(row_outcome)
+            remaining_listed = _list_rows(page, target)
+            remaining = int(remaining_listed.get("count") or 0)
+            listed_error = listed.get("error")
+            attempted = len(rows)
+            remaining_sample = remaining_listed.get("sample") or []
         deleted_total += deleted
         failed_total += len(failed)
         remaining_total += remaining
@@ -269,13 +447,14 @@ def _wipe_confirmed(page, selected: list[WipeTarget], preview: dict[str, Any]) -
                 "target": target.key,
                 "title": target.title,
                 "opened": opened.get("ok"),
-                "attempted": len(rows),
+                "attempted": attempted,
                 "deleted": deleted,
                 "failed": failed[:20],
                 "failed_count": len(failed),
                 "remaining": remaining,
-                "remaining_sample": remaining_listed.get("sample") or [],
-                "list_error": listed.get("error"),
+                "remaining_sample": remaining_sample,
+                "list_error": listed_error,
+                **journal_extra,
             }
         )
 
@@ -321,8 +500,9 @@ def _firm_context(page) -> dict[str, Any]:
 def _open_screen(page, target: WipeTarget) -> dict[str, Any]:
     app_base = saga_session.app_base_url(page)
     url = urljoin(app_base.rstrip("/") + "/", target.route)
-    current = (page.url or "").casefold()
-    if f"/sagac/{target.route.casefold()}" in current:
+    current_path = (page.url or "").split("?", 1)[0].rstrip("/").casefold()
+    want = f"/sagac/{target.route.casefold()}"
+    if current_path == want or current_path.endswith(want):
         return {"ok": True, "url": page.url, "via": "current"}
     try:
         page.goto(url, wait_until="domcontentloaded", timeout=60_000)
@@ -335,13 +515,228 @@ def _open_screen(page, target: WipeTarget) -> dict[str, Any]:
     return {"ok": True, "url": page.url, "via": "route"}
 
 
-def _list_rows(page, target: WipeTarget) -> dict[str, Any]:
+def _list_journal(page, target: WipeTarget) -> dict[str, Any]:
+    days_layer = target.journal_days
+    entries_layer = target.journal_entries
+    if days_layer is None or entries_layer is None:
+        return {"ok": False, "error": "Jurnal de bancă layers are not configured.", "count": 0}
+
+    days_listed = _list_rows(page, _layer_as_target(target, days_layer))
+    days = days_listed.get("rows") or []
+    entries: list[dict[str, Any]] = []
+    last_error = days_listed.get("error")
+    for day in days:
+        day_id = _row_get(day, *entries_layer.parent_id_fields)
+        if not day_id:
+            continue
+        listed = _list_rows(page, _layer_as_target(target, entries_layer), master_id=day_id)
+        if listed.get("error"):
+            last_error = listed.get("error")
+        for row in listed.get("rows") or []:
+            row = dict(row)
+            row["_day"] = day_id
+            entries.append(row)
+
+    sample_source = entries or days
+    sample_target = _layer_as_target(target, entries_layer if entries else days_layer)
+    return {
+        "ok": last_error is None,
+        "error": last_error,
+        "count": len(entries) + len(days),
+        "days_count": len(days),
+        "entry_count": len(entries),
+        "validated_count": 0,
+        "rows": entries,
+        "days": days,
+        "sample": [_row_sample(sample_target, row) for row in sample_source[:SAMPLE_LIMIT]],
+    }
+
+
+def _wipe_journal(page, target: WipeTarget) -> dict[str, Any]:
+    days_layer = target.journal_days
+    entries_layer = target.journal_entries
+    lines_layer = target.journal_lines
+    if days_layer is None or entries_layer is None:
+        return {"ok": False, "list_error": "Jurnal de bancă layers are not configured.", "deleted": 0}
+
+    try:
+        _ajax(page, "POST", "RegistruCasa/ClearCacheImport", form={})
+    except Exception:
+        pass
+
+    days_listed = _list_rows(page, _layer_as_target(target, days_layer))
+    days = days_listed.get("rows") or []
+    failed: list[dict[str, Any]] = []
+    entries_deleted = 0
+    days_deleted = 0
+    attempted = 0
+
+    for day in days:
+        day_id = _row_get(day, *entries_layer.parent_id_fields)
+        day_pk = _row_get(day, *days_layer.pk_fields)
+        if not day_id:
+            failed.append({"ok": False, "error": "Missing day date.", "row": _layer_sample(days_layer, day)})
+            continue
+        listed = _list_rows(page, _layer_as_target(target, entries_layer), master_id=day_id)
+        rows = listed.get("rows") or []
+        attempted += len(rows) + 1
+        for row in rows:
+            if lines_layer is not None:
+                line_parent = _row_get(row, *lines_layer.parent_id_fields)
+                if line_parent:
+                    line_listed = _list_rows(
+                        page,
+                        _layer_as_target(target, lines_layer),
+                        master_id=line_parent,
+                    )
+                    for line in line_listed.get("rows") or []:
+                        line_pk = _row_get(line, *lines_layer.pk_fields)
+                        if not line_pk:
+                            continue
+                        _delete_pk(page, lines_layer.delete, line_pk)
+            entry_pk = _row_get(row, *entries_layer.pk_fields)
+            sample = _layer_sample(entries_layer, row)
+            if not entry_pk:
+                failed.append({"ok": False, "error": "Missing IdNota.", "row": sample})
+                continue
+            deleted = _delete_pk(page, entries_layer.delete, entry_pk)
+            if deleted.get("ok"):
+                if entries_layer.ins_mod_table:
+                    _executa_ins_mod_table(page, entries_layer.ins_mod_table, entry_pk)
+                entries_deleted += 1
+            else:
+                failed.append(
+                    {
+                        "ok": False,
+                        "pk": entry_pk,
+                        "row": sample,
+                        "error": deleted.get("error") or "Delete Casa failed.",
+                        "response": deleted.get("response"),
+                    }
+                )
+
+        remaining_entries = _list_rows(page, _layer_as_target(target, entries_layer), master_id=day_id)
+        if int(remaining_entries.get("count") or 0) > 0:
+            failed.append(
+                {
+                    "ok": False,
+                    "error": "Stergeti intai intrarile din zi — day still has entries.",
+                    "row": _layer_sample(days_layer, day),
+                    "remaining_entries": remaining_entries.get("sample") or [],
+                }
+            )
+            continue
+
+        day_deleted = None
+        for candidate in (day_id, day_pk):
+            if not candidate:
+                continue
+            day_deleted = _delete_pk(page, days_layer.delete, candidate)
+            if day_deleted.get("ok"):
+                days_deleted += 1
+                break
+        if not (day_deleted or {}).get("ok"):
+            failed.append(
+                {
+                    "ok": False,
+                    "pk": day_id,
+                    "row": _layer_sample(days_layer, day),
+                    "error": (day_deleted or {}).get("error") or "Delete Solduri failed.",
+                    "response": (day_deleted or {}).get("response"),
+                }
+            )
+
+    remaining_listed = _list_journal(page, target)
+    remaining = int(remaining_listed.get("count") or 0)
+    return {
+        "deleted": entries_deleted + days_deleted,
+        "entries_deleted": entries_deleted,
+        "days_deleted": days_deleted,
+        "attempted": attempted,
+        "failed": failed,
+        "remaining": remaining,
+        "remaining_sample": remaining_listed.get("sample") or [],
+        "list_error": days_listed.get("error") or remaining_listed.get("error"),
+    }
+
+
+def _layer_as_target(
+    parent: WipeTarget,
+    layer: JournalLayer,
+    *,
+    get_data: str | None = None,
+    delete: str | None = None,
+) -> WipeTarget:
+    return WipeTarget(
+        key=parent.key,
+        title=parent.title,
+        kind=parent.kind,
+        route=parent.route,
+        table=parent.table,
+        get_data=get_data or layer.get_data,
+        delete=delete or layer.delete,
+        devalidate=None,
+        pk_fields=layer.pk_fields,
+        label_fields=layer.label_fields,
+        ins_mod_table=layer.ins_mod_table or parent.ins_mod_table,
+    )
+
+
+def _layer_sample(layer: JournalLayer, row: dict[str, Any]) -> dict[str, Any]:
+    return _row_sample(
+        WipeTarget(
+            key="_",
+            title="_",
+            kind="journal",
+            route="",
+            table="",
+            get_data=layer.get_data,
+            delete=layer.delete,
+            devalidate=None,
+            pk_fields=layer.pk_fields,
+            label_fields=layer.label_fields,
+            ins_mod_table=layer.ins_mod_table or "",
+        ),
+        row,
+    )
+
+
+def _delete_pk(page, delete_path: str, pk: str) -> dict[str, Any]:
+    stub = WipeTarget(
+        key="_",
+        title="_",
+        kind="document",
+        route="",
+        table="",
+        get_data="",
+        delete=delete_path,
+        devalidate=None,
+        pk_fields=("Id", "ID"),
+        label_fields=(),
+        ins_mod_table="",
+    )
+    return _delete_row(page, stub, str(pk).strip())
+
+
+def _executa_ins_mod_table(page, table: str, pk: str) -> None:
+    try:
+        _ajax(
+            page,
+            "GET",
+            "Home/ExecutaInsMMod",
+            params={"Id": pk, "Tabela": table, "Tip": "S"},
+        )
+    except Exception:
+        return
+
+
+def _list_rows(page, target: WipeTarget, *, master_id: str | None = None) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     skip = 0
     reported_count: int | None = None
     last_error = None
     while True:
-        params = {"RequestSetup": _request_setup(skip=skip, batch_size=BATCH_SIZE)}
+        params = {"RequestSetup": _request_setup(skip=skip, batch_size=BATCH_SIZE, master_id=master_id)}
         probed = _ajax(page, "GET", target.get_data, params=params)
         if not probed.get("ok_http"):
             last_error = (
@@ -376,11 +771,69 @@ def _list_rows(page, target: WipeTarget) -> dict[str, Any]:
     }
 
 
+def _wipe_children(
+    page, target: WipeTarget, row: dict[str, Any], pk: str
+) -> dict[str, Any]:
+    deleted = 0
+    failed: list[dict[str, Any]] = []
+    for layer in target.child_layers:
+        parent_id = _row_get(row, *layer.parent_id_fields) or pk
+        if not parent_id:
+            continue
+        listed = _list_layer(page, target, layer, parent_id)
+        for child in listed.get("rows") or []:
+            child_pk = _row_get(child, *layer.pk_fields)
+            if not child_pk:
+                continue
+            outcome = _delete_layer(page, layer, child_pk)
+            if outcome.get("ok"):
+                if layer.ins_mod_table:
+                    _executa_ins_mod_table(page, layer.ins_mod_table, child_pk)
+                deleted += 1
+            else:
+                failed.append(
+                    {
+                        "ok": False,
+                        "layer": layer.get_data,
+                        "pk": child_pk,
+                        "error": outcome.get("error") or "Child delete failed.",
+                    }
+                )
+    return {"deleted": deleted, "failed": failed}
+
+
+def _list_layer(
+    page, parent: WipeTarget, layer: JournalLayer, master_id: str
+) -> dict[str, Any]:
+    last: dict[str, Any] = {"ok": False, "rows": [], "count": 0}
+    for path in (layer.get_data, *layer.get_data_alt):
+        listed = _list_rows(
+            page,
+            _layer_as_target(parent, layer, get_data=path),
+            master_id=master_id,
+        )
+        if listed.get("ok") or listed.get("rows"):
+            return listed
+        last = listed
+    return last
+
+
+def _delete_layer(page, layer: JournalLayer, pk: str) -> dict[str, Any]:
+    last: dict[str, Any] = {"ok": False}
+    for path in (layer.delete, *layer.delete_alt):
+        outcome = _delete_pk(page, path, pk)
+        if outcome.get("ok"):
+            return outcome
+        last = outcome
+    return last
+
+
 def _wipe_row(page, target: WipeTarget, row: dict[str, Any]) -> dict[str, Any]:
     pk = _row_pk(target, row)
     sample = _row_sample(target, row)
     if not pk:
         return {"ok": False, "error": "Missing primary key.", "row": sample}
+    children = _wipe_children(page, target, row, pk)
     devalidated = None
     if target.devalidate and _is_validated(row):
         devalidated = _devalidate(page, target, row, pk)
@@ -396,6 +849,7 @@ def _wipe_row(page, target: WipeTarget, row: dict[str, Any]) -> dict[str, Any]:
             "row": sample,
             "devalidated": devalidated,
             "via": deleted.get("via"),
+            "children_deleted": children.get("deleted"),
         }
     if target.devalidate and not (devalidated or {}).get("ok"):
         devalidated = _devalidate(page, target, row, pk)
@@ -634,18 +1088,18 @@ def _ajax(
     }
 
 
-def _request_setup(*, skip: int = 0, batch_size: int = BATCH_SIZE) -> str:
-    return json.dumps(
-        {
-            "FilterSearchType": 1,
-            "FilterCaseSensitive": False,
-            "FilterCurrentTable": False,
-            "Skip": max(skip, 0),
-            "BatchSize": max(batch_size, 1),
-            "GetRowsCount": True,
-        },
-        separators=(",", ":"),
-    )
+def _request_setup(*, skip: int = 0, batch_size: int = BATCH_SIZE, master_id: str | None = None) -> str:
+    payload: dict[str, Any] = {
+        "FilterSearchType": 1,
+        "FilterCaseSensitive": False,
+        "FilterCurrentTable": False,
+        "Skip": max(skip, 0),
+        "BatchSize": max(batch_size, 1),
+        "GetRowsCount": True,
+    }
+    if master_id:
+        payload["Id"] = master_id
+    return json.dumps(payload, separators=(",", ":"))
 
 
 def _rows_from_payload(payload: Any) -> list[dict[str, Any]]:
@@ -666,19 +1120,37 @@ def _rows_from_payload(payload: Any) -> list[dict[str, Any]]:
     return []
 
 
-def _row_pk(target: WipeTarget, row: dict[str, Any]) -> str:
-    for key in target.pk_fields:
-        value = row.get(key)
-        if value is not None and str(value).strip() != "":
-            return str(value).strip()
+def _row_get(row: dict[str, Any], *names: str) -> str:
+    lower = {str(key).casefold(): key for key in row}
+    for name in names:
+        if name in row and row[name] not in (None, ""):
+            return str(row[name]).strip()
+        key = lower.get(name.casefold())
+        if key is not None and row[key] not in (None, ""):
+            return str(row[key]).strip()
     return ""
+
+
+def _row_pk(target: WipeTarget, row: dict[str, Any]) -> str:
+    return _row_get(row, *target.pk_fields)
 
 
 def _row_sample(target: WipeTarget, row: dict[str, Any]) -> dict[str, Any]:
     out: dict[str, Any] = {}
-    for key in target.label_fields + target.pk_fields:
-        if key in row and key not in out:
+    wanted = target.label_fields + target.pk_fields
+    lower = {str(key).casefold(): key for key in row}
+    for name in wanted:
+        if name in out:
+            continue
+        if name in row:
+            out[name] = row.get(name)
+            continue
+        key = lower.get(name.casefold())
+        if key is not None and key not in out:
             out[key] = row.get(key)
+    extra = row.get("_day")
+    if extra and "day" not in out:
+        out["day"] = extra
     return out
 
 

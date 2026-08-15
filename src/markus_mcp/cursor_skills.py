@@ -10,6 +10,8 @@ CLIENT_SKILLS = (
     "smartbill-to-saga-import",
     "export-smartbill-supplier-invoices",
     "import-xml-to-saga",
+    "import-iesiri-xml-to-saga",
+    "import-incasari-xml-to-saga",
     "import-fx-invoice-to-saga",
     "wipe-saga-data",
 )

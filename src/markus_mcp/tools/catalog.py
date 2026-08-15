@@ -150,11 +150,30 @@ TOOL_CATALOG: tuple[ToolInfo, ...] = (
         read_only=False,
     ),
     ToolInfo(
+        name="saga_import_iesiri_xml",
+        title="SAGA import Ieșiri XML",
+        description=(
+            "Create RON Ieșiri from a Facturi XML (keeps NrDoc); skips existing numbers; "
+            "requires confirm_write."
+        ),
+        read_only=False,
+    ),
+    ToolInfo(
+        name="saga_import_incasari_xml",
+        title="SAGA import încasări XML",
+        description=(
+            "Upload an I_/P_ XML on Jurnal de Bancă Import extrase, fill client/supplier, "
+            "associate via SAGA DisplayData(codFactura), then Accept; requires confirm_write."
+        ),
+        read_only=False,
+    ),
+    ToolInfo(
         name="saga_wipe_data",
         title="SAGA wipe data",
         description=(
-            "Delete Intrări/Ieșiri (cu/fără valută) then Furnizori/Clienți on the "
-            "connected firm; requires confirm_write."
+            "Delete Jurnal de bancă (incl. Import extrase staging), Intrări/Ieșiri "
+            "(cu/fără valută, lines and allocations first), then Furnizori/Clienți; "
+            "requires confirm_write."
         ),
         read_only=False,
     ),

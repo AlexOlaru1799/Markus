@@ -165,6 +165,24 @@ def preview_xml(xml_path: str) -> dict[str, Any]:
         return {"ok": False, "error": f"{source.name} is larger than 25 MB."}
 
     try:
+        tree = ET.parse(source)
+        root_name = _local(tree.getroot().tag)
+    except ET.ParseError as exc:
+        return {"ok": False, "error": f"Invalid XML: {exc}", "path": str(source)}
+    if root_name.casefold() in {"incasari", "plati"}:
+        return {
+            "ok": False,
+            "error": (
+                f"{source.name} is a SAGA {root_name} XML (I_/P_), not Facturi (F_). "
+                "Use saga_import_incasari_xml on Jurnal de Bancă / Import extrase, "
+                "not saga_import_xml."
+            ),
+            "tool": "saga_import_incasari_xml",
+            "path": _host(source),
+            "filename": source.name,
+        }
+
+    try:
         summary = summarize_facturi_xml(source)
     except ET.ParseError as exc:
         return {"ok": False, "error": f"Invalid XML: {exc}", "path": str(source)}
@@ -177,6 +195,12 @@ def preview_xml(xml_path: str) -> dict[str, Any]:
         )
     if summary.get("invoice_count", 0) == 0:
         warnings.append("No <Factura> nodes found; SAGA may reject this file.")
+    if any(item.get("customer_cod") for item in summary.get("invoices") or []):
+        warnings.append(
+            "This file has <ClientCod> (sales Ieșiri export). "
+            "Use saga_import_iesiri_xml to create RON Ieșiri and keep NrDoc. "
+            "Import date typically loads purchases onto Intrări valută."
+        )
 
     return {
         "ok": True,
@@ -220,6 +244,7 @@ def summarize_facturi_xml(path: Path) -> dict[str, Any]:
                 "supplier_cif": _child_text(antet, "FurnizorCIF"),
                 "customer": _child_text(antet, "ClientNume"),
                 "customer_cif": _child_text(antet, "ClientCIF"),
+                "customer_cod": _child_text(antet, "ClientCod"),
                 "currency": _child_text(antet, "FacturaMoneda") or "RON",
                 "line_count": len(lines),
                 "amount": round(amount, 2),

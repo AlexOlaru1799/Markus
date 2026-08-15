@@ -7,5 +7,7 @@ __all__ = [
     "iesiri_valuta",
     "fx_invoice_pdf",
     "import_date",
+    "iesiri",
+    "jurnal_banca_import",
     "wipe",
 ]

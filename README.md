@@ -69,10 +69,10 @@ Code signing (Apple Developer ID / Authenticode) is recommended before wide empl
 
 - Health: `health_check`, `list_tools`
 - WhatsApp: `whatsapp_web_status`, `whatsapp_web_pair`, `send_whatsapp_message`, …
-- SAGA: `saga_login`, `saga_submit_otp`, partners CRUD, `saga_add_iesiri_valuta`, `saga_import_xml`, `saga_wipe_data`, …
+- SAGA: `saga_login`, `saga_submit_otp`, partners CRUD, `saga_add_iesiri_valuta`, `saga_import_xml`, `saga_import_incasari_xml`, `saga_wipe_data`, …
 - SmartBill: `smartbill_status`, `smartbill_list_supplier_invoices`, `smartbill_export_supplier_invoices_xls`, `smartbill_invoices_to_saga_xml`
 
-Client workflows (installed to `~/.cursor/skills/` on `--setup`): `smartbill-to-saga-import`, `export-smartbill-supplier-invoices`, `import-xml-to-saga`, `import-fx-invoice-to-saga`, `wipe-saga-data`. Source of truth: `src/markus_mcp/agent_skills/`. Developer-only skills stay in `.cursor/skills/` (this repo).
+Client workflows (installed to `~/.cursor/skills/` on `--setup`): `smartbill-to-saga-import`, `export-smartbill-supplier-invoices`, `import-xml-to-saga`, `import-incasari-xml-to-saga`, `import-fx-invoice-to-saga`, `wipe-saga-data`. Source of truth: `src/markus_mcp/agent_skills/`. Developer-only skills stay in `.cursor/skills/` (this repo).
 
 ## Data layout
 

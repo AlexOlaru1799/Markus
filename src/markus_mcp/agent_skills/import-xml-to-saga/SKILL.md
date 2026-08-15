@@ -31,6 +31,16 @@ For SmartBill list → XLS → XML → import, use the `smartbill-to-saga-import
 `F_<cif>_<dd>_<mm>_<yyyy>.xml` under `~/.markus/data/smartbill/`). Do not rename
 it unless they ask. Warn if the name is not `F_*.xml`.
 
+For `I_*.xml` / `P_*.xml` (`<Incasari>` / `<Plati>`), use
+`import-incasari-xml-to-saga` / `saga_import_incasari_xml` on Jurnal de Bancă,
+not this skill.
+
+For RON **sales Ieșiri** Facturi XML (your firm as Furnizor, customers as
+ClientNume/ClientCod, extra `<Cont>` / `<TVAProc>`), use
+`import-iesiri-xml-to-saga` / `saga_import_iesiri_xml`. That tool posts
+`Iesiri/Create_Iesiri` so `NrDoc` stays `FacturaNumar`. This skill is Import
+date (typically Intrări valută).
+
 ## Login
 
 Same as other SAGA tools: `saga_status`, then `saga_login`. If

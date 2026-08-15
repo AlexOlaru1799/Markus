@@ -17,5 +17,7 @@ packaging/build/
 .cursor/skills/export-smartbill-supplier-invoices
 .cursor/skills/import-fx-invoice-to-saga
 .cursor/skills/import-xml-to-saga
+.cursor/skills/import-iesiri-xml-to-saga
+.cursor/skills/import-incasari-xml-to-saga
 .cursor/skills/smartbill-to-saga-import
 .cursor/skills/wipe-saga-data

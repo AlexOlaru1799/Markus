@@ -14,6 +14,8 @@ from markus_mcp.tools import whatsapp_web
 from markus_mcp.tools.saga import partners as saga_partners
 from markus_mcp.tools.saga import iesiri_valuta as saga_iesiri_valuta
 from markus_mcp.tools.saga import import_date as saga_import_date
+from markus_mcp.tools.saga import iesiri as saga_iesiri
+from markus_mcp.tools.saga import jurnal_banca_import as saga_jurnal_banca_import
 from markus_mcp.tools.saga import wipe as saga_wipe
 from markus_mcp.tools.saga import session as saga_session
 from markus_mcp.tools import smartbill as smartbill_tools
@@ -59,16 +61,29 @@ mcp = MCPServer(
         "saga_add_iesiri_valuta (header + lines). "
         "Use saga_partner_fields / saga_iesiri_valuta_fields to see writable columns. For create/update, "
         "pass only fields the user specified — never invent optional values. Mutations "
-        "(create/update/remove/add_iesiri_valuta/import_xml/wipe_data) require confirm_write=false preview first, then "
+        "(create/update/remove/add_iesiri_valuta/import_xml/import_iesiri_xml/import_incasari_xml/wipe_data) require confirm_write=false preview first, then "
         "confirm_write=true after explicit user OK. "
         "PDF FX imports: agent reads the PDF, ensures partner exists, then saga_add_iesiri_valuta; "
         "WhatsApp notify per the import-fx-invoice-to-saga skill. "
         "XML Import date: saga_import_xml with xml_path to a SAGA Facturi XML "
         "(typically F_<cif>_<dd>_<mm>_<yyyy>.xml). Opens "
         "https://web2.sagasoft.ro/sagac/ImportDate, uploads, then ImportFactura. "
+        "Same confirm_write preview then explicit user OK. Use this for purchases "
+        "(Intrări valută). RON sales Ieșiri Facturi XML (Furnizor = your firm, "
+        "ClientNume/ClientCod = customers, extra <Cont>/<TVAProc>): saga_import_iesiri_xml. "
+        "Creates Iesiri/Create_Iesiri so NrDoc stays as FacturaNumar; existing NrDoc is skipped. "
+        "Do not send sales Ieșiri XML to saga_import_xml. "
+        "Încasări/Plăți XML (I_<dd>_<mm>_<yyyy>.xml or P_…, root <Incasari>/<Plati>): "
+        "saga_import_incasari_xml. Opens Jurnal de Bancă, uploads via Import extrase "
+        "(RegistruCasa/IncarcaExtras), fills treasury account (from XML Cont or account=), "
+        "sets each row's client/supplier from unpaid Ieșiri/Intrări matching <FacturaNumar> "
+        "(or from partner= if the user named one), clicks SAGA's Asociere automata button, then Accept. "
         "Same confirm_write preview then explicit user OK. "
-        "Wipe current firm data: saga_wipe_data. Default targets are Intrări valută, "
-        "Intrări, Ieșiri valută, Ieșiri, Furnizori, Clienți (documents first, then partners). "
+        "Do not send I_/P_ files to saga_import_xml. "
+        "Wipe current firm data: saga_wipe_data. Default targets are Jurnal de bancă "
+        "(clears Import extrase staging, then day entries before day headers), "
+        "Intrări valută, Intrări, Ieșiri valută, Ieșiri (receipt allocations and "
+        "lines before headers), then Furnizori and Clienți. "
         "Does not wipe plan de conturi, salarii, închidere lună, or company config. "
         "Preview shows firm name, interval, and counts — only confirm_write=true after "
         "the user explicitly OK's that firm. Optional targets= comma-separated keys. "
@@ -349,14 +364,61 @@ def saga_import_xml(xml_path: str, confirm_write: bool = False) -> dict[str, Any
 
 
 @mcp.tool(
+    title="SAGA import Ieșiri XML",
+    description=(
+        "Create RON Ieșiri (sales invoices) from a SAGA Facturi XML "
+        "(F_*.xml with ClientNume/ClientCod). Posts Iesiri/Create_Iesiri so "
+        "NrDoc matches FacturaNumar. Existing NrDoc values are skipped. "
+        "Preview with confirm_write=false, then confirm_write=true after explicit user OK. "
+        "Not Import date — use saga_import_xml for purchases. "
+        "Not I_/P_ bank XML — use saga_import_incasari_xml for those."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
+)
+def saga_import_iesiri_xml(xml_path: str, confirm_write: bool = False) -> dict[str, Any]:
+    return saga_iesiri.import_iesiri_xml(xml_path, confirm_write=confirm_write)
+
+
+@mcp.tool(
+    title="SAGA import încasări XML",
+    description=(
+        "Upload a SAGA Încasări or Plăți XML (I_*.xml / P_*.xml) on Jurnal de Bancă "
+        "Import extrase (https://web2.sagasoft.ro/sagac/JurnalDeBanca), set each row's "
+        "client/supplier from unpaid Ieșiri/Intrări matching <FacturaNumar>, associate "
+        "via SAGA DisplayData(codFactura), then Accept. Preview with confirm_write=false, then "
+        "confirm_write=true after explicit user OK. Optional partner= forces one "
+        "client/supplier on every row. Optional account overrides XML <Cont>. "
+        "asociere=true by default."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
+)
+def saga_import_incasari_xml(
+    xml_path: str,
+    confirm_write: bool = False,
+    partner: str = "",
+    account: str = "",
+    asociere: bool = True,
+) -> dict[str, Any]:
+    return saga_jurnal_banca_import.import_incasari_xml(
+        xml_path,
+        confirm_write=confirm_write,
+        partner=partner,
+        account=account,
+        asociere=asociere,
+    )
+
+
+@mcp.tool(
     title="SAGA wipe data",
     description=(
-        "Permanently delete SAGA rows on the connected firm: Intrări / Ieșiri "
-        "(with and without valută), then Furnizori and Clienți. Does not wipe "
+        "Permanently delete SAGA rows on the connected firm: Jurnal de bancă "
+        "(Import extrase cache, then day entries, then day headers), Intrări / "
+        "Ieșiri (with and without valută; allocations and lines first), then "
+        "Furnizori and Clienți. Does not wipe "
         "plan de conturi, salarii, închidere lună, or config. Preview with "
         "confirm_write=false, then confirm_write=true after explicit user OK. "
         "Optional targets is a comma-separated list of: "
-        "intrari_valuta,intrari,iesiri_valuta,iesiri,furnizori,clienti."
+        "jurnal_banca,intrari_valuta,intrari,iesiri_valuta,iesiri,furnizori,clienti."
     ),
     annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, openWorldHint=True),
 )
