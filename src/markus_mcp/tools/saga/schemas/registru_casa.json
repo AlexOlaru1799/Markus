@@ -1,0 +1,27 @@
+{
+  "operation": "registru_casa",
+  "table": "Casa",
+  "controller": "RegistruCasa",
+  "primary_key": "IdNota",
+  "route": "RegistruCasa",
+  "write_style": "classic",
+  "risk": "medium",
+  "actions": {
+    "get_data": ["RegistruCasa/GetData_Casa", "JurnalDeBanca/GetData_Casa"],
+    "create": ["RegistruCasa/Create_Casa"],
+    "delete": ["RegistruCasa/Delete_Casa"]
+  },
+  "usage": "Cash register day entries. Required: Data, Suma, Cont. Named saga_add_casa_entry.",
+  "columns": [
+    {"name": "Data", "aliases": ["data", "date"], "kind": "date", "description": "Entry date", "required_on_create": true},
+    {"name": "NrDoc", "aliases": ["nr_doc", "numar", "Numar", "chitanta"], "kind": "text", "description": "Document / receipt number"},
+    {"name": "Suma", "aliases": ["suma", "amount"], "kind": "number", "description": "Amount", "required_on_create": true},
+    {"name": "Cont", "aliases": ["cont", "account"], "kind": "combo", "selectModel": "Conturi", "description": "Cash account", "required": true},
+    {"name": "Cont_D", "aliases": ["cont_d"], "kind": "text", "description": "Debit account"},
+    {"name": "Cont_C", "aliases": ["cont_c"], "kind": "text", "description": "Credit account"},
+    {"name": "Explicatie", "aliases": ["explicatie", "notes"], "kind": "text", "description": "Explanation"},
+    {"name": "FacturaNumar", "aliases": ["factura_numar", "invoice_number"], "kind": "text", "description": "Related invoice number"},
+    {"name": "Moneda", "aliases": ["moneda", "currency"], "kind": "text", "description": "Currency"},
+    {"name": "IdNota", "kind": "text", "description": "Entry id", "expose": false}
+  ]
+}

@@ -33,6 +33,12 @@ datas.append(
         os.path.join("markus_mcp", "agent_skills"),
     )
 )
+datas.append(
+    (
+        os.path.join(SRC, "markus_mcp", "tools", "saga", "schemas"),
+        os.path.join("markus_mcp", "tools", "saga", "schemas"),
+    )
+)
 
 a = Analysis(
     [os.path.join(SRC, "markus_mcp", "__main__.py")],
@@ -56,6 +62,26 @@ a = Analysis(
         "markus_mcp.tools.saga.fx_invoice_pdf",
         "markus_mcp.tools.saga.import_date",
         "markus_mcp.tools.saga.wipe",
+        "markus_mcp.tools.saga.protocol",
+        "markus_mcp.tools.saga.schema",
+        "markus_mcp.tools.saga.registry",
+        "markus_mcp.tools.saga.grid",
+        "markus_mcp.tools.saga.context",
+        "markus_mcp.tools.saga.discovery",
+        "markus_mcp.tools.saga.documents",
+        "markus_mcp.tools.saga.documents.emit_incasari_xml",
+        "markus_mcp.tools.saga.lookups",
+        "markus_mcp.tools.saga.exports",
+        "markus_mcp.tools.saga.reads",
+        "markus_mcp.tools.saga.reports",
+        "markus_mcp.tools.saga.nomenclator",
+        "markus_mcp.tools.saga.invoices",
+        "markus_mcp.tools.saga.bank",
+        "markus_mcp.tools.saga.efactura",
+        "markus_mcp.tools.saga.validate_doc",
+        "markus_mcp.tools.saga.declarations",
+        "markus_mcp.tools.saga.ensure",
+        "markus_mcp.tools.saga.documents.emit_facturi_xml",
         "markus_mcp.tools.smartbill",
         "markus_mcp.tools.smartbill.credentials",
         "markus_mcp.tools.smartbill.status",

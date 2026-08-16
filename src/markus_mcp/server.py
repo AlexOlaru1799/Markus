@@ -18,6 +18,21 @@ from markus_mcp.tools.saga import iesiri as saga_iesiri
 from markus_mcp.tools.saga import jurnal_banca_import as saga_jurnal_banca_import
 from markus_mcp.tools.saga import wipe as saga_wipe
 from markus_mcp.tools.saga import session as saga_session
+from markus_mcp.tools.saga import context as saga_context_mod
+from markus_mcp.tools.saga import registry as saga_registry
+from markus_mcp.tools.saga import schema as saga_schema
+from markus_mcp.tools.saga import reads as saga_reads
+from markus_mcp.tools.saga import lookups as saga_lookups
+from markus_mcp.tools.saga import exports as saga_exports
+from markus_mcp.tools.saga import reports as saga_reports
+from markus_mcp.tools.saga import nomenclator as saga_nomenclator
+from markus_mcp.tools.saga import invoices as saga_invoices
+from markus_mcp.tools.saga import bank as saga_bank
+from markus_mcp.tools.saga import efactura as saga_efactura
+from markus_mcp.tools.saga import validate_doc as saga_validate_doc
+from markus_mcp.tools.saga import declarations as saga_declarations
+from markus_mcp.tools.saga.documents.parse_facturi_xml import parse_facturi_xml
+from markus_mcp.tools.saga.documents.parse_incasari_xml import parse_incasari_xml
 from markus_mcp.tools import smartbill as smartbill_tools
 
 
@@ -49,7 +64,29 @@ mcp = MCPServer(
         "(for example 'yes, send it'). Optional to_phone_number is an escape hatch when "
         "the user provides a number with country code. "
         "SAGA WEB: credentials are read from private.data (never ask the user to paste "
-        "passwords into chat). Call saga_login first. Prefer the 3-month browser trust: "
+        "passwords into chat). Call saga_login first. After login, saga_context shows firm, "
+        "working interval, and closed-period status. saga_list_screens lists onboarded grids; "
+        "saga_describe_screen(screen) dumps catalog columns/aliases/lookups (clienti, iesiri_valuta, …). "
+        "Generic reads: saga_list_rows / saga_get_row / saga_lookup / saga_export_grid on onboarded screens. "
+        "Master data: saga_*_supplier (Furnizori, not Clienti), saga_*_item (Articole), "
+        "saga_chart_of_accounts (read). "
+        "Named document writes: saga_add_iesire (RON sales; FX routes to saga_add_iesiri_valuta), "
+        "saga_add_intrare (purchases; FX uses IntrariValuta; bulk NIR still saga_import_xml), "
+        "saga_post_bank_entries (BankBundle or I_/P_ XML via Import extrase; FX Moneda uses Jurnal de bancă valută), "
+        "saga_add_casa_entry (Registru de casă; FX Valuta uses Registru de casă valută + GetLastValuta). "
+        "saga_validate_document locks/unlocks a journal row (ExecutaValidare / Devalidare); create does not lock. "
+        "Reports: saga_run_report(name, filters) — name=period_pack runs balanță + jurnale; "
+        "files save under ~/.markus/data/saga/reports/ only when magic bytes are PDF/XLS. "
+        "Stock/commercial grids (imobilizari, transferuri, bonuri, productie, inventariere, …) "
+        "are readable via saga_list_rows; there is no generic write. "
+        "e-Factura: saga_efactura_list / saga_efactura_download are read-only. "
+        "saga_efactura_submit / saga_efactura_cancel / saga_close_month / saga_submit_declaration "
+        "are human-gated (confirm_write + confirm_phrase); never call them unattended. "
+        "saga_generate_declaration may download a local D406/D205/Intrastat PDF. "
+        "saga_set_interval changes the toolbar period after confirm_write. saga_about is Despre. "
+        "Writes go through named tools only — there is no generic create-row tool. "
+        "Optional ingest: saga_parse_facturi_xml / saga_parse_incasari_xml return canonical "
+        "documents without writing. Prefer the 3-month browser trust: "
         "if needs_browser_authorization=true, tell the user to click 'Autorizează browser' "
         "in the SAGA email (not 'Autentificare fără autorizare'), then saga_login again. "
         "Only use saga_login(allow_otp_without_authorization=true) when the user explicitly "
@@ -61,8 +98,14 @@ mcp = MCPServer(
         "saga_add_iesiri_valuta (header + lines). "
         "Use saga_partner_fields / saga_iesiri_valuta_fields to see writable columns. For create/update, "
         "pass only fields the user specified — never invent optional values. Mutations "
-        "(create/update/remove/add_iesiri_valuta/import_xml/import_iesiri_xml/import_incasari_xml/wipe_data) require confirm_write=false preview first, then "
-        "confirm_write=true after explicit user OK. "
+        "(create/update/remove/add_iesiri_valuta/add_iesire/add_intrare/post_bank_entries/add_casa_entry/"
+        "import_xml/import_iesiri_xml/import_incasari_xml/wipe_data/create_supplier/update_supplier/"
+        "remove_supplier/create_item/update_item/remove_item/set_interval/close_month/"
+        "efactura_submit/efactura_cancel/validate_document/submit_declaration) require confirm_write=false preview first, then "
+        "confirm_write=true after explicit user OK. close_month also needs confirm_phrase='INCHIDE LUNA'; "
+        "efactura_submit needs 'TRIMITE EFACTURA'; efactura_cancel needs 'ANULEAZA EFACTURA'; "
+        "saga_submit_declaration needs 'TRIMITE DECLARATIE'. "
+        "Invoice writes resolve Clienți/Furnizori on confirm and abort if missing (do not auto-create). "
         "PDF FX imports: agent reads the PDF, ensures partner exists, then saga_add_iesiri_valuta; "
         "WhatsApp notify per the import-fx-invoice-to-saga skill. "
         "XML Import date: saga_import_xml with xml_path to a SAGA Facturi XML "
@@ -240,6 +283,305 @@ def saga_reset_session(delete_profile: bool = False) -> dict[str, Any]:
 
 
 @mcp.tool(
+    title="SAGA context",
+    description=(
+        "Read the connected SAGA firm, user, working interval, rights probe, and "
+        "closed-period status from Home/LoadOperationalData."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def saga_context() -> dict[str, Any]:
+    return saga_context_mod.get_context()
+
+
+@mcp.tool(
+    title="SAGA about",
+    description="Read SAGA WEB Despre / version and firm identity from LoadOperationalData.",
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def saga_about() -> dict[str, Any]:
+    return saga_context_mod.about()
+
+
+@mcp.tool(
+    title="SAGA set working interval",
+    description=(
+        "Change the SAGA toolbar working interval. Preview with confirm_write=false, "
+        "then true after explicit user OK."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
+)
+def saga_set_interval(
+    interval_start: str,
+    interval_end: str,
+    confirm_write: bool = False,
+) -> dict[str, Any]:
+    return saga_context_mod.set_interval(interval_start, interval_end, confirm_write=confirm_write)
+
+
+@mcp.tool(
+    title="SAGA close month",
+    description=(
+        "HUMAN-GATED month close. Preview first. Execute only after explicit user OK with "
+        "confirm_write=true and confirm_phrase='INCHIDE LUNA'. Never call unattended."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, openWorldHint=True),
+)
+def saga_close_month(confirm_write: bool = False, confirm_phrase: str = "") -> dict[str, Any]:
+    return saga_context_mod.close_month(confirm_write=confirm_write, confirm_phrase=confirm_phrase)
+
+
+@mcp.tool(
+    title="SAGA generate declaration",
+    description=(
+        "Download a local D406/D205/Intrastat PDF when this WEB build exposes a generator. "
+        "Empty name lists declarations. Does not submit to ANAF — use saga_submit_declaration."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def saga_generate_declaration(
+    name: str = "",
+    filters: dict[str, Any] | None = None,
+    format: str = "pdf",
+) -> dict[str, Any]:
+    return saga_declarations.generate_declaration(name, filters=filters, format=format)
+
+
+@mcp.tool(
+    title="SAGA submit declaration",
+    description=(
+        "HUMAN-GATED ANAF/SPV submit for D406/D205/Intrastat/e-Transport/REVISAL. "
+        "Preview first. Execute only after explicit user OK with confirm_write=true and "
+        "confirm_phrase='TRIMITE DECLARATIE'. Never call unattended."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, openWorldHint=True),
+)
+def saga_submit_declaration(
+    name: str,
+    confirm_write: bool = False,
+    confirm_phrase: str = "",
+    filters: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    return saga_declarations.submit_declaration(
+        name, confirm_write=confirm_write, confirm_phrase=confirm_phrase, filters=filters
+    )
+
+
+@mcp.tool(
+    title="SAGA e-Factura list",
+    description=(
+        "List e-Factura rows (issued/received as exposed by this WEB build). Read-only. "
+        "Does not submit or import. Inbound import may still be desktop-only."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def saga_efactura_list(query: str | None = None, page: int = 1, page_size: int = 50) -> dict[str, Any]:
+    return saga_efactura.list_invoices(query=query, page=page, page_size=page_size)
+
+
+@mcp.tool(
+    title="SAGA e-Factura download",
+    description="Download one e-Factura XML/PDF by Id / Index / NrDoc. Does not submit to ANAF.",
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def saga_efactura_download(invoice_id: str) -> dict[str, Any]:
+    return saga_efactura.download_invoice(invoice_id)
+
+
+@mcp.tool(
+    title="SAGA e-Factura token status",
+    description="Check whether an SPV token is present. Does not return the token or save it.",
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def saga_efactura_token_status() -> dict[str, Any]:
+    return saga_efactura.token_status()
+
+
+@mcp.tool(
+    title="SAGA e-Factura submit",
+    description=(
+        "HUMAN-GATED ANAF/SPV submit. Preview first. Execute only after explicit user OK with "
+        "confirm_write=true and confirm_phrase='TRIMITE EFACTURA'. Never call unattended."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, openWorldHint=True),
+)
+def saga_efactura_submit(
+    invoice_id: str, confirm_write: bool = False, confirm_phrase: str = ""
+) -> dict[str, Any]:
+    return saga_efactura.submit_invoice(
+        invoice_id, confirm_write=confirm_write, confirm_phrase=confirm_phrase
+    )
+
+
+@mcp.tool(
+    title="SAGA e-Factura cancel",
+    description=(
+        "HUMAN-GATED ANAF/SPV cancel. Preview first. Execute only after explicit user OK with "
+        "confirm_write=true and confirm_phrase='ANULEAZA EFACTURA'. Never call unattended."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, openWorldHint=True),
+)
+def saga_efactura_cancel(
+    invoice_id: str, confirm_write: bool = False, confirm_phrase: str = ""
+) -> dict[str, Any]:
+    return saga_efactura.cancel_invoice(
+        invoice_id, confirm_write=confirm_write, confirm_phrase=confirm_phrase
+    )
+
+
+@mcp.tool(
+    title="SAGA list screens",
+    description=(
+        "List onboarded SAGA grids in the schema catalog (operation id, route, named tools). "
+        "Writes still use named tools — there is no generic create-row MCP tool."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False),
+)
+def saga_list_screens() -> dict[str, Any]:
+    return saga_registry.list_screens()
+
+
+@mcp.tool(
+    title="SAGA describe screen",
+    description=(
+        "Dump the committed schema catalog for a SAGA screen (columns, aliases, required). "
+        "Pass an operation id such as clienti, iesiri_valuta, iesiri, jurnal_banca."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False),
+)
+def saga_describe_screen(screen: str) -> dict[str, Any]:
+    return saga_schema.describe_screen(screen)
+
+
+@mcp.tool(
+    title="SAGA list rows",
+    description=(
+        "List rows on an onboarded SAGA grid (clienti, furnizori, iesiri, iesiri_valuta, "
+        "intrari, jurnal_banca, …). Optional query, paging, and master_id for detail grids."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def saga_list_rows(
+    screen: str,
+    page: int = 1,
+    page_size: int = 50,
+    query: str | None = None,
+    master_id: str | None = None,
+) -> dict[str, Any]:
+    return saga_reads.list_rows(
+        screen,
+        page=page,
+        page_size=page_size,
+        query=query,
+        master_id=master_id,
+    )
+
+
+@mcp.tool(
+    title="SAGA get row",
+    description=(
+        "Fetch one row by primary key / code / document number on an onboarded SAGA grid. "
+        "Includes detail lines when the screen has a detail table."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def saga_get_row(screen: str, pk: str, with_details: bool = True) -> dict[str, Any]:
+    return saga_reads.get_row(screen, pk, with_details=with_details)
+
+
+@mcp.tool(
+    title="SAGA lookup",
+    description=(
+        "Combo lookup for a catalog field or selectModel (Tara, Client, Cont, Valuta, …). "
+        "Tries the screen controller then Home (Home first for Conturi/Proiecte/Tari/…)."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def saga_lookup(screen: str, field: str, query: str = "", limit: int = 50) -> dict[str, Any]:
+    return saga_lookups.lookup(screen, field, query=query, limit=limit)
+
+
+@mcp.tool(
+    title="SAGA export grid",
+    description=(
+        "Export an onboarded SAGA grid via Home/ExportDate. Saves a real xlsx/xls under "
+        "~/.markus/data/saga/exports/. HTML error pages are not saved as Excel."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def saga_export_grid(screen: str, query: str | None = None, tip: str = "xlsx") -> dict[str, Any]:
+    return saga_exports.export_grid(screen, query=query, tip=tip)
+
+
+@mcp.tool(
+    title="SAGA run report",
+    description=(
+        "Download a SAGA Situatii report (PDF/XLS). Pass name=balanta|jurnal_cumparari|"
+        "jurnal_vanzari|fise_conturi|period_pack|… and optional filters (from/to dates, Cont). "
+        "Dates default to the working interval from saga_context. Empty name lists reports. "
+        "Saves under ~/.markus/data/saga/reports/ only when magic bytes are PDF/XLS. "
+        "Bilanț is local PDF only — do not ANAF-submit from this tool."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def saga_run_report(
+    name: str = "",
+    filters: dict[str, Any] | None = None,
+    format: str = "pdf",
+    accounts: str | None = None,
+) -> dict[str, Any]:
+    return saga_reports.run_report(name, filters=filters, format=format, accounts=accounts)
+
+
+@mcp.tool(
+    title="SAGA parse Facturi XML",
+    description=(
+        "Parse a SAGA Facturi XML into canonical sales documents (header + lines mapped "
+        "through the schema catalog). Does not write to SAGA."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False),
+)
+def saga_parse_facturi_xml(xml_path: str) -> dict[str, Any]:
+    from pathlib import Path
+    from xml.etree import ElementTree as ET
+
+    source = Path(str(xml_path or "")).expanduser()
+    if not str(xml_path or "").strip():
+        return {"ok": False, "error": "xml_path is required."}
+    if not source.is_file():
+        return {"ok": False, "error": f"XML file not found: {source}"}
+    try:
+        parsed = parse_facturi_xml(source)
+    except ET.ParseError as exc:
+        return {"ok": False, "error": f"Invalid XML: {exc}", "path": str(source)}
+    return {"ok": True, **parsed}
+
+
+@mcp.tool(
+    title="SAGA parse încasări XML",
+    description=(
+        "Parse a SAGA Încasări or Plăți XML into a canonical bank bundle mapped through "
+        "the schema catalog. Does not write to SAGA."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False),
+)
+def saga_parse_incasari_xml(xml_path: str) -> dict[str, Any]:
+    from pathlib import Path
+    from xml.etree import ElementTree as ET
+
+    source = Path(str(xml_path or "")).expanduser()
+    if not str(xml_path or "").strip():
+        return {"ok": False, "error": "xml_path is required."}
+    if not source.is_file():
+        return {"ok": False, "error": f"XML file not found: {source}"}
+    try:
+        parsed = parse_incasari_xml(source)
+    except ET.ParseError as exc:
+        return {"ok": False, "error": f"Invalid XML: {exc}", "path": str(source)}
+    return {"ok": True, **parsed}
+
+
+@mcp.tool(
     title="SAGA list partners",
     description="List SAGA partners/clients with optional text filter and pagination.",
     annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
@@ -319,6 +661,255 @@ def saga_update_partner(
 )
 def saga_remove_partner(partner_id: str, confirm_write: bool = False) -> dict[str, Any]:
     return saga_partners.delete_partner(partner_id, confirm_write=confirm_write)
+
+
+@mcp.tool(
+    title="SAGA list suppliers",
+    description="List SAGA Furnizori (suppliers). Not Clienți — use saga_list_partners for clients.",
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def saga_list_suppliers(page: int = 1, page_size: int = 50, query: str | None = None) -> dict[str, Any]:
+    return saga_nomenclator.list_records("furnizori", noun="supplier", page=page, page_size=page_size, query=query)
+
+
+@mcp.tool(
+    title="SAGA search suppliers",
+    description="Search SAGA Furnizori by name, code, or CUI.",
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def saga_search_suppliers(query: str, limit: int = 50) -> dict[str, Any]:
+    return saga_nomenclator.list_records("furnizori", noun="supplier", page=1, page_size=limit, query=query)
+
+
+@mcp.tool(
+    title="SAGA get supplier",
+    description="Fetch one SAGA Furnizor by exact id/cod/CUI/name.",
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def saga_get_supplier(supplier_id: str) -> dict[str, Any]:
+    return saga_nomenclator.get_record("furnizori", supplier_id, noun="supplier")
+
+
+@mcp.tool(
+    title="SAGA supplier fields",
+    description="List writable Furnizori fields/aliases. Pass only user-specified fields on create/update.",
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False),
+)
+def saga_supplier_fields() -> dict[str, Any]:
+    return saga_nomenclator.field_catalog("furnizori")
+
+
+@mcp.tool(
+    title="SAGA create supplier",
+    description="Create a Furnizor. Preview with confirm_write=false, then true after explicit user OK.",
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
+)
+def saga_create_supplier(fields: dict[str, Any], confirm_write: bool = False) -> dict[str, Any]:
+    return saga_nomenclator.create_record(
+        "furnizori", fields, noun="supplier", confirm_write=confirm_write, action="create_supplier"
+    )
+
+
+@mcp.tool(
+    title="SAGA update supplier",
+    description="Update only user-specified Furnizori fields. Preview then confirm_write=true.",
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
+)
+def saga_update_supplier(
+    supplier_id: str, fields: dict[str, Any], confirm_write: bool = False
+) -> dict[str, Any]:
+    return saga_nomenclator.update_record(
+        "furnizori",
+        supplier_id,
+        fields,
+        noun="supplier",
+        confirm_write=confirm_write,
+        action="update_supplier",
+    )
+
+
+@mcp.tool(
+    title="SAGA remove supplier",
+    description="Remove a Furnizor by exact id. Preview then confirm_write=true.",
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, openWorldHint=True),
+)
+def saga_remove_supplier(supplier_id: str, confirm_write: bool = False) -> dict[str, Any]:
+    return saga_nomenclator.remove_record(
+        "furnizori", supplier_id, noun="supplier", confirm_write=confirm_write, action="remove_supplier"
+    )
+
+
+@mcp.tool(
+    title="SAGA list items",
+    description="List SAGA Articole (articles/services).",
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def saga_list_items(page: int = 1, page_size: int = 50, query: str | None = None) -> dict[str, Any]:
+    return saga_nomenclator.list_records("articole", noun="item", page=page, page_size=page_size, query=query)
+
+
+@mcp.tool(
+    title="SAGA get item",
+    description="Fetch one Articol by code or name.",
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def saga_get_item(item_id: str) -> dict[str, Any]:
+    return saga_nomenclator.get_record("articole", item_id, noun="item")
+
+
+@mcp.tool(
+    title="SAGA item fields",
+    description="List writable Articole fields/aliases. Do not invent TVA, pret, or SGR.",
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False),
+)
+def saga_item_fields() -> dict[str, Any]:
+    return saga_nomenclator.field_catalog("articole")
+
+
+@mcp.tool(
+    title="SAGA create item",
+    description="Create an Articol. Preview with confirm_write=false, then true after explicit user OK.",
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
+)
+def saga_create_item(fields: dict[str, Any], confirm_write: bool = False) -> dict[str, Any]:
+    return saga_nomenclator.create_record(
+        "articole", fields, noun="item", confirm_write=confirm_write, action="create_item"
+    )
+
+
+@mcp.tool(
+    title="SAGA update item",
+    description="Update only user-specified Articole fields. Preview then confirm_write=true.",
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
+)
+def saga_update_item(item_id: str, fields: dict[str, Any], confirm_write: bool = False) -> dict[str, Any]:
+    return saga_nomenclator.update_record(
+        "articole", item_id, fields, noun="item", confirm_write=confirm_write, action="update_item"
+    )
+
+
+@mcp.tool(
+    title="SAGA remove item",
+    description="Remove an Articol by exact code. Preview then confirm_write=true.",
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, openWorldHint=True),
+)
+def saga_remove_item(item_id: str, confirm_write: bool = False) -> dict[str, Any]:
+    return saga_nomenclator.remove_record(
+        "articole", item_id, noun="item", confirm_write=confirm_write, action="remove_item"
+    )
+
+
+@mcp.tool(
+    title="SAGA chart of accounts",
+    description="List Plan de conturi (read-only). Optional query filter.",
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
+)
+def saga_chart_of_accounts(page: int = 1, page_size: int = 100, query: str | None = None) -> dict[str, Any]:
+    result = saga_nomenclator.list_records(
+        "plan_conturi", noun="account", page=page, page_size=page_size, query=query
+    )
+    if result.get("ok"):
+        result["accounts"] = result.get("rows") or result.get("accounts") or []
+    return result
+
+
+@mcp.tool(
+    title="SAGA add Ieșire",
+    description=(
+        "Create a RON sales invoice (Ieșiri) from header + lines (chat/PDF/XML mapped fields). "
+        "If Valuta is not RON, routes to saga_add_iesiri_valuta. Each line needs Cont. "
+        "Preview with confirm_write=false, then true after explicit user OK."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
+)
+def saga_add_iesire(
+    header: dict[str, Any] | None = None,
+    lines: list[dict[str, Any]] | None = None,
+    document: dict[str, Any] | None = None,
+    confirm_write: bool = False,
+) -> dict[str, Any]:
+    return saga_invoices.add_iesire(header, lines, document, confirm_write=confirm_write)
+
+
+@mcp.tool(
+    title="SAGA add Intrare",
+    description=(
+        "Create a purchase invoice (Intrări). Required: Furnizor or Cod, Data, lines with Cont. "
+        "Non-RON Valuta uses Intrări valută (Curs auto-filled). Bulk NIR still uses saga_import_xml. "
+        "Preview with confirm_write=false, then true after explicit user OK."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
+)
+def saga_add_intrare(
+    header: dict[str, Any] | None = None,
+    lines: list[dict[str, Any]] | None = None,
+    document: dict[str, Any] | None = None,
+    confirm_write: bool = False,
+) -> dict[str, Any]:
+    return saga_invoices.add_intrare(header, lines, document, confirm_write=confirm_write)
+
+
+@mcp.tool(
+    title="SAGA post bank entries",
+    description=(
+        "Post a bank bundle (încasări/plăți) on Jurnal de Bancă via Import extrase + Asociere. "
+        "Pass a parsed document or entries[]. Chat entries are emitted to I_/P_ XML then uploaded. "
+        "Non-RON Moneda uses the same Import extrase workflow on Jurnal de bancă valută. "
+        "Preview with confirm_write=false, then true after explicit user OK."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
+)
+def saga_post_bank_entries(
+    document: dict[str, Any] | None = None,
+    entries: list[dict[str, Any]] | None = None,
+    kind: str = "bank_receipts",
+    account: str = "",
+    partner: str = "",
+    asociere: bool = True,
+    confirm_write: bool = False,
+) -> dict[str, Any]:
+    return saga_bank.post_bank_entries(
+        document,
+        entries=entries,
+        kind=kind,
+        account=account,
+        partner=partner,
+        asociere=asociere,
+        confirm_write=confirm_write,
+    )
+
+
+@mcp.tool(
+    title="SAGA add casă entry",
+    description=(
+        "Add a Registru de casă entry. Required: Cont, Suma; also pass Data. "
+        "Non-RON Valuta/Moneda posts on Registru de casă valută (Curs from GetLastValuta). "
+        "Preview with confirm_write=false, then true after explicit user OK."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
+)
+def saga_add_casa_entry(fields: dict[str, Any], confirm_write: bool = False) -> dict[str, Any]:
+    return saga_bank.add_casa_entry(fields, confirm_write=confirm_write)
+
+
+@mcp.tool(
+    title="SAGA validate document",
+    description=(
+        "Lock (ExecutaValidare) or unlock (Devalidare) a journal document. Creating a row "
+        "does not lock it. Pass screen=iesiri|intrari|iesiri_valuta|… and pk. "
+        "Preview with confirm_write=false, then true after explicit user OK."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
+)
+def saga_validate_document(
+    screen: str,
+    pk: str,
+    devalidate: bool = False,
+    confirm_write: bool = False,
+) -> dict[str, Any]:
+    return saga_validate_doc.validate_document(
+        screen, pk, devalidate=devalidate, confirm_write=confirm_write
+    )
 
 
 @mcp.tool(

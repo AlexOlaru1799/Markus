@@ -1,0 +1,98 @@
+{
+  "operation": "contracte",
+  "table": "Contracte",
+  "controller": "Contracte",
+  "primary_key": "ID_Contract",
+  "route": "Contracte",
+  "write_style": "classic",
+  "risk": "medium",
+  "actions": {
+    "get_data": [
+      "Contracte/GetData_Contracte"
+    ],
+    "next_index": [
+      "Contracte/GetNrContracte"
+    ]
+  },
+  "usage": "Contracts. GenerareFacturi stays confirm_write when a named tool exists.",
+  "notes": [
+    "Wave 6 E. Best-effort columns until a live tableModel probe. No employee write tool."
+  ],
+  "columns": [
+    {
+      "name": "NrDoc",
+      "aliases": [
+        "nr_doc",
+        "nr",
+        "number"
+      ],
+      "kind": "text",
+      "description": "Document number"
+    },
+    {
+      "name": "Data",
+      "aliases": [
+        "data",
+        "date"
+      ],
+      "kind": "date",
+      "description": "Document date"
+    },
+    {
+      "name": "Cod",
+      "aliases": [
+        "cod"
+      ],
+      "kind": "text",
+      "description": "Partner/item code"
+    },
+    {
+      "name": "Denumire",
+      "aliases": [
+        "denumire",
+        "name",
+        "explicatie"
+      ],
+      "kind": "text",
+      "description": "Description"
+    },
+    {
+      "name": "Valoare",
+      "aliases": [
+        "valoare",
+        "suma",
+        "amount"
+      ],
+      "kind": "number",
+      "description": "Amount"
+    },
+    {
+      "name": "Validat",
+      "kind": "text",
+      "description": "Validated flag",
+      "expose": false
+    },
+    {
+      "name": "Id",
+      "kind": "text",
+      "description": "Row id",
+      "expose": false
+    },
+    {
+      "name": "Client",
+      "aliases": [
+        "client",
+        "customer"
+      ],
+      "kind": "combo",
+      "selectModel": "Clienti",
+      "description": "Client"
+    },
+    {
+      "name": "ID_Contract",
+      "kind": "text",
+      "description": "Internal id",
+      "expose": false
+    }
+  ]
+}

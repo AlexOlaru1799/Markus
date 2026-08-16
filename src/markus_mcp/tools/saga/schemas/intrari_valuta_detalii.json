@@ -1,0 +1,31 @@
+{
+  "operation": "intrari_valuta_detalii",
+  "table": "IntrariValutaDetalii",
+  "controller": "IntrariValuta",
+  "primary_key": "ID_IntrareDet",
+  "route": "IntrariValuta",
+  "write_style": "classic",
+  "risk": "medium",
+  "is_detail": true,
+  "master_table": "IntrariValuta",
+  "selection_key": "ID_Intrare",
+  "actions": {
+    "get_data": ["IntrariValuta/GetData_IntrariValutaDetalii", "IntrariValutaDetalii/GetData_IntrariValutaDetalii"],
+    "create": ["IntrariValuta/Create_IntrariValutaDetalii", "IntrariValutaDetalii/Create_IntrariValutaDetalii"]
+  },
+  "usage": "Required per line: Cont, and amounts (Cantitate + PretUnitarValuta, or explicit totals).",
+  "columns": [
+    {"name": "Denumire", "aliases": ["denumire", "descriere", "Descriere", "item_name"], "kind": "text", "description": "Article/service name"},
+    {"name": "Cantitate", "aliases": ["cantitate", "qty", "quantity"], "kind": "number", "description": "Quantity"},
+    {"name": "PretUnitarValuta", "aliases": ["pret_unitar_valuta", "pret", "Pret", "price_fx", "unit_price_fx"], "kind": "number", "description": "Unit price FX"},
+    {"name": "PretUnitar", "aliases": ["pret_unitar", "unit_price_ron"], "kind": "number", "description": "Unit price RON"},
+    {"name": "TVA_ART", "aliases": ["tva_art", "tva_proc", "TVAProc", "vat_rate"], "kind": "number", "description": "VAT rate %"},
+    {"name": "ValoareValuta", "aliases": ["valoare_valuta"], "kind": "number", "description": "Line amount FX"},
+    {"name": "Cont", "aliases": ["cont", "account"], "kind": "combo", "selectModel": "Conturi", "description": "Expense/stock account", "required": true},
+    {"name": "Gestiune", "aliases": ["gestiune", "warehouse"], "kind": "combo", "selectModel": "Gestiuni", "description": "Warehouse"},
+    {"name": "Cod", "aliases": ["cod", "sku"], "kind": "text", "description": "Article code"},
+    {"name": "ID_Intrare", "kind": "text", "description": "Parent invoice id", "expose": false},
+    {"name": "ID_IntrareDet", "kind": "text", "description": "Line id", "expose": false},
+    {"name": "Id", "kind": "text", "description": "Classic RowData Id", "expose": false}
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "operation": "registru_casa_valuta",
+  "table": "Casa",
+  "controller": "RegistruCasaValuta",
+  "primary_key": "IdNota",
+  "route": "RegistruCasaValuta",
+  "write_style": "classic",
+  "risk": "medium",
+  "actions": {
+    "get_data": [
+      "RegistruCasaValuta/GetData_Casa",
+      "RegistruCasa/GetData_CasaValuta",
+      "RegistruCasa/GetData_Casa"
+    ],
+    "create": ["RegistruCasaValuta/Create_Casa", "RegistruCasa/Create_Casa"]
+  },
+  "usage": "FX cash register. saga_add_casa_entry routes here when Moneda/Valuta is not RON. Curs from GetLastValuta when omitted.",
+  "columns": [
+    {"name": "Data", "aliases": ["data", "date"], "kind": "date", "description": "Entry date", "required_on_create": true},
+    {"name": "NrDoc", "aliases": ["nr_doc", "numar", "chitanta"], "kind": "text", "description": "Receipt number"},
+    {"name": "Suma", "aliases": ["suma", "amount"], "kind": "number", "description": "Amount RON", "required_on_create": true},
+    {"name": "SumaValuta", "aliases": ["suma_valuta", "amount_fx"], "kind": "number", "description": "Amount FX"},
+    {"name": "Valuta", "aliases": ["valuta", "currency", "moneda"], "kind": "combo", "selectModel": "Valute", "description": "Currency"},
+    {"name": "Curs", "aliases": ["curs", "fx_rate"], "kind": "number", "description": "FX rate"},
+    {"name": "Cont", "aliases": ["cont", "account"], "kind": "combo", "selectModel": "Conturi", "description": "Cash account", "required": true},
+    {"name": "Explicatie", "aliases": ["explicatie", "notes"], "kind": "text", "description": "Explanation"},
+    {"name": "FacturaNumar", "aliases": ["factura_numar"], "kind": "text", "description": "Related invoice number"},
+    {"name": "IdNota", "kind": "text", "description": "Entry id", "expose": false}
+  ]
+}

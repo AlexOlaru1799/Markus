@@ -1,0 +1,25 @@
+{
+  "operation": "deconturi_valuta",
+  "table": "DeconturiValuta",
+  "controller": "DeconturiValuta",
+  "primary_key": "ID_Decont",
+  "route": "DeconturiValuta",
+  "write_style": "classic",
+  "risk": "medium",
+  "actions": {
+    "get_data": ["DeconturiValuta/GetData_Deconturi", "Deconturi/GetData_DeconturiValuta"]
+  },
+  "usage": "FX settlements. Read-only until a job exists.",
+  "notes": ["Best-effort until a live tableModel probe. No employee write tool."],
+  "columns": [
+    {"name": "NrDoc", "aliases": ["nr_doc", "nr"], "kind": "text", "description": "Document number"},
+    {"name": "Data", "aliases": ["data", "date"], "kind": "date", "description": "Document date"},
+    {"name": "Valuta", "aliases": ["valuta", "currency"], "kind": "combo", "selectModel": "Valute", "description": "Currency"},
+    {"name": "Curs", "aliases": ["curs", "fx_rate"], "kind": "number", "description": "FX rate"},
+    {"name": "Suma", "aliases": ["suma", "amount"], "kind": "number", "description": "Amount RON"},
+    {"name": "SumaValuta", "aliases": ["suma_valuta", "amount_fx"], "kind": "number", "description": "Amount FX"},
+    {"name": "Denumire", "aliases": ["denumire", "name"], "kind": "text", "description": "Description"},
+    {"name": "ID_Decont", "kind": "text", "description": "Internal id", "expose": false},
+    {"name": "Id", "kind": "text", "description": "Row id", "expose": false}
+  ]
+}

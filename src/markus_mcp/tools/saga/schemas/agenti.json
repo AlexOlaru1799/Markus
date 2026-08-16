@@ -1,0 +1,37 @@
+{
+  "operation": "agenti",
+  "table": "Agenti",
+  "controller": "Agenti",
+  "primary_key": "Cod",
+  "route": "Agenti",
+  "write_style": "ex",
+  "risk": "low",
+  "actions": {
+    "get_data": [
+      "Agenti/GetData_Agenti"
+    ]
+  },
+  "usage": "Agents. Read-only until a job needs named writes.",
+  "notes": [
+    "Wave 6 E. Best-effort columns until a live tableModel probe. No employee write tool."
+  ],
+  "columns": [
+    {
+      "name": "Cod",
+      "aliases": [
+        "cod"
+      ],
+      "kind": "text",
+      "description": "Code"
+    },
+    {
+      "name": "Denumire",
+      "aliases": [
+        "denumire",
+        "name"
+      ],
+      "kind": "text",
+      "description": "Name"
+    }
+  ]
+}

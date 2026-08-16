@@ -1,0 +1,33 @@
+{
+  "operation": "iesiri",
+  "table": "Iesiri",
+  "controller": "Iesiri",
+  "primary_key": "ID_Iesire",
+  "route": "Iesiri",
+  "write_style": "classic",
+  "risk": "medium",
+  "detail_operation": "iesiri_detalii",
+  "actions": {
+    "get_data": ["Iesiri/GetData_Iesiri"],
+    "create": ["Iesiri/Create_Iesiri"],
+    "delete": ["Iesiri/Delete_Iesiri"]
+  },
+  "usage": "RON sales invoices. Required: Client or Cod, Data. saga_add_iesire is the format-agnostic write; saga_import_iesiri_xml parses then posts the same path.",
+  "columns": [
+    {"name": "NrDoc", "aliases": ["nr_doc", "nr", "number", "invoice_number", "FacturaNumar"], "kind": "text", "description": "Document number"},
+    {"name": "Data", "aliases": ["data", "date", "invoice_date", "FacturaData"], "kind": "date", "description": "Document date"},
+    {"name": "Scadent", "aliases": ["scadent", "due_date", "FacturaScadenta"], "kind": "date", "description": "Due date"},
+    {"name": "Tip", "aliases": ["tip"], "kind": "combo", "selectModel": "Tip_Iesiri", "description": "Invoice type"},
+    {"name": "Cod", "aliases": ["cod", "cod_client", "ClientCod"], "kind": "text", "description": "Client code"},
+    {"name": "Client", "aliases": ["client", "customer", "ClientNume"], "kind": "combo", "selectModel": "Clienti", "description": "Client name"},
+    {"name": "TVAI", "aliases": ["tvai"], "kind": "text", "description": "VAT on receipt flag"},
+    {"name": "ID_Iesire", "kind": "text", "description": "Internal invoice id", "expose": false},
+    {"name": "Id", "kind": "text", "description": "Classic RowData Id", "expose": false},
+    {"name": "Validat", "kind": "text", "description": "Validated flag", "expose": false},
+    {"name": "Valoare", "kind": "number", "description": "Header amount", "expose": false},
+    {"name": "TVA", "kind": "number", "description": "Header VAT", "expose": false},
+    {"name": "Total", "kind": "number", "description": "Header total", "expose": false},
+    {"name": "Neachitat", "kind": "number", "description": "Unpaid", "expose": false},
+    {"name": "Adaos", "kind": "number", "description": "Markup", "expose": false}
+  ]
+}

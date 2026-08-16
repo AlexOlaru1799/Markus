@@ -438,7 +438,7 @@ def _llm_extract(text: str) -> dict[str, Any]:
 
     header: dict[str, str] = {}
     if isinstance(header_raw, dict):
-        mapped, unknown = fx._map_fields(header_raw, fx.HEADER_FIELD_CATALOG)
+        mapped, unknown = fx._map_fields(header_raw, "iesiri_valuta")
         header = mapped
         if unknown:
             warnings.append(f"LLM unknown header fields ignored: {', '.join(unknown)}")
@@ -456,7 +456,7 @@ def _llm_extract(text: str) -> dict[str, Any]:
         for idx, line in enumerate(lines_raw):
             if not isinstance(line, dict):
                 continue
-            mapped, unknown = fx._map_fields(line, fx.LINE_FIELD_CATALOG)
+            mapped, unknown = fx._map_fields(line, "iesiri_valuta_detalii")
             if unknown:
                 warnings.append(f"LLM unknown line[{idx}] fields ignored: {', '.join(unknown)}")
             for key in ("Cantitate", "PretUnitarValuta", "TVA_ART", "ValoareValuta"):
@@ -489,7 +489,7 @@ def _apply_defaults(
 
     header_defaults, unknown_h = fx._map_fields(
         {k: v for k, v in defaults.items() if k.casefold() not in {"cont", "um", "tva_art", "tva", "cod_art"}},
-        fx.HEADER_FIELD_CATALOG,
+        "iesiri_valuta",
     )
     for key, value in header_defaults.items():
         if key not in header_out or not header_out[key]:
@@ -541,7 +541,7 @@ def parse_fx_invoice_pdf(
     use_llm: bool | None = None,
 ) -> dict[str, Any]:
     """
-    Read a PDF invoice and map it to saga_create_fx_invoice header/lines.
+    Read a PDF invoice and map it to saga_add_iesiri_valuta header/lines.
 
     defaults: optional values applied when PDF omits them (especially Cont, Cod, Client, TVA_ART, UM).
     use_llm: True/False to force; default auto when MARKUS_LLM_API_KEY/OPENAI_API_KEY is set.
@@ -622,7 +622,7 @@ def parse_fx_invoice_pdf(
         "ready_for_preview": len(missing) == 0,
         "warnings": warnings,
         "next_step": (
-            "Call saga_create_fx_invoice(**create_args) with confirm_write=false, show the user the "
+            "Call saga_add_iesiri_valuta(**create_args) with confirm_write=false, show the user the "
             "preview, then confirm_write=true after explicit OK."
             if not missing
             else "Fill missing_required (especially Cont/Cod/Client) via defaults or overrides, then create."

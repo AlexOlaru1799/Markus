@@ -14,6 +14,12 @@ CLIENT_SKILLS = (
     "import-incasari-xml-to-saga",
     "import-fx-invoice-to-saga",
     "wipe-saga-data",
+    "export-saga-period-pack",
+    "import-sales-invoice-to-saga",
+    "import-purchase-invoice-to-saga",
+    "import-bank-entries-to-saga",
+    "add-saga-casa-entry",
+    "review-inbound-efactura",
 )
 
 

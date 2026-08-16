@@ -1,0 +1,26 @@
+{
+  "operation": "jurnal_banca",
+  "table": "Casa",
+  "controller": "JurnalDeBanca",
+  "primary_key": "IdNota",
+  "route": "JurnalDeBanca",
+  "write_style": "classic",
+  "risk": "medium",
+  "actions": {
+    "get_data": ["JurnalDeBanca/GetData_Casa"],
+    "delete": ["RegistruCasa/Delete_Casa"]
+  },
+  "usage": "Bank journal day entries. I_/P_ XML maps onto these fields then posts via Import extrase.",
+  "columns": [
+    {"name": "Data", "aliases": ["data", "date"], "kind": "date", "description": "Entry date"},
+    {"name": "NrDoc", "aliases": ["nr_doc", "numar", "Numar"], "kind": "text", "description": "Document number"},
+    {"name": "Suma", "aliases": ["suma", "amount"], "kind": "number", "description": "Amount"},
+    {"name": "Cont", "aliases": ["cont", "account"], "kind": "combo", "selectModel": "Conturi", "description": "Treasury account"},
+    {"name": "Cont_D", "aliases": ["cont_d"], "kind": "text", "description": "Debit account"},
+    {"name": "Cont_C", "aliases": ["cont_c"], "kind": "text", "description": "Credit account"},
+    {"name": "Explicatie", "aliases": ["explicatie", "notes"], "kind": "text", "description": "Explanation"},
+    {"name": "FacturaNumar", "aliases": ["factura_numar", "invoice_number"], "kind": "text", "description": "Related invoice number"},
+    {"name": "Moneda", "aliases": ["moneda", "currency"], "kind": "text", "description": "Currency"},
+    {"name": "IdNota", "kind": "text", "description": "Entry id", "expose": false}
+  ]
+}

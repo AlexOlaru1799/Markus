@@ -1,0 +1,64 @@
+{
+  "shared": {
+    "qty": "Cantitate",
+    "quantity": "Cantitate",
+    "customer": "Client",
+    "customer_name": "Client",
+    "ClientNume": "Client",
+    "client_nume": "Client",
+    "ClientCod": "Cod",
+    "client_cod": "Cod",
+    "FacturaNumar": "NrDoc",
+    "factura_numar": "NrDoc",
+    "invoice_number": "NrDoc",
+    "FacturaData": "Data",
+    "invoice_date": "Data",
+    "FacturaScadenta": "Scadent",
+    "due_date": "Scadent",
+    "FacturaMoneda": "Valuta",
+    "currency": "Valuta",
+    "Descriere": "Denumire",
+    "item_name": "Denumire",
+    "TVAProc": "TVA_ART",
+    "vat_rate": "TVA_ART",
+    "account": "Cont",
+    "FurnizorNume": "Furnizor",
+    "furnizor": "Furnizor",
+    "supplier": "Furnizor"
+  },
+  "by_operation": {
+    "iesiri_valuta_detalii": {
+      "Pret": "PretUnitarValuta",
+      "price_fx": "PretUnitarValuta",
+      "unit_price_fx": "PretUnitarValuta"
+    },
+    "iesiri_detalii": {
+      "Pret": "PretUnitar",
+      "price": "PretUnitar",
+      "unit_price": "PretUnitar"
+    },
+    "intrari_detalii": {
+      "Pret": "PretUnitar",
+      "price": "PretUnitar",
+      "unit_price": "PretUnitar"
+    },
+    "intrari_valuta_detalii": {
+      "Pret": "PretUnitarValuta",
+      "price_fx": "PretUnitarValuta"
+    },
+    "jurnal_banca": {
+      "Numar": "NrDoc",
+      "FacturaNumar": "FacturaNumar",
+      "Suma": "Suma",
+      "Explicatie": "Explicatie",
+      "Moneda": "Moneda",
+      "Valuta": "Moneda",
+      "currency": "Moneda"
+    },
+    "jurnal_banca_valuta": {
+      "Numar": "NrDoc",
+      "currency": "Valuta",
+      "Moneda": "Valuta"
+    }
+  }
+}

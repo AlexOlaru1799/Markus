@@ -1,0 +1,37 @@
+{
+  "operation": "masini",
+  "table": "Masini",
+  "controller": "Masini",
+  "primary_key": "Cod",
+  "route": "Masini",
+  "write_style": "ex",
+  "risk": "low",
+  "actions": {
+    "get_data": [
+      "Masini/GetData_Masini"
+    ]
+  },
+  "usage": "Vehicles. Read-only until a job needs named writes.",
+  "notes": [
+    "Wave 6 E. Best-effort columns until a live tableModel probe. No employee write tool."
+  ],
+  "columns": [
+    {
+      "name": "Cod",
+      "aliases": [
+        "cod"
+      ],
+      "kind": "text",
+      "description": "Code"
+    },
+    {
+      "name": "Denumire",
+      "aliases": [
+        "denumire",
+        "name"
+      ],
+      "kind": "text",
+      "description": "Name"
+    }
+  ]
+}

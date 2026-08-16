@@ -1,0 +1,19 @@
+{
+  "operation": "plan_conturi",
+  "table": "PlanConturi",
+  "controller": "PlanConturi",
+  "primary_key": "Cont",
+  "route": "PlanConturi",
+  "write_style": "ex",
+  "risk": "high",
+  "actions": {
+    "get_data": ["PlanConturi/GetData_PlanConturi", "PlanConturi/GetData"]
+  },
+  "usage": "Read-only in Wave 3. Use saga_chart_of_accounts or saga_list_rows(screen=plan_conturi). Writes only if a later job needs them.",
+  "columns": [
+    {"name": "Cont", "aliases": ["cont", "account", "cod"], "kind": "text", "description": "Account code"},
+    {"name": "Denumire", "aliases": ["denumire", "name"], "kind": "text", "description": "Account name"},
+    {"name": "Tip", "aliases": ["tip"], "kind": "text", "description": "Account type"},
+    {"name": "Sintetic", "aliases": ["sintetic"], "kind": "text", "description": "Synthetic account"}
+  ]
+}

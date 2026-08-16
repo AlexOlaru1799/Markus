@@ -1,0 +1,82 @@
+{
+  "operation": "articole_contabile",
+  "table": "Registru",
+  "controller": "Registru",
+  "primary_key": "IdNota",
+  "route": "Registru",
+  "write_style": "classic",
+  "risk": "medium",
+  "actions": {
+    "get_data": [
+      "Registru/GetData_Registru",
+      "Registru/GetData_ArticoleContabile"
+    ]
+  },
+  "usage": "Accounting notes (Registru). Read-only until a job exists.",
+  "notes": [
+    "Wave 6 E. Best-effort columns until a live tableModel probe. No employee write tool."
+  ],
+  "columns": [
+    {
+      "name": "Data",
+      "aliases": [
+        "data",
+        "date"
+      ],
+      "kind": "date",
+      "description": "Entry date"
+    },
+    {
+      "name": "NrDoc",
+      "aliases": [
+        "nr_doc",
+        "nr"
+      ],
+      "kind": "text",
+      "description": "Document number"
+    },
+    {
+      "name": "Cont_D",
+      "aliases": [
+        "cont_d",
+        "debit"
+      ],
+      "kind": "text",
+      "description": "Debit account"
+    },
+    {
+      "name": "Cont_C",
+      "aliases": [
+        "cont_c",
+        "credit"
+      ],
+      "kind": "text",
+      "description": "Credit account"
+    },
+    {
+      "name": "Suma",
+      "aliases": [
+        "suma",
+        "amount",
+        "valoare"
+      ],
+      "kind": "number",
+      "description": "Amount"
+    },
+    {
+      "name": "Explicatie",
+      "aliases": [
+        "explicatie",
+        "notes"
+      ],
+      "kind": "text",
+      "description": "Explanation"
+    },
+    {
+      "name": "IdNota",
+      "kind": "text",
+      "description": "Entry id",
+      "expose": false
+    }
+  ]
+}

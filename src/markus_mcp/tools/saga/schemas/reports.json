@@ -1,0 +1,488 @@
+{
+  "balanta": {
+    "title": "Balanță",
+    "aliases": ["balanta", "balante", "trial_balance", "trial-balance"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportBalanta",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportBalantaPDF",
+      "xlsx": "Rapoarte/CreateRaportBalanta"
+    },
+    "period_pack": true,
+    "provisional": false,
+    "usage": "Trial balance for a date range. Defaults to the SAGA working interval when dates are omitted.",
+    "notes": [
+      "Setter/creator names come from the Rapoarte module inventory (SetDataRaportBalanta / CreateRaportBalantaPDF).",
+      "Auxiliar field names are a best-effort snapshot until a print-modal capture is reviewed."
+    ],
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start", "interval_start", "Data1", "DeLa"], "kind": "date", "description": "Period start (dd.mm.yyyy)"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop", "interval_end", "Data2", "PanaLa"], "kind": "date", "description": "Period end (dd.mm.yyyy)"},
+      {"name": "Cont", "aliases": ["cont", "account"], "kind": "combo", "selectModel": "Conturi", "description": "Optional account filter"},
+      {"name": "Titlu", "aliases": ["titlu", "title"], "kind": "text", "description": "Report title"}
+    ]
+  },
+  "jurnal_cumparari": {
+    "title": "Jurnal de cumpărări",
+    "aliases": ["jurnal_cumparari", "jurnal cumparari", "purchases_journal", "intrari_pdf"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportIntrari",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportIntrariPDF",
+      "xlsx": "Rapoarte/CreateRaportIntrari"
+    },
+    "period_pack": true,
+    "provisional": false,
+    "usage": "Purchases journal (Intrari report family) for a date range.",
+    "notes": ["Setter inventory: Intrari → SetDataRaportIntrari / CreateRaportIntrariPDF."],
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start", "interval_start", "Data1"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop", "interval_end", "Data2"], "kind": "date", "description": "Period end"},
+      {"name": "Furnizor", "aliases": ["furnizor", "supplier"], "kind": "combo", "selectModel": "Furnizori", "description": "Optional supplier filter"},
+      {"name": "Titlu", "aliases": ["titlu", "title"], "kind": "text", "description": "Report title"}
+    ]
+  },
+  "jurnal_vanzari": {
+    "title": "Jurnal de vânzări",
+    "aliases": ["jurnal_vanzari", "jurnal vanzari", "sales_journal", "lista_iesiri"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportListaIesiri",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportListaIesiri",
+      "xlsx": "Rapoarte/CreateRaportListaIesiri"
+    },
+    "period_pack": true,
+    "provisional": false,
+    "usage": "Sales journal (ListaIesiri report family) for a date range.",
+    "notes": ["Setter inventory: ListaIesiri → SetDataRaportListaIesiri / CreateRaportListaIesiri."],
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start", "interval_start", "Data1"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop", "interval_end", "Data2"], "kind": "date", "description": "Period end"},
+      {"name": "Client", "aliases": ["client", "customer"], "kind": "combo", "selectModel": "Clienti", "description": "Optional client filter"},
+      {"name": "Titlu", "aliases": ["titlu", "title"], "kind": "text", "description": "Report title"}
+    ]
+  },
+  "fise_conturi": {
+    "title": "Fișe conturi",
+    "aliases": ["fise_conturi", "fise conturi", "account_sheets", "fisa_cont"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportFiseConturi",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportFiseConturi",
+      "xlsx": "Rapoarte/CreateRaportFiseConturi"
+    },
+    "period_pack": true,
+    "provisional": true,
+    "usage": "Account sheets. Pass Cont (or a comma-separated list via the period-pack skill). Dates default to the working interval.",
+    "notes": [
+      "Not named in the Rapoarte setter inventory dump — endpoints are provisional until a print-modal capture (U6)."
+    ],
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start", "interval_start", "Data1"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop", "interval_end", "Data2"], "kind": "date", "description": "Period end"},
+      {"name": "Cont", "aliases": ["cont", "account", "accounts"], "kind": "combo", "selectModel": "Conturi", "description": "Account (required for a useful fișă)"},
+      {"name": "Titlu", "aliases": ["titlu", "title"], "kind": "text", "description": "Report title"}
+    ]
+  },
+  "jurnal_banca": {
+    "title": "Jurnal de bancă (raport)",
+    "aliases": ["jurnal_banca_pdf", "jurnal banca raport", "bank_journal_report"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportCasa",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportJurnalBancaPDF",
+      "xlsx": "Rapoarte/CreateRaportCasa"
+    },
+    "period_pack": false,
+    "provisional": false,
+    "usage": "Bank/cash journal PDF (Casa family).",
+    "notes": ["Setter inventory: Casa → SetDataRaportCasa / CreateRaportJurnalBancaPDF."],
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start", "interval_start"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop", "interval_end"], "kind": "date", "description": "Period end"},
+      {"name": "Cont", "aliases": ["cont", "account"], "kind": "combo", "selectModel": "Conturi", "description": "Treasury account"},
+      {"name": "Titlu", "aliases": ["titlu", "title"], "kind": "text", "description": "Report title"}
+    ]
+  },
+  "bilant": {
+    "title": "Bilanț",
+    "aliases": ["bilant", "balance_sheet"],
+    "route": "Bilant",
+    "mode": "direct",
+    "setter": "",
+    "creators": {
+      "pdf": "Bilant/GenerarePDF_Bilant"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Local bilanț PDF only. ANAF submit stays human-gated.",
+    "notes": ["Direct generator Bilant/GenerarePDF_Bilant. Do not file to ANAF from this tool."],
+    "columns": [
+      {"name": "An", "aliases": ["an", "year"], "kind": "text", "description": "Year"},
+      {"name": "Luna", "aliases": ["luna", "month"], "kind": "text", "description": "Month"},
+      {"name": "Titlu", "aliases": ["titlu", "title"], "kind": "text", "description": "Report title"}
+    ]
+  },
+    "carte_mare": {
+    "title": "Carte mare",
+    "aliases": ["carte_mare", "general_ledger"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportCarteMare",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportCarteMarePDF",
+      "xlsx": "Rapoarte/CreateRaportCarteMare"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "General ledger. Provisional until a print-modal capture.",
+    "notes": ["Setter inventory: CarteMare family. Not a live PDF/XLS golden."],
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start", "interval_start", "Data1"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop", "interval_end", "Data2"], "kind": "date", "description": "Period end"},
+      {"name": "Cont", "aliases": ["cont", "account"], "kind": "combo", "selectModel": "Conturi", "description": "Optional account filter"},
+      {"name": "Titlu", "aliases": ["titlu", "title"], "kind": "text", "description": "Report title"}
+    ]
+  },
+  "situatie_furnizori": {
+    "title": "Situație furnizori",
+    "aliases": ["situatie_furnizori", "supplier_statement"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportFurnizori",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportFurnizori",
+      "xlsx": "Rapoarte/CreateRaportFurnizori"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Supplier statement. Provisional until a print-modal capture.",
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop"], "kind": "date", "description": "Period end"},
+      {"name": "Furnizor", "aliases": ["furnizor", "supplier"], "kind": "combo", "selectModel": "Furnizori", "description": "Optional supplier filter"}
+    ]
+  },
+  "situatie_clienti": {
+    "title": "Situație clienți",
+    "aliases": ["situatie_clienti", "customer_statement"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportClienti",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportClienti",
+      "xlsx": "Rapoarte/CreateRaportClienti"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Customer statement. Provisional until a print-modal capture.",
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop"], "kind": "date", "description": "Period end"},
+      {"name": "Client", "aliases": ["client", "customer"], "kind": "combo", "selectModel": "Clienti", "description": "Optional client filter"}
+    ]
+  },
+  "situatie_cecuri": {
+    "title": "Situație cecuri / bilete la ordin",
+    "aliases": ["situatie_cecuri", "cecuri", "bilete_la_ordin"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportOP",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportOP"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Cheques / OP family. Provisional until a print-modal capture.",
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop"], "kind": "date", "description": "Period end"}
+    ]
+  },
+    "registru_jurnal": {
+    "title": "Registru jurnal",
+    "aliases": ["registru_jurnal", "journal_register"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportRegistruJurnal",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportRegistruJurnal",
+      "xlsx": "Rapoarte/CreateRaportRegistruJurnal"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Journal register. Provisional until a print-modal capture.",
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop"], "kind": "date", "description": "Period end"}
+    ]
+  },
+  "registru_inventar": {
+    "title": "Registru inventar",
+    "aliases": ["registru_inventar", "inventory_register"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportInventariere",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportInventariere"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Inventory register (Inventariere family). Provisional until a print-modal capture.",
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop"], "kind": "date", "description": "Period end"}
+    ]
+  },
+  "fise_articole": {
+    "title": "Fișe articole",
+    "aliases": ["fise_articole", "item_sheets"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportArticole",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportArticole",
+      "xlsx": "Rapoarte/CreateRaportArticole"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Article sheets (Articole report family). Provisional until a print-modal capture.",
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop"], "kind": "date", "description": "Period end"},
+      {"name": "Gestiune", "aliases": ["gestiune", "warehouse"], "kind": "combo", "selectModel": "Gestiuni", "description": "Warehouse"},
+      {"name": "Titlu", "aliases": ["titlu", "title"], "kind": "text", "description": "Report title"}
+    ]
+  },
+  "situatie_aprovizionari": {
+    "title": "Situație aprovizionări",
+    "aliases": ["situatie_aprovizionari", "supply_report"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportTransferuriNIR",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportTransferuriNIR"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Supply / TransferuriNIR family. Provisional until a print-modal capture.",
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop"], "kind": "date", "description": "Period end"}
+    ]
+  },
+    "situatie_vanzari": {
+    "title": "Situație vânzări",
+    "aliases": ["situatie_vanzari", "sales_report"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportListaIesiri",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportListaIesiri",
+      "xlsx": "Rapoarte/CreateRaportListaIesiri"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Sales situation (ListaIesiri family, same setters as jurnal_vanzari). Provisional until a dedicated print-modal capture.",
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop"], "kind": "date", "description": "Period end"},
+      {"name": "Client", "aliases": ["client", "customer"], "kind": "combo", "selectModel": "Clienti", "description": "Optional client filter"}
+    ]
+  },
+  "situatie_consumuri": {
+    "title": "Situație consumuri",
+    "aliases": ["situatie_consumuri", "consumuri"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportConsumuri",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportConsumuri"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Consumptions report. Provisional until a print-modal capture.",
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop"], "kind": "date", "description": "Period end"}
+    ]
+  },
+  "situatie_obiecte_inventar": {
+    "title": "Situație obiecte inventar",
+    "aliases": ["situatie_obiecte_inventar", "inventory_objects"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportImobilizari",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportImobilizari"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Fixed-asset / Imobilizari family. Provisional until a print-modal capture.",
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop"], "kind": "date", "description": "Period end"}
+    ]
+  },
+  "situatie_productie": {
+    "title": "Situație producție",
+    "aliases": ["situatie_productie", "productie"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportProductie",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportProductie"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Production report. Provisional until a print-modal capture.",
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop"], "kind": "date", "description": "Period end"}
+    ]
+  },
+  "situatie_stocuri": {
+    "title": "Situație stocuri",
+    "aliases": ["situatie_stocuri", "stocuri", "stock_report"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportArticole",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportArticole",
+      "xlsx": "Rapoarte/CreateRaportArticole"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Stock situation (Articole family). Provisional until a dedicated print-modal capture.",
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop"], "kind": "date", "description": "Period end"},
+      {"name": "Gestiune", "aliases": ["gestiune", "warehouse"], "kind": "combo", "selectModel": "Gestiuni", "description": "Warehouse"}
+    ]
+  },
+    "situatie_sgr": {
+    "title": "Situație ambalaje SGR",
+    "aliases": ["situatie_sgr", "sgr"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportSGR",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportSGR"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "SGR packaging report. Provisional until a print-modal capture.",
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop"], "kind": "date", "description": "Period end"}
+    ]
+  },
+  "raport_gestiune": {
+    "title": "Raport de gestiune",
+    "aliases": ["raport_gestiune", "warehouse_report"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportGestiune",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportGestiune",
+      "xlsx": "Rapoarte/CreateRaportGestiune"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Warehouse management report. Provisional until a print-modal capture.",
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop"], "kind": "date", "description": "Period end"},
+      {"name": "Gestiune", "aliases": ["gestiune", "warehouse"], "kind": "combo", "selectModel": "Gestiuni", "description": "Warehouse"}
+    ]
+  },
+  "situatii_manageriale": {
+    "title": "Situații manageriale",
+    "aliases": ["situatii_manageriale", "sit_lunare"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportSitLunare",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportSitLunare"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "SitLunare family. Provisional until a print-modal capture.",
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop"], "kind": "date", "description": "Period end"}
+    ]
+  },
+  "situatie_comenzi": {
+    "title": "Situație comenzi",
+    "aliases": ["situatie_comenzi", "orders_report"],
+    "route": "Rapoarte",
+    "mode": "set_then_create",
+    "setter": "Rapoarte/SetDataRaportContracte",
+    "creators": {
+      "pdf": "Rapoarte/CreateRaportContracte"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Orders/contracts report. Provisional until a print-modal capture.",
+    "columns": [
+      {"name": "DataStart", "aliases": ["from", "date_from", "data_start"], "kind": "date", "description": "Period start"},
+      {"name": "DataStop", "aliases": ["to", "date_to", "data_stop"], "kind": "date", "description": "Period end"}
+    ]
+  },
+  "declaratie_406": {
+    "title": "Declarația 406 (SAF-T) — local PDF",
+    "aliases": ["declaratie_406", "d406", "saft"],
+    "route": "InchidereLuna",
+    "mode": "direct",
+    "setter": "",
+    "creators": {
+      "pdf": "InchidereLuna/GenerarePDFDeclaratie406"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Local SAF-T / D406 PDF only. ANAF submit is saga_submit_declaration (HUMAN-GATED).",
+    "columns": [
+      {"name": "An", "aliases": ["an", "year"], "kind": "text", "description": "Year"},
+      {"name": "Luna", "aliases": ["luna", "month"], "kind": "text", "description": "Month"}
+    ]
+  },
+  "declaratie_205": {
+    "title": "Declarația 205 — local PDF",
+    "aliases": ["declaratie_205", "d205"],
+    "route": "InchidereLuna",
+    "mode": "direct",
+    "setter": "",
+    "creators": {
+      "pdf": "InchidereLuna/GenerarePDFDeclaratie205"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Local D205 PDF only. ANAF submit is saga_submit_declaration (HUMAN-GATED).",
+    "columns": [
+      {"name": "An", "aliases": ["an", "year"], "kind": "text", "description": "Year"}
+    ]
+  },
+  "declaratie_intrastat": {
+    "title": "Declarația Intrastat — local PDF",
+    "aliases": ["declaratie_intrastat", "intrastat"],
+    "route": "InchidereLuna",
+    "mode": "direct",
+    "setter": "",
+    "creators": {
+      "pdf": "InchidereLuna/GenerarePDFIntrastat"
+    },
+    "period_pack": false,
+    "provisional": true,
+    "usage": "Local Intrastat PDF only. Submit is saga_submit_declaration (HUMAN-GATED).",
+    "columns": [
+      {"name": "An", "aliases": ["an", "year"], "kind": "text", "description": "Year"},
+      {"name": "Luna", "aliases": ["luna", "month"], "kind": "text", "description": "Month"}
+    ]
+  }
+}

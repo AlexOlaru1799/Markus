@@ -1,0 +1,94 @@
+{
+  "operation": "bonuri",
+  "table": "Bonuri",
+  "controller": "Bonuri",
+  "primary_key": "ID_Bon",
+  "route": "Bonuri",
+  "write_style": "classic",
+  "risk": "medium",
+  "actions": {
+    "get_data": [
+      "Bonuri/GetData_Bonuri"
+    ]
+  },
+  "usage": "Consumption notes. Read-only until a job exists.",
+  "notes": [
+    "Wave 6 E. Best-effort columns until a live tableModel probe. No employee write tool."
+  ],
+  "columns": [
+    {
+      "name": "NrDoc",
+      "aliases": [
+        "nr_doc",
+        "nr",
+        "number"
+      ],
+      "kind": "text",
+      "description": "Document number"
+    },
+    {
+      "name": "Data",
+      "aliases": [
+        "data",
+        "date"
+      ],
+      "kind": "date",
+      "description": "Document date"
+    },
+    {
+      "name": "Cod",
+      "aliases": [
+        "cod"
+      ],
+      "kind": "text",
+      "description": "Partner/item code"
+    },
+    {
+      "name": "Denumire",
+      "aliases": [
+        "denumire",
+        "name",
+        "explicatie"
+      ],
+      "kind": "text",
+      "description": "Description"
+    },
+    {
+      "name": "Valoare",
+      "aliases": [
+        "valoare",
+        "suma",
+        "amount"
+      ],
+      "kind": "number",
+      "description": "Amount"
+    },
+    {
+      "name": "Validat",
+      "kind": "text",
+      "description": "Validated flag",
+      "expose": false
+    },
+    {
+      "name": "Id",
+      "kind": "text",
+      "description": "Row id",
+      "expose": false
+    },
+    {
+      "name": "Gestiune",
+      "aliases": [
+        "gestiune"
+      ],
+      "kind": "combo",
+      "selectModel": "Gestiuni",
+      "description": "Warehouse"
+    },
+    {
+      "name": "ID_Bon",
+      "kind": "text",
+      "description": "Internal id",
+      "expose": false
+    }
+  ]
+}

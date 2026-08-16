@@ -1,6 +1,6 @@
 ; Inno Setup 6 — Markus MCP Windows installer
 #define MyAppName "Markus MCP"
-#define MyAppVersion "0.7.0"
+#define MyAppVersion "0.12.0"
 #define MyAppExeName "markus-mcp.exe"
 
 [Setup]

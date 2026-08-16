@@ -1,0 +1,33 @@
+{
+  "operation": "iesiri_detalii",
+  "table": "IesiriDetalii",
+  "controller": "Iesiri",
+  "primary_key": "ID_IesireDet",
+  "route": "Iesiri",
+  "write_style": "classic",
+  "risk": "medium",
+  "is_detail": true,
+  "master_table": "Iesiri",
+  "selection_key": "ID_Iesire",
+  "actions": {
+    "get_data": ["Iesiri/GetData_IesiriDetalii", "IesiriDetalii/GetData_IesiriDetalii"],
+    "create": ["Iesiri/Create_IesiriDetalii", "IesiriDetalii/Create_IesiriDetalii"]
+  },
+  "usage": "Required per line: Cont. Amounts from Cantitate + PretUnitar or Valoare.",
+  "columns": [
+    {"name": "Denumire", "aliases": ["denumire", "descriere", "Descriere", "item_name", "DenumireArticolServiciu"], "kind": "text", "description": "Article/service name"},
+    {"name": "DenumireArticolServiciu", "aliases": ["denumire_articol_serviciu"], "kind": "text", "description": "Article/service name (alternate column)"},
+    {"name": "Cantitate", "aliases": ["cantitate", "qty", "quantity"], "kind": "number", "description": "Quantity"},
+    {"name": "PretUnitar", "aliases": ["pret_unitar", "pret", "Pret", "unit_price"], "kind": "number", "description": "Unit price RON"},
+    {"name": "TVA_ART", "aliases": ["tva_art", "tva_proc", "TVAProc", "vat_rate"], "kind": "number", "description": "VAT rate %"},
+    {"name": "Valoare", "aliases": ["valoare"], "kind": "number", "description": "Line amount"},
+    {"name": "TVA", "aliases": ["tva"], "kind": "number", "description": "Line VAT amount"},
+    {"name": "Total", "aliases": ["total"], "kind": "number", "description": "Line total with VAT"},
+    {"name": "Cont", "aliases": ["cont", "account"], "kind": "combo", "selectModel": "Conturi", "description": "Revenue account", "required": true},
+    {"name": "Cod", "aliases": ["cod", "sku"], "kind": "text", "description": "Article code"},
+    {"name": "Tip", "aliases": ["tip"], "kind": "combo", "selectModel": "TipArticol", "description": "Item type"},
+    {"name": "ID_Iesire", "kind": "text", "description": "Parent invoice id", "expose": false},
+    {"name": "ID_IesireDet", "kind": "text", "description": "Line id", "expose": false},
+    {"name": "Id", "kind": "text", "description": "Classic RowData Id", "expose": false}
+  ]
+}

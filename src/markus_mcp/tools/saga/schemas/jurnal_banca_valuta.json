@@ -1,0 +1,31 @@
+{
+  "operation": "jurnal_banca_valuta",
+  "table": "Casa",
+  "controller": "JurnalDeBancaValuta",
+  "primary_key": "IdNota",
+  "route": "JurnalDeBancaValuta",
+  "write_style": "classic",
+  "risk": "medium",
+  "actions": {
+    "get_data": [
+      "JurnalDeBancaValuta/GetData_Casa",
+      "JurnalDeBanca/GetData_CasaValuta",
+      "JurnalDeBanca/GetData_Casa"
+    ]
+  },
+  "usage": "FX bank journal. Same Import extrase posting as saga_post_bank_entries when Moneda is not RON.",
+  "notes": ["Best-effort until a live probe. Do not grid.create on Solduri."],
+  "columns": [
+    {"name": "Data", "aliases": ["data", "date"], "kind": "date", "description": "Entry date"},
+    {"name": "NrDoc", "aliases": ["nr_doc", "numar", "Numar"], "kind": "text", "description": "Document number"},
+    {"name": "Suma", "aliases": ["suma", "amount"], "kind": "number", "description": "Amount RON"},
+    {"name": "SumaValuta", "aliases": ["suma_valuta", "amount_fx"], "kind": "number", "description": "Amount FX"},
+    {"name": "Valuta", "aliases": ["valuta", "currency"], "kind": "combo", "selectModel": "Valute", "description": "Currency"},
+    {"name": "Curs", "aliases": ["curs", "fx_rate"], "kind": "number", "description": "FX rate"},
+    {"name": "Cont", "aliases": ["cont", "account"], "kind": "combo", "selectModel": "Conturi", "description": "Treasury account"},
+    {"name": "Explicatie", "aliases": ["explicatie", "notes"], "kind": "text", "description": "Explanation"},
+    {"name": "FacturaNumar", "aliases": ["factura_numar", "invoice_number"], "kind": "text", "description": "Related invoice number"},
+    {"name": "Moneda", "aliases": ["moneda"], "kind": "text", "description": "Currency (XML tag)"},
+    {"name": "IdNota", "kind": "text", "description": "Entry id", "expose": false}
+  ]
+}

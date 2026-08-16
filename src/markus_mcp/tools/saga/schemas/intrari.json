@@ -1,0 +1,32 @@
+{
+  "operation": "intrari",
+  "table": "Intrari",
+  "controller": "Intrari",
+  "primary_key": "ID_Intrare",
+  "route": "Intrari",
+  "write_style": "classic",
+  "risk": "medium",
+  "detail_operation": "intrari_detalii",
+  "actions": {
+    "get_data": ["Intrari/GetData_Intrari"],
+    "create": ["Intrari/Create_Intrari"],
+    "delete": ["Intrari/Delete_Intrari"]
+  },
+  "usage": "RON purchase invoices. Required: Furnizor or Cod, Data, NrDoc. Bulk NIR with many suppliers still goes through Import date.",
+  "columns": [
+    {"name": "NrDoc", "aliases": ["nr_doc", "nr", "number", "invoice_number", "FacturaNumar"], "kind": "text", "description": "Document number"},
+    {"name": "Data", "aliases": ["data", "date", "invoice_date", "FacturaData"], "kind": "date", "description": "Document date"},
+    {"name": "Scadent", "aliases": ["scadent", "due_date", "FacturaScadenta"], "kind": "date", "description": "Due date"},
+    {"name": "Tip", "aliases": ["tip"], "kind": "combo", "description": "Invoice type"},
+    {"name": "Cod", "aliases": ["cod", "cod_furnizor", "FurnizorCod"], "kind": "text", "description": "Supplier code"},
+    {"name": "Furnizor", "aliases": ["furnizor", "supplier", "FurnizorNume", "vendor"], "kind": "combo", "selectModel": "Furnizori", "description": "Supplier name"},
+    {"name": "NIR", "aliases": ["nir"], "kind": "text", "description": "NIR number"},
+    {"name": "TVAI", "aliases": ["tvai"], "kind": "text", "description": "VAT on receipt flag"},
+    {"name": "ID_Intrare", "kind": "text", "description": "Internal id", "expose": false},
+    {"name": "Id", "kind": "text", "description": "Classic RowData Id", "expose": false},
+    {"name": "Validat", "kind": "text", "description": "Validated flag", "expose": false},
+    {"name": "Valoare", "kind": "number", "description": "Header amount", "expose": false},
+    {"name": "TVA", "kind": "number", "description": "Header VAT", "expose": false},
+    {"name": "Total", "kind": "number", "description": "Header total", "expose": false}
+  ]
+}

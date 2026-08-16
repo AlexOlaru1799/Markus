@@ -49,7 +49,12 @@ def import_xml(xml_path: str, *, confirm_write: bool = False) -> dict[str, Any]:
         }
 
     def _run(browser_page):
+        from markus_mcp.tools.saga import context as saga_context
+
         page = saga_partners._ready(browser_page)
+        blocked = saga_context.assert_writable(page, screen="import_date")
+        if blocked:
+            return {**blocked, "preview": preview}
         opened = _open_import_date(page)
         if not opened.get("ok"):
             return {"ok": False, **opened, "preview": preview}

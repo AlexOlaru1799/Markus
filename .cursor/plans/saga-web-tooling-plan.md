@@ -1,324 +1,437 @@
-# SAGA WEB → Markus MCP: full tool coverage plan
+# SAGA WEB → Markus: ingest, engine, named tools, and skills
 
-Goal: expose **every SAGA WEB feature listed in `data/saga/research/feature_inventory.json` (77 features)** as Markus MCP tools, by reverse-engineering what the SAGA WEB UI posts and replaying the same URLs with Playwright's `page.request` inside the already-authenticated persistent browser session.
+Goal: cover **as much of SAGA WEB as is safe to automate**, with **as little human intervention as possible**, without turning Markus into 77 MCP tools or a generic CRUD API.
 
-This document is the single source of truth for that work. It contains the protocol reference, the unknowns and how to capture them, the code architecture, the complete feature→tool mapping, the per-screen runbook, guardrails, and the rollout waves.
+SAGA’s menu (`data/saga/research/feature_inventory.json`, 77 items) is a **menu**, not 77 independent APIs. Many rows share one controller. Coverage is measured as:
+
+1. **Schema catalog** — local copy of each onboarded SAGA **grid** (`tableModel` / `tableColumns`), keyed by operation. When the user says “do X” with data in any format, we look up X’s expected fields and map into them.
+2. **Ingest** — turn chat / XML / PDF / XLS into a **canonical document** that matches that schema (aliases, types, required vs optional).
+3. **Engine** — one AdvancedControls client that can talk to any grid.
+4. **Named MCP tools** — accountant verbs that accept **canonical documents**, not file formats (`saga_add_iesire`, `saga_add_iesiri_valuta`, `saga_post_bank_entries`, …).
+5. **Agent skills** — multi-step jobs that pick an ingest path, then call those tools.
+
+XML is a **common input**, not the tool contract. If the canonical shape looks like a Facturi header+lines JSON (or we serialize it to SAGA Facturi XML only when talking to Import date), that is an implementation detail. The user must be free to paste fields in chat, attach a PDF, or drop an `.xml`.
+
+This document is the source of truth for protocol, code layout, MCP surface, skills, feature mapping, runbook, guardrails, waves, and the **master checklist (§13)** for “100% of SAGA” as defined there.
+
+Do **not** drive rollout from `feature_inventory_compact.json` `t:` tags. That file is stale (it still marks IesiriValuta as unsolved and Import date as human-only). Use this plan + the live tool catalog. Tick boxes in **§13** as work lands.
 
 ---
 
 ## 0. Executive summary
 
-SAGA WEB is an ASP.NET MVC app whose entire data layer is a **single generic grid component** (`AdvancedControls.min.js`, ~1 MB, `AdvancedTable`). Every nomenclator, journal and document screen — `Clienti`, `Furnizori`, `Articole`, `Intrari`, `Iesiri`, `IesiriValuta`, `RegistruCasa`, `Imobilizari`, `Comenzi`, `StateSalarii`, … — is an instance of that same component driven by a JSON **`tableModel`** rendered into the page.
+SAGA WEB is an ASP.NET MVC app whose data layer is one generic grid (`AdvancedControls.min.js`, `AdvancedTable`). Every nomenclator, journal and document screen is an instance of that grid driven by a JSON `tableModel`.
 
-That means we do **not** need 77 bespoke integrations. We need:
+That means we do **not** clone `partners.py` 70 times. Internally we need:
 
-1. **One generic grid client** that speaks the AdvancedControls protocol (read / create / edit / delete / next-index / master-detail / export).
-2. **One discovery layer** that reads `tableModel` off any rendered SAGA screen and derives endpoints + column schema automatically.
-3. **One report client** for the `Rapoarte/*` two-step PDF/XLS pipeline (covers all 23 "Situatii" report features at once).
-4. **Thin per-screen adapters** only where a screen has extra business endpoints (FX rate lookup, `LProcedure`, `ExecutaValidare`, `GetNrDoc`, e-Factura, …).
+1. **Schema catalog** — committed snapshots of probed `tableModel`s (and report `auxiliar` filters) so ingest can look up “what does operation X expect?” without guessing and without a live SAGA round-trip.
+2. **Canonical documents** — format-agnostic payloads (invoice, bank entries, partner, …) whose keys **are** those schema fields (plus a small alias map). Named SAGA tools consume these.
+3. **Ingest parsers / mappers** — one parser per *input* format; then a **schema mapper** that matches user keys (`ClientNume`, “customer”, “client”) onto `tableColumns[].name`. Chat/PDF extraction fills the same schema.
+4. **One grid client** (read / create / edit / delete / next-index / master-detail / export).
+5. **One discovery layer** that reads `tableModel` live and **refreshes** the catalog when SAGA changes.
+6. **One report client** for the `Rapoarte/*` two-step PDF/XLS pipeline.
+7. **Thin adapters** only where a screen has extra business endpoints (`GetCursValutar`, `ExecutaValidare`, `GetNrDoc`, e-Factura, Import extrase, …).
 
-Everything already shipped (`Clienti` CRUD, `IesiriValuta` header+lines) is a hand-written special case of this generic layer. **Wave 0 of this plan is to extract that generic layer out of `partners.py` / `iesiri_valuta.py`**, then the remaining 70+ features become configuration plus a handful of adapters.
+**Do not dump the SAGA SQL database.** WEB never gives us CREATE TABLE. The real schema for MCP is `tableColumns` (+ combos, defaults, required/hidden/lock) on each AdvancedControls grid, plus document pairs (header table + detail table). Copy **those** locally, one screen at a time as we onboard — not all 77 menus on day one, and not payroll/admin tables we will never write.
+
+What we do **not** need:
+
+- Exposing the generic grid client as employee MCP tools.
+- Making `xml_path` the primary API for creating invoices or bank rows. Today’s `saga_import_iesiri_xml` / `saga_import_incasari_xml` stay as **convenience wrappers** that parse → call the document tools; new work goes through canonical documents.
+
+**Wave 0** extracts the engine from code we already have (`partners.py`, `iesiri_valuta.py`, `iesiri.py`, `wipe.py`, `jurnal_banca_import.py`), with **zero employee tool-name changes**. Later waves add documents + ingest, then named tools + a skill per job.
+
+Shipped today (keep names stable; evolve inputs over waves):
+
+| Area | Tools | Input today | Target input |
+|---|---|---|---|
+| Session | `saga_status`, `saga_login`, `saga_submit_otp`, `saga_reset_session` | — | — |
+| Clienti | `saga_*_partner` | field dicts | unchanged (already format-agnostic) |
+| FX sales | `saga_add_iesiri_valuta` | `header` + `lines` dicts | unchanged — **this is the model** |
+| RON sales | `saga_add_iesire` / `saga_import_iesiri_xml` | header+lines, `document`, or Facturi XML | `saga_add_iesire` is the write; XML is ingest |
+| Bank | `saga_post_bank_entries` / `saga_import_incasari_xml` | BankBundle, chat rows, or I_/P_ XML | same Import extrase worker |
+| Purchases | `saga_add_intrare` (single) / `saga_import_xml` (bulk NIR) | header+lines or Facturi XML | bulk stays Import date |
+| Wipe | `saga_wipe_data` | targets | unchanged |
+
+Skills already in `src/markus_mcp/agent_skills/` (installed to `~/.cursor/skills/` on `--setup`): FX PDF, SmartBill → XML → Import date, Ieșiri XML, încasări XML, wipe, period pack, sales/purchase/bank any-source, casă entry.
 
 ---
 
-## 1. Protocol reference (reverse-engineered)
+## 1. Target product architecture
 
-Everything in this section is confirmed from `data/saga/research/AdvancedControls.min.js`, `Layout.min.js`, and `data/saga/research/modules/*.js`, plus the live captures in `data/saga/network-*.json`.
+Markus splits **schema lookup** (operation → expected fields), **ingest** (any user format → those fields), **operations** (MCP tools), and **jobs** (agent skills).
 
-### 1.1 Session and transport
+```
+Accountant: “do X” + (chat | .xml | PDF | XLS)
+        │
+        ▼
+┌───────────────────────────────────────┐
+│  Skills                               │
+│  resolve X → operation / document kind│
+└───────────────────┬───────────────────┘
+                    ▼
+┌───────────────────────────────────────┐
+│  Schema catalog (local)               │
+│  schemas/iesiri.json = tableColumns   │
+│  + aliases, required, combos          │
+└───────────────────┬───────────────────┘
+                    │ expected fields
+        ┌───────────┴───────────┐
+        ▼                       ▼
+┌──────────────────┐   ┌────────────────────────┐
+│ Ingest parsers   │   │ Agent extracts values  │
+│ XML / XLS → raw  │   │ from chat / PDF        │
+└────────┬─────────┘   └───────────┬────────────┘
+         │                         │
+         └───────────┬─────────────┘
+                     ▼
+         Schema mapper
+         user keys → tableColumns names
+         validate required / types
+                     ▼
+         Canonical document
+                     ▼
+┌───────────────────────────────────────┐
+│  Named MCP tools (confirm_write)      │
+└───────────────────┬───────────────────┘
+                    ▼
+         SAGA engine → one Chromium session
+```
+
+### 1.1 Five layers
+
+| Layer | Lives in | Allowed to know | Not allowed |
+|---|---|---|---|
+| **Schema catalog** | `tools/saga/schemas/*.json` + `schema.py` | `tableColumns`, aliases, required, combos, header/detail pairing | Playwright at lookup time; inventing columns |
+| **Ingest** | `tools/saga/documents/` | Input formats + catalog aliases | Playwright, `_CHECKED`, SAGA routes |
+| **Engine** | `protocol.py`, `grid.py`, … | `tableModel`, `RowData`, routes | file formats, WhatsApp, PDF OCR |
+| **Named tools** | `server.py` + wrappers | Canonical documents, `confirm_write` | Parsing XML/PDF; multi-step jobs |
+| **Skills** | `agent_skills/<job>/SKILL.md` | User intent → operation X → catalog + tools | Re-implementing SAGA HTTP |
+
+WhatsApp and SmartBill stay sibling packages. Skills may call them. SmartBill’s XLS→Facturi XML converter is an **ingest** (or emit) step into the same canonical invoice, not a reason for SAGA tools to require XML.
+
+### 1.2 Schema catalog (local lookup for operation X)
+
+This is the “copy SAGA schemas locally” piece — **yes, it makes sense**, with a precise meaning:
+
+| Copy this | Do not copy this |
+|---|---|
+| Each onboarded grid’s `tableModel`: `tableName`, `primaryKey`, `tableColumns[]` (name, inputType, selectModel, defaultValue, hidden/lock), `actionsURLs`, master/detail pairing | SAGA SQL Server / Firebird table dumps (WEB does not expose them) |
+| Alias maps (RO labels, XML tags, English chat synonyms → column `name`) | Every menu item on day one (Salariati, Inchidere luna, … until we have a job) |
+| Report `auxiliar` filter schemas when Wave 2 lands | Binary `.mdf` / firm data |
+
+**Flow when the user says “add this as an Ieșire” and pastes anything:**
+
+1. Skill maps the request to operation `iesiri` (or document kind `sales_invoice`).
+2. `schema.py` loads `schemas/iesiri.json` + `schemas/iesiri_detalii.json` (committed snapshot from a reviewed probe).
+3. Ingest/mapper: match incoming keys to columns via exact name, then aliases (`ClientNume` → `Client`, “qty” → `Cantitate`). Unknown keys → `unknown_fields` (do not send). Missing required (non-hidden, no default) → ask the user.
+4. Canonical document uses **SAGA column names** so the adapter does not guess.
+5. Optional live refresh: if `saga_probe_screen` shows the snapshot drifted, CI / Wave runbook updates the JSON. Runtime may merge a fresh `tableModel` for reads; **writes use the committed catalog** until a human reviews the diff (avoids silently posting a renamed column).
+
+Canonical document types (`SalesInvoice`) are a **facade** over one or more catalog tables (header + lines), not a second invented schema. If the catalog and the facade disagree, the catalog wins.
+
+`saga_describe_screen` / `saga_partner_fields` / `saga_iesiri_valuta_fields` become thin reads of this catalog (today those catalogs are hand-written in Python — migrate them into JSON snapshots).
+
+### 1.3 Canonical documents (format-agnostic tool input)
+
+Named write tools speak **documents**, not paths.
+
+Sketch (field names **come from the schema catalog**, not from us inventing JSON):
+
+```python
+# tools/saga/documents/types.py  (conceptual)
+
+SalesInvoice = {
+  "kind": "sales_invoice",          # or "sales_invoice_fx"
+  "currency": "RON" | "EUR" | …,
+  "header": { "Client"|"Cod", "Data", "NrDoc", "Scadent", "Valuta"?, … },
+  "lines":  [ { "Cont", "Denumire", "Cantitate", "PretUnitar…", "TVA_ART", … } ],
+  "meta":   { "source": "chat"|"facturi_xml"|"pdf"|"smartbill_xls", "source_path"?: str },
+}
+
+BankBundle = {
+  "kind": "bank_receipts" | "bank_payments",
+  "account"?: str,
+  "entries": [ { "date", "amount", "partner"?, "factura_numar"?, … } ],
+  "meta": { "source": "chat"|"incasari_xml"|… },
+}
+```
+
+Rules:
+
+- **Schema first.** Every named write looks up the catalog for that operation before mapping. No ad-hoc column lists in adapters once the snapshot exists (adapters keep only side-effect POSTs).
+- **SAGA tools only accept documents (or field dicts already shaped like today’s FX tool).** They must not require `xml_path` to create an Ieșire.
+- **Ingest is many → one.** Facturi XML, chat, PDF extraction, SmartBill rows all produce `SalesInvoice`.
+- **Emit is optional.** If we still use SAGA Import date (upload Facturi XML), a small `documents/emit_facturi_xml.py` turns canonical → XML for that *transport*. That does not make XML the user-facing contract.
+- **Proven pattern already:** `saga_add_iesiri_valuta(header, lines)` is format-agnostic. The FX PDF skill extracts into those dicts. RON Ieșiri and bank should converge on the same idea.
+- **Compatibility:** keep `saga_import_iesiri_xml(xml_path)` / `saga_import_incasari_xml(xml_path)` as thin wrappers: parse XML → document(s) → call `saga_add_iesire` / `saga_post_bank_entries`. Skills and docs prefer the document tools + ingest.
+
+### 1.4 MCP surface rules
+
+**Employee tools (always):**
+
+- Session: `saga_status`, `saga_login`, `saga_submit_otp`, `saga_reset_session`, **`saga_context`** (new).
+- Named verbs on **documents / field dicts**: `saga_create_partner`, `saga_add_iesiri_valuta`, then `saga_add_iesire`, `saga_add_intrare`, `saga_add_casa_entry`, `saga_post_bank_entries`, `saga_run_report`, `saga_efactura_list`, …
+- **Ingest helpers** (read-only / pure transform, no SAGA write): e.g. `saga_parse_facturi_xml`, `saga_parse_incasari_xml` — return canonical documents + validation errors so the agent can show a preview before `confirm_write`. Optional; skills may also call Python via the same modules if we only expose parse inside the write preview.
+- Convenience wrappers that take a path: `saga_import_iesiri_xml`, `saga_import_incasari_xml`, `saga_import_xml` (Import date upload) — keep for existing skills; implement as parse/emit + document tool or Import date transport.
+- Wipe: `saga_wipe_data`.
+
+**Generic reads (employee, once Wave 0 exists):**
+
+- `saga_list_screens`, `saga_describe_screen` (catalog dump: columns, required, aliases, combos), `saga_list_rows`, `saga_get_row`, `saga_lookup`, `saga_export_grid`, `saga_run_report`.
+
+**Generic writes (`saga_create_row`, …):** engine only; not on employee MCP.
+
+**Probe:** developer onboarding only (`saga_probe_screen`).
+
+### 1.5 Skills rules
+
+- One skill per **job**, not per SAGA menu item and not per file type.
+- Prefer **one skill per document kind** that accepts any source: “put this sales invoice in SAGA” whether the user pasted fields, attached PDF, or gave `F_*.xml`.
+- Skill steps: (1) detect operation X → (2) load schema catalog → (3) ingest or extract → (4) map/validate against catalog → (5) preview → (6) named tool `confirm_write=false` then `true`.
+- Source of truth: `src/markus_mcp/agent_skills/`. `--setup` copies via `cursor_skills.py`.
+
+| Skill | Needs |
+|---|---|
+| `import-fx-invoice-to-saga` | exists (PDF → header/lines → `saga_add_iesiri_valuta`) — template for others |
+| `smartbill-to-saga-import` | exists; evolve to SmartBill → canonical → Import date emit or `saga_add_intrare` |
+| `export-smartbill-supplier-invoices` / `import-xml-to-saga` | exist (export-only / Import date XML) |
+| XML-named skills (`import-iesiri-xml-to-saga`, `import-incasari-xml-to-saga`) | keep until document tools land; then retarget to parse + `saga_add_*` |
+| Sales invoice (RON) any source | `saga_add_iesire` + Facturi XML parser + chat/PDF extract |
+| Bank entries any source | `saga_post_bank_entries` + I_/P_ parser + chat |
+| Cash receipt | `saga_add_casa_entry` |
+| Period pack | `saga_run_report` + `saga_context` |
+| Inbound e-Factura review | `saga_efactura_list` (submit stays human) |
+| `wipe-saga-data` | exists |
+
+### 1.6 What “100% of SAGA” means here
+
+| Band | Target |
+|---|---|
+| Engine can read any grid we have probed | Yes |
+| Engine can write nomenclators + documents that have an adapter | Yes |
+| Accountant can supply data as chat, XML, PDF, or XLS for those jobs | Yes — schema lookup → ingest → canonical → named tool |
+| Schema catalog covers every **onboarded** write/read screen | Yes — grows with waves; not a one-shot dump of all SAGA |
+| Agent can finish common jobs unattended after login/OTP | Yes, via skills |
+| ANAF filings, payroll execute, month close, users, DB, special stock ops | **Read + hard-gated human confirm only** |
+| Zero human forever | No — OTP, SPV, legal filings stay side-channels |
+
+Count **controllers + jobs automated**, not 77/77 menu ticks. Count **input formats** as parsers, not as separate MCP tools.
+
+---
+
+## 2. Protocol reference (reverse-engineered)
+
+Confirmed from `data/saga/research/AdvancedControls.min.js`, `Layout.min.js`, `modules/*.js`, and live captures in `data/saga/network-*.json`. Runtime session dir is **`~/.markus/data/saga-session`**, not `./data/saga-session`.
+
+### 2.1 Session and transport
 
 | Concern | Value |
 |---|---|
 | Login origin | `https://web.sagasoft.ro` (`SAGA_BASE_URL`) |
 | App origin after firm connect | `https://web2.sagasoft.ro/sagac` (`SAGA_APP_BASE_URL`) |
-| Report/API origin | read at runtime from `document.body.dataset.api` (`$("body").data("api")`) — **do not hardcode** |
-| Auth | persistent Chromium profile in `./data/saga-session`; cookies carry the session |
-| Required headers | `X-Requested-With: XMLHttpRequest`, plus `X-SAGA-Valid-Token: <cookie SAGA-Valid-Token-JS>` |
-| Existing helper | `saga_session._auth_headers(page)` already does this |
-| All calls go through | `page.request.get/post/fetch` on the logged-in page — cookies are shared automatically |
+| Report/API origin | `document.body.dataset.api` at runtime — **do not hardcode** |
+| Auth | persistent Chromium profile under `~/.markus/data/saga-session` |
+| Headers | `X-Requested-With: XMLHttpRequest`, `X-SAGA-Valid-Token: <cookie SAGA-Valid-Token-JS>` via `saga_session._auth_headers(page)` |
+| Calls | `page.request.get/post/fetch` on the logged-in page (cookies shared) |
+| Concurrency | **one** SAGA browser worker (`session._run_on_browser_thread`). Do not add a second context. |
 
-Session/context endpoints worth wrapping as tools:
+Context endpoints (feed `saga_context`):
 
-- `GET Home/LoadOperationalData` → toolbar state, current firm (`Toolbar.CodFirma`), current user, `Societ`, `Configurare`, `TipContabilitate` (SC/PS/ONG/IFN), `FaraStocuri`, working interval. **This is the "who am I / what firm / what period" call.**
-- `GET Home/LoadDrepturiEcrane`, `Home/GetDreptEcran`, `Home/GetDreptCont` → per-screen rights (drives "can this user do X?").
-- `GET Home/IsStillConnected` → session liveness, cheaper than a screenshot.
+- `GET Home/LoadOperationalData` — firm (`Toolbar.CodFirma`), user, `Societ`, `Configurare`, `TipContabilitate`, `FaraStocuri`, working interval.
+- `GET Home/LoadDrepturiEcrane`, `Home/GetDreptEcran`, `Home/GetDreptCont` — rights.
+- `GET Home/IsStillConnected` — cheaper than a screenshot.
 - `GET Home/GetTipContabilitate`, `Home/GetCurrentUser`, `Home/GetDatabaseSize`, `Home/CheckDBStatus`.
 
-### 1.2 The `tableModel` — the key to generic coverage
+### 2.2 `tableModel`
 
-`AdvancedControls.parseTableModel()` parses a JSON blob per grid instance:
-
-```js
-let auxModel = JSON.parse(tableModel);
-tableName        = auxModel.tableName;          // e.g. "Clienti", "IesiriValutaDetalii"
-controllerName   = auxModel.controllerName;     // e.g. "Clienti", "IesiriValuta"
-primaryKey       = auxModel.primaryKey;          // e.g. "Cod", "ID_Iesire"
-masterTableName  = auxModel.detailSetup.masterTableName;
-isMaster         = auxModel.detailSetup.isMaster;
-isDetail         = auxModel.detailSetup.isDetail;
-selectionKey     = auxModel.detailSetup.selectionKey;
-actionsURLs = {
-    getData:            auxModel.tableConfig.actionsURLs.getData,
-    create:             auxModel.tableConfig.actionsURLs.create,
-    edit:               auxModel.tableConfig.actionsURLs.edit,
-    delete:             auxModel.tableConfig.actionsURLs.delete,
-    getNextIndex:       auxModel.tableConfig.actionsURLs.getNextIndex,
-    copyDetail:         auxModel.tableConfig.actionsURLs.copyDetail,
-    deleteMasterDetails: auxModel.tableConfig.actionsURLs.deleteMasterDetails,
-};
-tableColumns = auxModel.tableColumns;  // name, inputType, selectModel, defaultValue, …
-```
-
-Consequences:
-
-- **We never have to guess an endpoint.** Open the screen, read `tableModel`, and you have the exact create/edit/delete/getData URLs SAGA itself uses.
-- **We never have to guess a column list.** `tableColumns[i].name` is the exact `RowData` key; `inputType` tells us Input / Select / Checkbox / Hidden / Lock; `selectModel` names the combo (see §1.7); `defaultValue` gives SAGA's own default.
-- DOM conventions that let us enumerate grids on a page without any JS internals:
-  - container: `#containerAdvancedTable_<TableName>`
-  - grid: `#tableMain_<TableName>`, toolbar `#toolbar_<TableName>`
-  - per-cell inputs: `.rowFieldInput_<ColumnName>`, display cells `.rowFieldText_<ColumnName>`
-  - toolbar buttons: `.buttonOperationAdd_<TableName>`, `…Edit…`, `…Save…`, `…Cancel…`, `…Delete…`, `.buttonOperationExportExcel_<TableName>`
-- Global JS helpers available via `page.evaluate`: `getTable("<TableName>")` returns the live table API (`GetVirtualData`, `GetDataByPK`, `GetRequestSetup`, `SelectRowByIndex`, `ToolbarActionAdd/Edit/Save/Delete`, `RefreshRow`, `SyncToSelectedData`, …). `tabID` is the `SenderID`.
-
-### 1.3 Read protocol (`getData`)
+`AdvancedControls.parseTableModel()`:
 
 ```js
-$.ajax({ type:'GET', url: actionsURLs.getData,
-         data: { RequestSetup: JSON.stringify(requestSetup.json) } })
-// → { data: [...rows...], pageCount: n }
+tableName, controllerName, primaryKey,
+detailSetup.{masterTableName, isMaster, isDetail, selectionKey},
+tableConfig.actionsURLs.{getData, create, edit, delete, getNextIndex, copyDetail, deleteMasterDetails},
+tableColumns[]  // name, inputType, selectModel, defaultValue, …
 ```
 
-`RequestSetup` is a `DataRequestSetup(id, page, filter, sortMode, sortColumn)` serialized via its `.json` property. Confirmed / observed keys:
+- Never guess CRUD URLs: open the screen, read `tableModel`.
+- Never guess `RowData` keys: `tableColumns[i].name`.
+- DOM: `#containerAdvancedTable_<TableName>`, `#tableMain_<TableName>`, `.buttonOperationAdd_<TableName>`, …
+- `page.evaluate`: `getTable("<TableName>")` → `GetVirtualData`, `GetRequestSetup`, `ToolbarActionSave`, … `tabID` is `SenderID`.
+
+Probe **does not** replace adapters. Side-effect endpoints (`GetCursValutar`, `ExecutaValidare`, `IncarcaExtras`, …) live in module JS and in captured XHR, not in `actionsURLs`.
+
+### 2.3 Read (`getData`)
+
+```
+GET actionsURLs.getData  ? RequestSetup = JSON.stringify(requestSetup.json)
+→ { data: [...rows...], pageCount: n }
+```
+
+Working `RequestSetup` already used in `partners.py` / `iesiri_valuta.py` / `wipe.py` / `jurnal_banca_import.py`:
 
 | Key | Meaning |
 |---|---|
-| `Skip`, `BatchSize` | paging (confirmed working today in `partners.py`) |
-| `GetRowsCount` | ask for total count |
-| `FilterKeyword` | free-text search string |
-| `FilterColumns` | array of column names to search (defaults to all non-Lock/non-Hidden) |
-| `FilterSearchType` | 0 = starts-with, 1 = contains, 2 = exact (from the three radio options) |
-| `FilterCaseSensitive` | bool |
-| `FilterCurrentTable` | bool |
+| `Skip`, `BatchSize` | paging |
+| `GetRowsCount` | total count |
+| `FilterKeyword` | search |
+| `FilterColumns` | columns to search |
+| `FilterSearchType` | 0 starts-with, 1 contains, 2 exact |
+| `FilterCaseSensitive`, `FilterCurrentTable` | bool |
 | `SortColumn`, `SortMode` | sorting |
-| `auxiliar` | JSON string of screen-specific filters — **this is what reports consume** (see §1.9) |
-| ctor arg `id` | fetch a single row by PK (used by `refreshRow`) |
+| `Id` | single row / master PK for details (`wipe.py` already passes `master_id` this way) |
+| `auxiliar` | screen-specific filters — **reports** |
 
-> The exact full shape of `DataRequestSetup.json` is the one remaining unknown — see §2.1 for the one-line capture that resolves it.
+Wave 0 should **unify this helper**, not block on a perfect `new DataRequestSetup().json` dump. Capture `auxiliar` per report when building `reports.py`.
 
-### 1.4 Write protocol (`create` / `edit`) — the `RowData` + `_CHECKED` handshake
+### 2.4 Write (`create` / `edit`) — `RowData` + `_CHECKED`
 
-Two request families exist; both are already implemented somewhere in our codebase.
-
-**(a) Classic AdvancedControls (used by every document/detail grid, e.g. `IesiriValuta`):**
+**(a) Classic AdvancedControls** (documents, e.g. IesiriValuta):
 
 ```
-POST <actionsURLs.create | actionsURLs.edit>
-  RowData  = JSON.stringify(rowObject)     # keys are tableColumns[].name
-  _CHECKED = "false"                        # first pass = validation pass
-  SenderID = tabID
-  IsPaste  = "false"
-  uvf      = ""                             # or JSON array of user validation flags
+POST actionsURLs.create | edit
+  RowData, _CHECKED, SenderID, IsPaste, uvf
 ```
 
-Response types:
+| `type` | Action |
+|---|---|
+| `Validation` | re-POST `_CHECKED=true` |
+| `Choice` | re-POST `uvf=[{id, userChoice:"Yes"}]` **only if `confirm_write=true`**; echo the question |
+| `Warning` | surface, do not retry |
+| success | extract new PK |
 
-| `type` | Meaning | Our action |
-|---|---|---|
-| `Validation` | server asks to re-post confirmed | re-POST identical body with `_CHECKED="true"` |
-| `Choice` | modal question (`status` text, `flagId`) | re-POST with `uvf` = `[{id: flagId, userChoice: "Yes"}]` — **only when the tool was called with `confirm_write=true`** |
-| `Warning` | blocking message in `status` | surface to user, do not retry |
-| *(none / success)* | saved | extract new PK |
+Third variant: one `crudRequest` with `UserValidationFlags` and `CRUDOperation`.
 
-A third variant posts a single `crudRequest` object with `UserValidationFlags` and `CRUDOperation: "Create" | "Update"`.
-
-**(b) "Ex" style (used by `Clienti`):**
+**(b) Ex style** (Clienti):
 
 ```
-POST Clienti/Create_Clienti | Clienti/Edit_Clienti
-  Data[<Column>] = <value>   (one form field per column)
-  _CHECKED = "false"
-  IsPaste  = "false"
-  uvf      = JSON  # [{"id": "...", "userChoice": "Yes"}]
-# → { success: true } | { errorCode: "ValidateData", validationFlags: [...] }
+POST Clienti/Create_Clienti | Edit_Clienti
+  Data[<Column>]=…  _CHECKED  IsPaste  uvf
+→ { success } | { errorCode: "ValidateData", validationFlags }
 ```
 
-The generic client must **try the family implied by the screen and fall back to the other**, because SAGA is inconsistent across controllers. Both are already proven in `partners.py` (`_post_clienti_row`) and `iesiri_valuta.py` (`_post_rowdata` / `_post_with_validation_retry`) — the fallback logic gets unified in Wave 0.
+Generic client tries the family implied by the screen, falls back to the other. Already proven: `partners._post_clienti_row`, `iesiri_valuta._post_with_validation_retry`, `wipe._delete_ex` / `_delete_classic`.
 
-### 1.5 Delete protocol
+### 2.5 Delete
 
-```js
-let parameters = { Id: <pk>, _CHECKED: 'false', SenderID: tabID };
-$.ajax({ url: actionsURLs.delete, dataType:'json', data: parameters })  // NOTE: jQuery default = GET
-// type == "Validation" → repeat with _CHECKED:'true'
-// type == "Choice"     → answer via flagId, may add parameters["Type"] = result.flagId
-```
+UI uses **GET** with `{ Id, _CHECKED, SenderID }` (jQuery default). Clienti also accepts POST. Keep POST-then-GET. Master+details: `deleteMasterDetails`. After deleting a detail of Intrari/Iesiri (and valuta), refresh the master row. Wipe already encodes “children before header” and “day entries before day headers” for Jurnal de Bancă — that ordering belongs in the adapter/workflow, not in naive `grid.delete`.
 
-Notes:
-- The UI issues this as **GET with query params** (jQuery's default). Our current `partners.py` uses POST and works for `Clienti` — keep POST-then-GET fallback in the generic client.
-- Master rows with details also expose `actionsURLs.deleteMasterDetails`.
-- After deleting a detail row of `IntrariDetalii` / `IesiriDetalii` / `IntrariValutaDetalii` / `IesiriValutaDetalii`, the UI calls `GetTableMaster().RefreshRow()` — our tools should re-read the master row to return fresh totals.
+### 2.6 PK, copy, master–detail
 
-### 1.6 PK generation, copy, master–detail
+- `GET getNextIndex` unless `avoidPKGeneration`; always for Intrari/Iesiri (+valuta).
+- Screen-specific: `Gestiuni/GetNextPK`, `Imobilizari/GetNrInventar`, `Transferuri/GetNrDoc`, `Contracte/GetNrContracte`, …
+- `copyDetail` `{ originId, targetId, negative }` — copy document.
+- Detail `getData` uses master PK as `RequestSetup.Id`; FK column is `detailSetup.selectionKey`. Document create: master → read PK → lines with FK → re-read master totals.
 
-- `GET actionsURLs.getNextIndex` (no params) → next PK. Called automatically unless `tableConfig.avoidPKGeneration`, and **always** for `Intrari`, `Iesiri`, `IntrariValuta`, `IesiriValuta`.
-- Screen-specific variants seen in module JS: `Gestiuni/GetNextPK`, `Actionari/GetNextCod`, `Filiale/GetCod`, `Imobilizari/GetNrInventar`, `Inventariere/GetNrDoc`, `Transferuri/GetNrDoc`, `Productie/GetNrDoc`, `Contracte/GetNrContracte`.
-- `actionsURLs.copyDetail` with `{ originId, targetId, negative }` duplicates detail lines — this is how "copy a document" works.
-- Master→detail: the detail grid's `getData` is called with the master PK as the `DataRequestSetup` `id`/selection argument (`detailSetup.selectionKey` names the FK column). Document tools therefore always run: create master → read back PK → create each detail row with the FK set.
+### 2.7 Lookups
 
-### 1.7 Lookups / combo boxes
+`GET <Controller>/GetData_ComboBox_<selectModel>` with documented redirects to `Home` (conturi, proiecte, …). Column combo name is `tableColumns[i].selectModel` → `saga_lookup` is derivable.
 
-- Data: `GET <ControllerName>/GetData_ComboBox_<comboName>` where `<ControllerName>` is the **owner table's** controller. Documented redirects to `Home` exist for: `BugCategorie*`, `ContTipuriArticol*` → `Home/GetData_ComboBox_ContGeneral`, `Import_Gestiune`, `Proiect_*` → `Home/GetData_ComboBox_Proiect`, `ContCredit_TipuriContracte` / `ContPenalizari_TipuriContracte` → `Home/GetData_ComboBox_ContTipuriCont…`, and `Balanta` combos force controller `Balanta`.
-- Markup: `GET Home/GetAdvancedComboBoxViewComponent?Type=<selectModel>&OwnerTableName=<tableName>` returns the dropdown HTML. Useful only for UI fallback; for MCP we want the data endpoint.
-- The combo name for a column is `tableColumns[i].selectModel`. So **`saga_lookup(table, column)` is fully derivable** — no per-screen work.
-
-### 1.8 Screen-specific business endpoints (the "adapter" layer)
-
-These are the calls a screen fires *around* the CRUD, and they are what makes a document post correctly. Full inventory extracted from `modules/*.js`:
+### 2.8 Adapter-only endpoints (not in `tableModel`)
 
 | Concern | Endpoints |
 |---|---|
-| Partner validation / defaults | `Clienti/Verificare`, `Clienti/VerificareAll`, `Clienti/LProcedure_Clienti`, `Furnizori/Verificare`, `Furnizori/VerificareAll`, `Furnizori/LProcedure_Furnizori`, `Home/CheckCF`, `Home/GetBanca` |
-| Chart of accounts | `PlanConturi/LProcedure`, `PlanConturi/GetTipSintetic`, `PlanConturi/VerifAnalitic121`, `PlanConturi/ActualizarePlanConturi`, `Home/GetDreptCont` |
-| Items / pricing / VAT | `Articole/GetTVAArticol`, `Articole/GetDataArticoleTVA`, `Articole/ExecutaSchimbareTVA`, `Articole/IsVandabil`, `Articole/CheckSGR`, `Articole/AnteEdit`, `Articole/GenereazaCB`, `Articole/GetBrut`/`SetBrut`, `Articole/UpdateGarantie`, `Articole/ActualizeazaPreturiArticol`, `PreturiVanzare/*`, `Home/GetDataArticol`, `Home/GetTVA`, `Home/GetDataArticolCodBare` |
-| FX | `IntrariValuta/GetCursValutar` (already used by our FX invoice tool) |
-| Cash / bank | `RegistruCasa/SetActFact`, `GetClientByContAnalitic`, `GetFurnizorByContAnalitic`, `SetContCasa`, `GetAnaliticByCod`, `SetContDifCurs`, `GetLastValuta`, `SetFiltruOP`, `GetDefaultCont`, `GetDefaultAnalitic`, `SetDataSold`, `GetConturi` |
-| Document lock (validare) | `<Controller>/ExecutaValidare` + `ExecutaDevalidare` for `Intrari`, `Iesiri`, `IesiriValuta`, `Bonuri`, `BonuriOI`, `Transferuri`, `Productie` (+`…Master`), `Imobilizari`, `Inventariere`, `StateSalarii`, and the many `InchidereLuna/ExecutaValidare_*` |
-| Accounting note side-effect | `Home/ExecutaInsMMod` (fires after saving journal docs — the `executaInsMMod("S")` call in AdvancedControls) |
-| Contracts | `Contracte/GenerareFacturi`, `SaveData_GenerareFacturiContracte`, `CheckRate`, `CheckValuta`, `ModificareCurs`, `GetNrContracte`, `CorectezTVA` |
-| e-Factura | `EFactura/ReadToken`, `SaveToken`, `ImportEFactura`, `LoadFacturiImport`, `LoadIstoricEFacturiImport`, `AnulareEFactura`, `GetFacturiGenerateDarNetransmise`, `GetFacturiCuEroriLaTransmitere`, `SalveazaDate_EFactGenerareSiTransmitere`, `SalvareSetare`, `LoadSetariGenerale`, `ExistaFisiereArhivaEFactura`, `Home/GetViewDownloadEFacturi`, `Home/GetViewCodAccesSPV` |
-| Import | `ImportDate/UploadXMLFiles`, `ImportFactura`, `AnuleazaImportXML`, `StergeFiserXML` |
-| Balance / closing | `Balanta/ExecutaBalanta`, `InchidereLuna/*` (~74 endpoints), `Bilant/*` (~23 endpoints incl. `ActualizareDate`, `ActualizareFormule`, `ValidareData`, `GenerarePDF_Bilant`) |
-| DB admin | `BackupDB/*`, `Home/UpdateDB` |
+| Partner defaults | `Clienti/Verificare*`, `LProcedure_Clienti`, `Furnizori/…`, `Home/CheckCF`, `Home/GetBanca` |
+| Chart of accounts | `PlanConturi/LProcedure`, `GetTipSintetic`, `VerifAnalitic121`, `Home/GetDreptCont` |
+| Items / VAT / prices | `Articole/GetTVAArticol`, `IsVandabil`, `CheckSGR`, `GenereazaCB`, `GetBrut`/`SetBrut`, `PreturiVanzare/*`, `Home/GetTVA` |
+| FX | `IntrariValuta/GetCursValutar` (IesiriValuta tool already uses the FX rate path) |
+| Cash / bank | `RegistruCasa/SetActFact`, `GetClientByContAnalitic`, `SetContCasa`, `SetFiltruOP`, `IncarcaExtras`, `ImportExtrase/*` |
+| Validare | `<Controller>/ExecutaValidare` + `Devalidare` (Intrari, Iesiri, IesiriValuta, Bonuri, Transferuri, Productie, Imobilizari, Inventariere, StateSalarii, InchidereLuna/…) |
+| Accounting note | `Home/ExecutaInsMMod` after journal saves |
+| Contracts | `Contracte/GenerareFacturi`, `CheckRate`, `GetNrContracte` |
+| e-Factura | `EFactura/ReadToken`, `SaveToken`, `ImportEFactura`, `AnulareEFactura`, `LoadFacturiImport`, … |
+| Import date | `ImportDate/UploadXMLFiles`, `ImportFactura` — **shipped** as `saga_import_xml` |
+| Balance / close | `Balanta/ExecutaBalanta`, `InchidereLuna/*`, `Bilant/*` |
+| DB | `BackupDB/*`, `Home/UpdateDB` |
 
-### 1.9 Report protocol (covers all "Situatii" features)
+### 2.9 Reports
 
-Confirmed pattern (from `IesiriValuta.js`, identical shape across modules):
-
-```js
-// step 1 — push filters into server session
-t = getTable("IesiriValuta").GetRequestSetup();
-t.auxiliar = JSON.stringify(screenFilters);
-await $.ajax({ type:"Post", url:"Rapoarte/SetDataRaportListaIesiri",
-               data:{ Filtru: t.auxiliar, Titlu: "<report title>",
-                      Tip: "Export", SortColumn: i, SortMode: r } });
-
-// step 2 — fetch the rendered report
-src = $("body").data("api") + "/Rapoarte/CreateRaportListaIesiri?Filtru=Export&Descarca=true"
+```
+POST Rapoarte/SetDataRaport<X>   Filtru, Titlu, Tip=Export, SortColumn, SortMode
+GET  <apiBase>/Rapoarte/CreateRaport<X>?Filtru=Export&Descarca=true
 ```
 
-So every report is: **POST `Rapoarte/SetDataRaport<X>` (or `SetDateRaport<X>` / `SetDetaliiRaport<X>`) → GET `<apiBase>/Rapoarte/CreateRaport<X>PDF?Filtru=Export&Descarca=true`**, and we save `response.body()` to `./data/saga/reports/<name>.pdf`. `Descarca=false` renders inline; `Descarca=true` downloads.
+Save `response.body()` only after `content-type` / magic bytes say PDF or XLS. HTML error pages must not be written as `.pdf`.
 
-Extracted report inventory (44 setters, ~100 `CreateRaport*` endpoints) — enough to build every report tool without further discovery. Highlights:
+Setter inventory (from modules): Balanta, Bilant, Intrari, ListaIesiri, Articole, Imobilizari, Casa, OP, Deconturi, Inventariere, Productie, Consumuri, Contracte, StateSalarii, SitLunare, TransferuriNIR, … Creators: `BalantaPDF`, `IntrariPDF`, `ListaIesiri`, `JurnalBancaPDF`, `FacturaPDFNoDownload`, salary/bilant families, etc. Direct generators: `Bilant/GenerarePDF_Bilant`, `InchidereLuna/GenerarePDFDeclaratie`, …
 
-- Setters: `Balanta`, `Bilant`, `Intrari`, `ListaIesiri`, `Articole`, `Imobilizari`, `ImobilizariRegistru`, `Casa`, `OP`, `Deconturi`, `Inventariere`, `Productie`, `Consumuri`, `Contracte`, `Chitanta`, `AnexaComanda`, `AnexaCB`, `Etichete`, `Garantie`, `Masini`, `Oferta`, `Reteta`, `NT`, `Creditare`, `DI`, `Monetar`, `Deseuri`, `Bonuri`, `Profit`, `InchidereAn`, `InchidereDetaliataAn`, `InchidereAnRegistru`, `SitLunare`, `TransferuriNIR`, `Pontaj`, `Card`, `StateSalarii`, `SituatiiSal`, `SimulareSal`, `AdeverinteSalarii`, `Concedii`, `ListaConcedii`, `CentralizareConcedii`, `ProgramareCO`, `Tichete`.
-- Creators: `BalantaPDF`, `IntrariPDF`, `IntrariNCPDF`, `FacturaIntervalPDF`, `FacturaPDFNoDownload`, `ListaIesiri`, `ArticolePDF`, `ProductiePDF`, `InventarierePDF`, `TransferuriPDF`/`TransferuriNIRPDF`, `RegistruCasaPDF`/`ValutaPDF`/`TotalPDF`/`ChitantaPDF`/`NTPDF`/`CreditarePDF`/`DPPDF`/`DIPDF`/`MonetarPDF`, `JurnalBancaPDF`/`ValutaPDF`/`TotalPDF`/`BorderouPDF`, `JurnalDeconturiPDF`/`ValutaPDF`, `DecontCheltuieliPDF`, `ImobilizariFisaPDF`/`ReceptiePDF`/`CasarePDF`/`PlanAmortPDF`/`RegistruPDF`, `SituatiiLunarePDF`, `SituatieMarfuri`, `StocBCPDF`, `OIPDF`, `ConsumuriPDF`, `ComandaIesirePDF`/`ComandaIntrarePDF`/`ComandaConsumuriPDF`, `ContractePDF`, `OfertaPDF`, `GarantiePDF`, `EtichetePDF`, `OPPDF`, `ProfitPDF`, `InchidereAnPDF`, `Bilant*PDF` + `BilantNota1..10PDF`, `BilantDeclaratiePDF`, all `StateSalarii*PDF` / `Sal*PDF` / `AdeverinteSalariatiPDF`, `FoaieParcursPDF`, `OrdinDeDeplasarePDF`, `SituatieCosturiMasiniPDF`, `SalConcediiCentralizareXLS`.
-- Direct PDF generators (bypass the two-step): `Bilant/GenerarePDF_Bilant`, `Bilant/GenerarePDF_Extra`, `InchidereLuna/GenerarePDFDeclaratie`, `Salariati/GenerarePDF_Adeverinte`, `StateSalarii/GenerarePDF_ConcediiOdihna`, `StateSalarii/GenerarePDF_D112`, `Actionari/ExecutaGenerarePDF`.
-- Print-option views (skippable for MCP; we set params directly): `Home/GetViewTiparire*`.
-- Signature combos: `Rapoarte/GetLastData_ComboBox_Semnaturi`.
+Each report still needs its `auxiliar` filter schema. That is Wave 2 work, not “registry string only.”
 
-### 1.10 Excel export protocol
+### 2.10 Excel export
 
 ```
 POST Home/ExportDate
-  TableName, RequestSetup, Tip, RowsExport, ConfigRowsExport,
-  ExcludedIDs, DetailsSetup, ConfigRowsDetailsExport, ExportToate
+  TableName, RequestSetup, Tip, RowsExport, …
 ```
-Support endpoints: `Home/GetViewDataExport`, `Home/GetExportColumnPreferences`, `Home/SaveExportColumnPreferences`, `Home/GetCustomColumnSizes`. This gives us **"export any grid to Excel"** as a single generic tool for all 40+ grids.
+
+One `saga_export_grid` for every registered grid.
 
 ---
 
-## 2. Unknowns to capture live (must-do before Wave 1)
+## 3. Unknowns to capture (before / during the matching wave)
 
-Small, bounded list. Each has an exact capture recipe. Ship a temporary `saga_probe_screen` tool (§3.4) and run it once per screen; store output under `data/saga/research/tablemodels/<Screen>.json`.
+Do not block Wave 0 on these except where noted.
 
-### 2.1 `DataRequestSetup.json` exact shape
-```python
-page.evaluate("() => JSON.stringify(new DataRequestSetup().json)")
-page.evaluate("(t) => JSON.stringify(getTable(t).GetRequestSetup())", "Clienti")
-```
-Result pins down paging/sorting/filter keys and the `auxiliar` slot. Blocks: generic list/search + reports.
+| ID | What | Recipe | Blocks |
+|---|---|---|---|
+| U1 | Full `DataRequestSetup.json` | `page.evaluate("() => JSON.stringify(getTable('Clienti').GetRequestSetup())")` | extra filter keys; paging already works |
+| U2 | `tableModel` per screen | init-script hook on `JSON.parse` **or** scrape `#containerAdvancedTable_*` | generic reads; **do this as each screen is onboarded** |
+| U3 | `tableColumns` extras | dump one real array | required / maxlength / caption |
+| U4 | Report API base | `page.get_attribute("body", "data-api")` | reports |
+| U5 | `SenderID` / `tabID` | already in `partners.py` / `iesiri_valuta.py` / `wipe.py` — **move to protocol** in Wave 0 | — |
+| U6 | Per-report `auxiliar` | capture print-modal XHR or module `u.<Field>=` | `saga_run_report` |
+| U7 | Rights matrix | `GET Home/LoadDrepturiEcrane` | **Probed:** Access=`0` = allowed, Access=`1` = restricted (Salariați / State salarii). `assert_writable` denies Access=1 and Adaugare/Stergere=0. |
 
-### 2.2 `tableModel` per screen
-Not in a global; it is the constructor argument. Two ways, in order:
-```python
-# a) intercept the model at parse time (inject before navigation)
-page.add_init_script("window.__sagaModels=[];const P=JSON.parse;JSON.parse=function(s){const r=P.apply(this,arguments);if(r&&r.tableName&&r.tableConfig&&r.tableConfig.actionsURLs){window.__sagaModels.push(r);}return r;};")
-# b) fall back to scraping DOM conventions
-page.eval_on_selector_all("[id^='containerAdvancedTable_']", "els => els.map(e => e.id.replace('containerAdvancedTable_',''))")
-```
-Blocks: everything generic. **Highest priority.**
-
-### 2.3 `tableColumns` entry shape
-Known keys from usage: `name`, `inputType` (contains `Input` / `Select` / `Checkbox` / `Hidden` / `Lock`), `selectModel`, `defaultValue`. Dump one real array to learn the rest (required flags, max length, numeric scale, caption).
-
-### 2.4 Report API base
-```python
-page.get_attribute("body", "data-api")
-```
-
-### 2.5 `SenderID` / `tabID`
-```python
-page.evaluate("() => (typeof tabID!=='undefined'&&tabID!=null)?String(tabID):'0'")
-```
-Already implemented in `partners.py`; move to shared.
-
-### 2.6 Per-screen `auxiliar` filter shape
-Each report screen builds its own filter object from its modal. Capture by opening the print modal once with network capture on, or read the `u.<Field>=…` assignments in the module JS (they are readable even minified, e.g. `u.Neachitate`, `u.Tip`, `u.TVAI`, `u.Tert`, `u.Agent` for `ListaIesiri`).
-
-### 2.7 Rights matrix
-`GET Home/LoadDrepturiEcrane` once → which screens this user may touch. `feature_inventory.json` already flags `access: "1"` (restricted) for `Salariati`, `State salarii`, `Configurare salarii`.
+Persist **reviewed** probes as committed catalog files under `src/markus_mcp/tools/saga/schemas/<table>.json` (packaged with the binary — not only gitignored `data/`). Raw captures may still live in `data/saga/research/tablemodels/` during a wave.
 
 ---
 
-## 3. Architecture
+## 4. Code architecture
 
-### 3.1 Target file layout
+### 4.1 Layout (as shipped)
+
+Named writes live at the `saga/` root. There is no `adapters/` package — extra POSTs (`GetCursValutar`, Import extrase, e-Factura) stay in the module that owns that job. SmartBill ingest is `tools/smartbill.py`, not `documents/from_smartbill.py`.
 
 ```
 src/markus_mcp/tools/saga/
-  session.py            # exists — auth, browser thread, capture, api_request
-  credentials.py        # exists
-  protocol.py           # NEW — response classification + validation handshake
-  discovery.py          # NEW — tableModel/tableColumns extraction + cache
-  grid.py               # NEW — generic AdvancedControls client (read/create/edit/delete/next/detail)
-  registry.py           # NEW — screen registry: feature → route/controller/table/PK/flags
-  reports.py            # NEW — Rapoarte two-step client + report registry
-  exports.py            # NEW — Home/ExportDate client
-  lookups.py            # NEW — GetData_ComboBox_* client with Home redirects
-  context.py            # NEW — LoadOperationalData / rights / interval
-  adapters/             # NEW — thin per-screen business logic
-    __init__.py
-    clienti.py          # migrate from partners.py
-    furnizori.py
-    articole.py
-    intrari.py
-    iesiri.py
-    iesiri_valuta.py    # migrate from iesiri_valuta.py
-    intrari_valuta.py
-    registru_casa.py
-    jurnal_banca.py
-    deconturi.py
-    imobilizari.py
-    transferuri.py
-    bonuri_consum.py
-    productie.py
-    inventariere.py
-    comenzi.py
-    contracte.py
-    efactura.py
-    cecuri.py
-    diurne.py
-    numere_serii.py
-  partners.py           # keep as a compatibility shim for existing tool names
-  fx_invoice_pdf.py     # exists
+  session.py              # auth, browser thread, capture
+  credentials.py
+  protocol.py             # classify + handshake; SenderID; RequestSetup
+  discovery.py            # tableModel extract + catalog diff
+  grid.py                 # generic AdvancedControls client (not employee MCP)
+  registry.py             # ScreenSpec: route, PK, risk, write_style, schema_id
+  schema.py               # catalog load, aliases, map_fields(operation, payload)
+  schemas/                # committed tableModel snapshots (onboarded screens only)
+  documents/              # canonical payloads + ingest/emit (no Playwright)
+    types.py
+    validate.py
+    parse_facturi_xml.py / emit_facturi_xml.py
+    parse_incasari_xml.py / emit_incasari_xml.py
+  reports.py / exports.py / lookups.py / context.py
+  nomenclator.py          # Furnizori / Articole / casă via SagaGrid
+  invoices.py             # saga_add_iesire / saga_add_intrare — one post_on_page
+  bank.py                 # saga_post_bank_entries / saga_add_casa_entry
+  iesiri_valuta.py        # FX extras (Curs, Tip) + MCP name saga_add_iesiri_valuta
+  partners.py             # saga_*_partner facade: grid writes + list; UI fallback if API fails (not on preflight block)
+  iesiri.py               # Facturi XML wrapper → invoices.post_on_page
+  import_date.py          # Import date transport
+  jurnal_banca_import.py  # I_/P_ XML → Import extrase
+  efactura.py / declarations.py / validate_doc.py
+  wipe.py                 # ordered delete workflow; SagaGrid.delete when the target is a catalog screen
+  fx_invoice_pdf.py       # optional helper
+
+src/markus_mcp/agent_skills/   # jobs; install via cursor_skills.py
 ```
 
-### 3.2 `protocol.py` — response handling (single place)
+`wipe.py` is a proto-generic client. Wave 0 **folds its handshake into `protocol.py` / `grid.py`**. Do not invent a second handshake.
+
+**Ingest vs engine:** parsers and `schema.py` must be unit-testable without a browser. Adapters import `documents` + `schema`, never the reverse. Catalog JSON is the lookup; live `probe_screen` only **updates** that JSON after review.
+
+### 4.2 `protocol.py`
 
 ```python
 Outcome = Literal["success", "needs_check", "needs_choice", "warning", "error"]
 
-@dataclass(frozen=True)
 class SagaResponse:
     outcome: Outcome
     raw: Any
@@ -327,308 +440,523 @@ class SagaResponse:
     validation_flags: list[dict]
     new_id: str | None
 
-def classify(body: Any) -> SagaResponse:
-    """Unify the two families:
-       classic: {type: Validation|Choice|Warning, status, flagId}
-       ex:      {success: bool, errorCode: 'ValidateData', validationFlags: [...]}"""
-
+def classify(body) -> SagaResponse: ...
+def request_setup(*, skip, batch_size, keyword=None, master_id=None, **extra) -> str: ...
+def sender_id(page) -> str: ...
 def post_with_handshake(page, url, payload, *, style, allow_choices: bool) -> SagaResponse:
-    """1) POST with _CHECKED=false
-       2) Validation → repost _CHECKED=true
-       3) Choice     → only if allow_choices (i.e. confirm_write=true), repost with uvf
-       4) Warning    → return as-is, never auto-answer
-       Max 3 round trips, always return the full chain for diagnostics."""
+    # 1) _CHECKED=false  2) Validation → true  3) Choice only if allow_choices
+    # Max 3 round trips; return full chain
 ```
 
-Existing behaviour to fold in: `iesiri_valuta._post_with_validation_retry`, `iesiri_valuta._extract_created_ids`, `partners._post_clienti_row`, `partners._delete_clienti_via_api`.
+Fold in: `iesiri_valuta._post_with_validation_retry`, `_extract_created_ids`, `partners._post_clienti_row`, `wipe._delete_ex` / `_delete_classic` / `_devalidate`.
 
-### 3.3 `grid.py` — the generic client
+### 4.3 `grid.py`
 
 ```python
-@dataclass(frozen=True)
 class GridModel:
-    table_name: str
-    controller: str
-    primary_key: str
-    get_data_url: str
-    create_url: str
-    edit_url: str
-    delete_url: str
-    next_index_url: str | None
-    copy_detail_url: str | None
-    delete_master_details_url: str | None
-    is_master: bool
-    is_detail: bool
-    master_table: str | None
-    selection_key: str | None
+    table_name, controller, primary_key
+    get_data_url, create_url, edit_url, delete_url
+    next_index_url, copy_detail_url, delete_master_details_url
+    is_master, is_detail, master_table, selection_key
     columns: tuple[GridColumn, ...]
+    write_style: Literal["classic", "ex"]
+    risk: Literal["low", "medium", "high"]
 
 class SagaGrid:
-    def __init__(self, page, model: GridModel): ...
-    def list(self, *, skip=0, batch_size=100, keyword=None, columns=None,
-             search_type=1, sort_column=None, sort_mode=None,
-             master_id=None) -> dict          # GET getData
-    def get(self, pk: str) -> dict | None      # getData with id
-    def next_index(self) -> str | None         # GET getNextIndex
-    def create(self, row: dict, *, allow_choices: bool) -> SagaResponse
-    def update(self, pk: str, row: dict, *, allow_choices: bool) -> SagaResponse
-    def delete(self, pk: str, *, allow_choices: bool) -> SagaResponse
-    def details(self, master_pk: str, detail_table: str) -> dict
-    def create_detail(self, master_pk: str, detail_table: str, row: dict, *, allow_choices) -> SagaResponse
-    def copy_detail(self, origin_id, target_id, negative=False) -> dict
+    def list(...) -> dict
+    def get(pk) -> dict | None
+    def next_index() -> str | None
+    def create(row, *, allow_choices) -> SagaResponse
+    def update(pk, row, *, allow_choices) -> SagaResponse
+    def delete(pk, *, allow_choices) -> SagaResponse
+    def details(master_pk, detail_table) -> dict
+    def create_detail(...) -> SagaResponse
 ```
 
-Rules baked into `SagaGrid`:
-- Never send a column that is not in `model.columns` — return `unknown_fields` instead (mirrors today's `_map_user_fields`).
-- Never invent values. Only fill `defaultValue` when SAGA's own model declares one, and say so in the result.
-- Auto-`next_index` when `avoidPKGeneration` is false or the table is one of `Intrari|Iesiri|IntrariValuta|IesiriValuta`.
-- Every mutating call returns `{ok, via, endpoint, request, response_chain, screenshot_path, capture_path}` so failures are debuggable without re-running.
+Rules:
 
-### 3.4 `discovery.py` — one probe to rule them all
+- Refuse columns not in `model.columns` (`unknown_fields`).
+- Never invent values; only fill `defaultValue` from the model and report it.
+- Auto-`next_index` when required.
+- Pre-flight `LoadDrepturiEcrane` and closed period (`GetInchidereCurenta`) before writes.
+- Mutating results always include `{ok, via, endpoint, request, response_chain, screenshot_path, capture_path}`.
+- `risk=high` screens: engine may read; named write tools are not registered.
 
-```python
-def probe_screen(page, route: str) -> dict:
-    """Navigate to <app_base>/<route>, capture every tableModel on the page,
-       return grids (model + columns + combos), toolbar buttons, detected
-       report buttons, and the raw XHR capture. Persist to
-       data/saga/research/tablemodels/<route>.json"""
-```
-
-This becomes an MCP tool (`saga_probe_screen`, read-only) so the **agent itself can onboard a new SAGA screen** without a code change — that is the mechanism that gets us to 100% coverage cheaply.
-
-`registry.py` then holds the curated, reviewed result:
+### 4.4 `registry.py`
 
 ```python
-SCREENS: dict[str, ScreenSpec] = {
-  "clienti": ScreenSpec(route="Clienti", controller="Clienti", table="Clienti",
-                        pk="Cod", risk="low", tools=("list","get","create","update","delete","export")),
-  "iesiri_valuta": ScreenSpec(route="IesiriValuta", controller="IesiriValuta",
-                        table="IesiriValuta", detail_table="IesiriValutaDetalii",
-                        pk="ID_Iesire", risk="medium", tools=(...)),
-  ...
+SCREENS = {
+  "clienti": ScreenSpec(route="Clienti", table="Clienti", pk="Cod",
+                        risk="low", tools=("list","get","create","update","delete","export"),
+                        named=("saga_list_partners", "saga_create_partner", ...)),
+  "iesiri_valuta": ScreenSpec(..., detail_table="IesiriValutaDetalii",
+                        risk="medium", named=("saga_add_iesiri_valuta",)),
 }
 ```
 
-### 3.5 Generic MCP tool surface
+Registry is how generic **reads** know a screen. Named write tools point at adapters and accept **canonical documents** (or the existing header/lines field dicts), not raw “any grid row” payloads and not file paths as the primary contract.
 
-These 12 tools alone cover the read/write/export/report needs of **every** grid-based screen:
+### 4.5 Discovery and catalog refresh
 
-| Tool | Kind | Purpose |
+`probe_screen(page, route)` navigates, captures every `tableModel`, toolbar, report buttons, XHR dump. Used by developers (and optionally a hidden MCP tool).
+
+1. Persist raw capture (research folder).
+2. Diff against `schemas/<table>.json`.
+3. If columns/endpoints changed: review, then replace the committed snapshot in the same PR as adapter/tool updates.
+4. **Reads** can use a reviewed spec immediately. **Writes** still wait for one captured UI create (§6) plus an adapter if side-effects exist.
+
+Do not auto-overwrite write catalogs from a probe in production.
+
+### 4.6 Documents, ingest, and schema mapping
+
+```python
+# schema.py
+def catalog_for(operation: str) -> Schema: ...  # header + optional detail tables
+def map_fields(operation: str, user_payload: dict) -> Mapped:
+    # exact names, then aliases.json, then reject unknown
+    # fill only documented defaultValue from catalog
+
+# documents/validate.py
+def validate(operation: str, document: dict) -> list[str]:  # uses catalog required/types
+```
+
+Agent path for **chat**: skill loads catalog for X → agent fills those field names (or aliases) → `map_fields` → named tool preview.
+
+Agent path for **XML**: parser produces raw tags → `map_fields` against the same catalog → same named tool.
+
+Do **not** keep a long-term separate posting implementation per file type. Do **not** maintain a second handwritten field list in Python once the JSON catalog exists (`fx_invoice_field_catalog` / `partner_field_catalog` migrate into `schemas/`).
+
+---
+
+## 5. Feature → engine / named tool / skill
+
+Legend: **E** engine+registry (reads) · **N** named write/workflow tool · **A** adapter · **R** `saga_run_report` · **S** skill · **H** human-gated · **✓** shipped.
+
+### 5.1 Auth / session
+
+| Feature | Plan | Notes |
 |---|---|---|
-| `saga_context` | read | firm, user, period, accounting type, rights (`LoadOperationalData` + `LoadDrepturiEcrane`) |
-| `saga_list_screens` | read | curated registry: which SAGA screens Markus can drive, and at what risk level |
-| `saga_probe_screen` | read | discover `tableModel`/columns/endpoints for a screen; the onboarding tool |
-| `saga_describe_screen` | read | writable columns + types + combos + required fields for a screen (generic `*_fields`) |
-| `saga_list_rows` | read | paged/filtered read of any registered grid |
-| `saga_get_row` | read | single row by PK |
-| `saga_lookup` | read | combo values for a column (`GetData_ComboBox_*`) |
-| `saga_create_row` | write | create on any registered grid; `confirm_write` gate |
-| `saga_update_row` | write | update; only user-specified fields |
-| `saga_delete_row` | write | delete; `confirm_write` gate |
-| `saga_create_document` | write | master + detail lines in one call (journals/documents) |
-| `saga_export_grid` | read | `Home/ExportDate` → xlsx path |
-| `saga_run_report` | read | `Rapoarte/SetDataRaport<X>` + `CreateRaport<X>` → pdf/xls path |
-| `saga_validate_document` | write | `ExecutaValidare` / `ExecutaDevalidare`; `confirm_write` gate |
+| Login / OTP / firm | ✓ | keep current tools |
+| Working interval | E + N | `saga_context` read; `saga_set_interval` with `confirm_write` if we automate changing it |
 
-Plus **named convenience wrappers** for the high-traffic screens (better agent ergonomics and stable names for skills), e.g. `saga_list_suppliers`, `saga_create_supplier`, `saga_list_items`, `saga_create_item`, `saga_add_intrare`, `saga_add_iesire`, `saga_add_iesiri_valuta` (exists), `saga_add_casa_entry`, `saga_add_bank_entry`, `saga_trial_balance`, `saga_account_ledger`, `saga_sales_journal`, `saga_customer_statement`, `saga_stock_report`, `saga_efactura_list`, `saga_efactura_download`.
+### 5.2 Fisiere — master data
 
-Backwards compatibility: keep every currently shipped tool name (`saga_list_partners`, `saga_create_partner`, `saga_add_iesiri_valuta`, …) as thin wrappers over the generic layer. Update `tools/catalog.py` in the same commit as `server.py` — the catalog is what `list_tools` reports and it has drifted before.
-
----
-
-## 4. Complete feature → tool mapping (all 77)
-
-Legend for **Plan**: `G` = covered by the generic grid tools + registry entry only · `A` = generic + a thin adapter · `R` = report tool (`saga_run_report`) · `H` = human-gated (tool exists but requires explicit confirmation and never runs unattended) · `✓` = already shipped.
-
-### 4.1 Auth / Session (4)
-
-| Feature | Route/Controller | Plan | Notes |
-|---|---|---|---|
-| Login | `Home/Login`, `Home/CompleteLogin` | ✓ | `saga_login` |
-| OTP / browser authorize | `Home/ValidateOTP` | ✓ | `saga_submit_otp`; email link is the user's side-channel |
-| Firm select | `/Firme` + Conectare | ✓ | inside `saga_login` |
-| Working interval | `Home/LoadOperationalData` | A | new `saga_context` read; changing interval = toolbar UI action, add `saga_set_interval` with confirm |
-
-### 4.2 Fisiere — master data (12)
-
-| Feature | Controller / Table | Plan | Adapter work |
-|---|---|---|---|
-| Clienti | `Clienti` | ✓ | migrate to generic; keep tool names |
-| Furnizori | `Furnizori` | A | `Verificare`, `VerificareAll`, `LProcedure_Furnizori`, `Home/GetBanca` — mirror of Clienti |
-| Agenti | `Agenti` | G | pure nomenclator |
-| Plan conturi | `PlanConturi` | A | `LProcedure`, `GetTipSintetic`, `VerifAnalitic121`; add `saga_chart_of_accounts` read |
-| Gestiuni | `Gestiuni` | A | `GetNextPK`, `LProcedure` |
-| Tipuri de articole / servicii | `TipuriArticole` | A | `AnteEdit`, `ActualizeazaTipArticole` |
-| Articole | `Articole` | A | biggest adapter: `GetTVAArticol`, `IsVandabil`, `CheckSGR`, `GenereazaCB`, `GetBrut`/`SetBrut`, `UpdateGarantie`, `PreturiVanzare/*` |
-| Grupe | `Grupe` | A | `LProcedure_{Articole,Clienti,Furnizori,Proiecte,BugCategorie}` |
-| Filiale | `Filiale` | A | `GetCod`, `LProcedure_Filiale` |
-| Salariati | `Salariati` | H | `access=1` today; read-only until rights granted |
-| Actionari | `Actionari` | A | `GetNextCod`, `ExecutaGenerarePDF` |
-| Masini | `Masini` | A | `RefDate`, `SetFiltruTip`; reports `FoaieParcursPDF`, `SituatieCosturiMasiniPDF` |
-
-### 4.3 Operatii — journals (24)
-
-| Feature | Controller / Tables | Plan | Adapter work |
-|---|---|---|---|
-| Articole contabile | (probe) | G | probe first; likely `Registru` grid |
-| Intrari | `Intrari` + `IntrariDetalii` | A | `GetTextFurnizor`, `SetIdBcIntrariDetalii`, `ExecutaValidare/Devalidare`, `Home/ExecutaInsMMod`, NIR reports |
-| Iesiri | `Iesiri` + `IesiriDetalii` | A | `GetTextClient`, `GetCAG`, `CorectezTVA`, validare, `Rapoarte/AnteCheckFacturaCuChitanta` |
-| e-Facturi | `EFactura` (`EFactImport`, `EFactImportDetalii`, `EFactRaspunsuri`, `EFactGenerareSiTransmitere`, `EFactImportFacturiEmise`) | A/H | read+download automatable; **ANAF submit/cancel is `H`** (`ImportEFactura`, `AnulareEFactura`, `SalveazaDate_EFactGenerareSiTransmitere`, token via `ReadToken`/`SaveToken`/SPV code) |
-| Intrari - valuta | `IntrariValuta` (+`Detalii`) | A | mirror of IesiriValuta; `GetCursValutar` lives here |
-| Iesiri - valuta | `IesiriValuta` (+`Detalii`) | ✓ | migrate onto `grid.py`, keep `saga_add_iesiri_valuta` |
-| Imobilizari | `Imobilizari` | A | `GetNrInventar`, `ValoareRamasa`, `RI_S`, validare, 5 report variants |
-| Transferuri | `Transferuri` | A | `GetNrDoc`, `GetCAT`, `ValidareCantitate`, `InsertSelectiiRapide`, validare |
-| Bonuri de consum | `Bonuri` / `BonuriOI` | A | `Bonuri/GetCAG`, `BonuriOI/CompareDatePrelGest`, validare |
-| Productie | `Productie` | A | `GetNrDoc`, `GetNrDocComenzi`, `GetValDescNoStoc`, validare (+Master) |
-| Inventariere | `Inventariere` | A | `GetNrDoc`, `ValidPret`, `ActualizareStocuriScriptice`, `SetFiltreDetalii`, validare |
-| Dare în folosinta ob. inv. | `BonuriOI` | A | shares the Bonuri adapter |
-| Dezmembrari | (probe) | H | stock teardown; destructive |
-| Operatii speciale | (probe) | H | rare corrective ops |
-| Reglari descarcare | (probe) | H | stock adjustments |
-| Registru de casa | `RegistruCasa` | A | largest cash adapter (see §1.8); receipts via `RegistruCasaChitantaPDF` |
-| Registru de casa - valuta | `RegistruCasa` (valuta mode) | A | same adapter + `GetLastValuta`, `SetContDifCurs` |
-| Deconturi | `RegistruCasa` family / `Deconturi` view | A | `JurnalDeconturiPDF`, `AnteCheckDecont` |
-| Deconturi - valuta | idem | A | `JurnalDeconturiValutaPDF` |
-| Jurnal de banca | `RegistruCasa` family / `JurnalDeBanca` view | A | `JurnalBancaPDF`, `BorderouPDF`, `SetFiltruOP`, `AnteCheckIBAN` |
-| Jurnal de banca - valuta | idem | A | `JurnalBancaValutaPDF` |
-| Cecuri, BO emise/primite | `Cecuri` | A | `Cecuri/SetAnteSaveData` (already referenced inside AdvancedControls) |
-| State salarii | `StateSalarii` | H | `access=1`; payroll + D112 filings |
-| Inchidere luna | `InchidereLuna` | H | irreversible period close; expose read-only status (`GetInchidereCurenta`) + a hard-gated execute |
-
-### 4.4 Situatii — reports (23)
-
-All of these are the same tool with different parameters. Build **one** `saga_run_report` plus a small registry mapping friendly name → (setter endpoint, creator endpoint, filter schema). Named wrappers for the top ones.
-
-| Feature | Setter → Creator | Plan |
+| Feature | Plan | Notes |
 |---|---|---|
-| Fise conturi | `SetDataRaport…` (probe `FiseConturi` combos) → `…PDF` | R |
-| Balante | `Balanta/ExecutaBalanta` + `SetDataRaportBalanta` → `CreateRaportBalantaPDF` | R |
-| Carte mare | probe | R |
-| Jurnale de cumparari / vânzari | `SetDataRaportIntrari` / `SetDataRaportListaIesiri` → `IntrariPDF` / `ListaIesiri` | R |
-| Situatie furnizori | probe (`SituatiiFurnizori` view) | R |
-| Situatie clienti | probe (`SituatiiClienti` view) | R |
-| Situatie cecuri / bilete la ordin | probe (`Cecuri`) | R |
-| Registru jurnal | probe | R |
-| Registru inventar | `ImobilizariRegistruPDF` family | R |
-| Bilant | `Bilant/*` + `SetDateRaportBilant` → `BilantDeclaratiePDF`, `BilantNota1..10PDF` | A+R |
-| Declaratia 406 (SAF-T) | `Declaratia406` | H |
-| Declaratia 205 | `Home/GetViewDeclaratia205` | H |
-| Declaratia Intrastat | probe | H |
-| Fise articole | `SetDateRaportArticole` → `ArticolePDF` | R |
-| Situatie aprovizionari | `SituatiiAprovizionari` combos | R |
-| Situatie vânzari | `SituatiiVanzari` combos → `ListaIesiri` | R |
-| Situatie consumuri | `SetDataRaportConsumuri` → `ConsumuriPDF` | R |
-| Situatie obiecte inventar | → `OIPDF` | R |
-| Situatie productie | `SetDataRaportProductie` → `ProductiePDF` | R |
-| Situatie stocuri | → `StocBCPDF` / `SituatieMarfuri` | R |
-| Situatie ambalaje SGR | `Articole/CheckSGR` + probe | R |
-| Raport de gestiune | probe | R |
-| Situatii manageriale | `SituatiiManageriale` combos, `SitLunare` → `SituatiiLunarePDF` | R |
+| Clienti | ✓ migrate onto grid; keep tool names | adapter: Verificare / CUI |
+| Furnizori | E + N + A | clone Clienti named tools (`saga_list_suppliers`, …) |
+| Agenti, Grupe, Filiale, Actionari, Masini | E then N if a job needs them | do not ship 5 CRUD tools “because the menu exists” |
+| Plan conturi | E + A; N read `saga_chart_of_accounts` | writes cautious |
+| Gestiuni, Tipuri articole | E + A (`GetNextPK`, `LProcedure`) | named when Articole/Intrări need them |
+| Articole | E + N + A | biggest nomenclator adapter |
+| Salariati | H | Access=1; read-only until rights + explicit job |
 
-### 4.5 Diverse (8)
+### 5.3 Operatii — journals
 
-| Feature | Controller | Plan | Notes |
-|---|---|---|---|
-| Comenzi | `Comenzi` | A | orders master+detail; `ComandaIesirePDF`/`ComandaIntrarePDF`; shares Articole+Productie helpers |
-| Situatie comenzi | `Rapoarte/SetDataRaportAnexaComanda` | R | |
-| Contracte | `Contracte` | A | `GenerareFacturi` is a **write with financial impact** → `confirm_write` + preview of what would be invoiced |
-| Cheltuieli / venituri în avans | `InregistrareCheltuieliVenituri` | A | `Home/GetViewInregistrareCheltuieliVenituri` |
-| Import date | `ImportDate` | ✓ | `saga_import_xml` — `UploadXMLFiles` then `ImportFactura`; `confirm_write` gate |
-| Diurne | probe | A | per-diem grid; `OrdinDeDeplasarePDF` |
-| e-Transport | `eTransport` | H | ANAF portal |
-| REVISAL | `REVISAL` | H | labour registry filing |
-
-### 4.6 Administrare (6)
-
-| Feature | Controller | Plan |
+| Feature | Plan | Notes |
 |---|---|---|
-| Configurare societati | `ConfigSociet` | H (read via `LoadOperationalData.Societ` is fine) |
-| Configurare salarii | payroll config | H (`access=1`) |
-| Numere si serii | probe | A — needed by document tools to pick the right series |
-| Utilizatori | probe | H — security |
-| Intretinere BD | `BackupDB`, `Home/UpdateDB` | H — destructive |
-| Despre... | `Home/GetActualizari` | G — version info, trivially read-only |
+| Iesiri - valuta | ✓ header/lines (format-agnostic) + migrate to grid | skill: FX PDF (and chat) |
+| Iesiri (RON) | ✓ XML wrapper today → **N `saga_add_iesire(document)`** + A + Facturi XML ingest | one skill: any source |
+| Intrari / Intrari valuta | N `saga_add_intrare(document)` + A; Import date remains XML *transport* | chat/PDF/XML → same document |
+| Jurnal de banca | ✓ XML wrapper → **N `saga_post_bank_entries(documents)`** + ingest | skill: any source |
+| Registru casa (+valuta), Deconturi | N + A | skill: cash receipt when needed |
+| e-Facturi | N list/download; **H submit/cancel** | skill: review inbound |
+| Imobilizari, Transferuri, Bonuri, Productie, Inventariere | E reads; N+A when a job exists | stock teardown / reglări / ops speciale = **H** |
+| State salarii | H | |
+| Inchidere luna | H | read status in `saga_context`; execute hard-gated |
+
+### 5.4 Situatii — reports (23)
+
+One `saga_run_report(name, filters)` + registry (setter, creator, `auxiliar` schema). Named wrappers only for the top jobs (balanță, jurnale, fișe, stocuri). Skill: period pack.
+
+Declarations 406 / 205 / Intrastat = **H**. Bilant generate PDF can be R with confirm if it only files locally; ANAF submit stays H.
+
+### 5.5 Diverse / Administrare
+
+| Feature | Plan |
+|---|---|
+| Import date | ✓ `saga_import_xml` = upload transport; prefer emit from canonical when we build docs in Markus |
+| Comenzi / Contracte | N+A when a job exists; `GenerareFacturi` is confirm_write + preview |
+| e-Transport, REVISAL | H |
+| Numere și serii | A needed by document tools |
+| Config societăți / salarii, Utilizatori, Întreținere BD | H (read firm via `saga_context` is fine) |
+| Despre | E read |
 
 ---
 
-## 5. Per-screen runbook (repeat verbatim for every new screen)
+## 6. Per-screen runbook (writes)
 
-1. **Open + probe.** `saga_probe_screen(route)` → persist `tablemodels/<Route>.json`. Confirm `tableName`, `controllerName`, `primaryKey`, `actionsURLs`, `tableColumns`, detail table(s).
-2. **Read first.** `SagaGrid.list(batch_size=5)` and eyeball the rows against the UI. If the shapes disagree, the model is wrong — fix before writing anything.
-3. **Capture a real UI write.** Turn on `saga_session.clear_capture()`, perform ONE create in the UI by hand (or via Playwright toolbar clicks) on a throwaway record, then `_dump_capture("network-<screen>-create.json")`. This is the ground truth for the `RowData` keys, the `_CHECKED` sequence, and any side-effect calls that must run before/after (`LProcedure`, `AnteEdit`, `ExecutaInsMMod`).
-4. **Diff.** Compare captured `RowData` against `tableColumns`. Anything present in the capture but absent from our payload is a required field or a server default we must reproduce.
-5. **Replay via `page.request`.** Implement `create`/`update` with `post_with_handshake`. Verify the row comes back through `getData` — never trust the POST response alone.
-6. **Detail lines** (documents only): create master, read PK from the `Validation` `status` / response, then create each line with the FK from `detailSetup.selectionKey`, then re-read the master row for computed totals.
-7. **Deletes.** Test on the record created in step 5. Confirm both the POST and GET variants; record which one this controller accepts in the registry.
-8. **Register.** Add the `ScreenSpec` to `registry.py`, add named wrapper tools to `server.py` **and** the matching `ToolInfo` to `tools/catalog.py`.
-9. **Document.** Append a short "endpoints used" section to this plan's appendix and store the capture JSON next to it.
+Repeat for every new **named write** screen:
 
-Throwaway-record discipline: every screen gets a `MARKUS-TEST-<timestamp>` record created and deleted in the same session, so we never learn a protocol on real accounting data.
-
----
-
-## 6. Guardrails (non-negotiable)
-
-- **Preview-then-confirm on every mutation.** Same contract as today: call with `confirm_write=false` → returns `{requires_confirmation: true, preview, mapped_fields}`; only `confirm_write=true` writes. Applies to create/update/delete, document creation, `ExecutaValidare`, `Contracte/GenerareFacturi`, e-Factura submit.
-- **Never auto-answer a `Choice`.** A `Choice` is SAGA asking a human a question. Auto-answering is only allowed when the user already confirmed the write, and the question text must be echoed in the tool result.
-- **Never invent field values.** Only send keys the caller supplied, plus documented SAGA defaults, and always report which values were auto-filled and why (existing `iesiri_valuta` behaviour for `Tip`/`Curs`/`NrDoc` is the model).
-- **Human-only list** (tools may read, must not write unattended): `Inchidere luna`, `State salarii`, `Configurare salarii/societati`, `Utilizatori`, `Intretinere BD`, `Declaratia 406/205/Intrastat`, `e-Transport`, `REVISAL`, `Dezmembrari`, `Operatii speciale`, `Reglari descarcare`, e-Factura ANAF submit/cancel. `Import date` is `saga_import_xml` with `confirm_write`.
-- **Rights-aware.** Check `LoadDrepturiEcrane` before offering a screen; return a clear "your SAGA user lacks rights for X" instead of a cryptic HTTP failure.
-- **Period-aware.** Refuse writes dated inside a closed period; surface `InchidereLuna/GetInchidereCurenta`.
-- **Every mutating tool returns** endpoint, request payload, full response chain, screenshot path and network capture path. Debuggability is part of the contract.
-- **Concurrency.** All SAGA work runs on the single browser worker thread (`session._run_on_browser_thread`). Do not add a second context; SAGA's session and `tabID` are per-browser.
+1. **Probe.** Capture `tableModel` → commit `schemas/<table>.json` (+ detail table, + aliases). Confirm table, PK, `actionsURLs`, columns.
+2. **Read first.** `SagaGrid.list(batch_size=5)` vs UI. Fix the model before writing.
+3. **Capture one UI create** on a throwaway `MARKUS-TEST-<timestamp>` row. Dump XHR. That is ground truth for `RowData`, `_CHECKED`, and side-effect calls.
+4. **Diff** capture vs `tableColumns`. Missing keys are required or server defaults.
+5. **Replay** via `page.request` + `post_with_handshake`. Verify with `getData`, not the POST body alone.
+6. **Details** (documents): master → PK → lines with FK → re-read totals.
+7. **Delete** the throwaway row. Record POST vs GET in the registry.
+8. **Named tool** takes a **canonical document** mapped through `schema.map_fields`. Add/adjust ingest parsers in the same wave if a file format matters. Register in `server.py` **and** `tools/catalog.py` in the same commit. Adapter only if step 3 showed extra endpoints.
+9. **Skill** for the job accepts **any source** (chat / XML / PDF), not one skill per extension. Do not add a skill that only wraps a single CRUD call with a hard-coded file type.
+10. Never learn a protocol on real accounting data — test firm or `MARKUS-TEST-*` only.
 
 ---
 
-## 7. Rollout waves
+## 7. Guardrails (non-negotiable)
 
-| Wave | Scope | Exit criteria |
-|---|---|---|
-| **0 — Foundation** | `protocol.py`, `discovery.py`, `grid.py`, `registry.py`, `context.py`; migrate `Clienti` + `IesiriValuta` onto it with **zero tool-name changes**; add `saga_probe_screen`, `saga_context`, `saga_describe_screen` | existing FX-invoice skill passes end-to-end unchanged; `saga_probe_screen("Clienti")` reproduces the known endpoints |
-| **1 — Master data** | Furnizori, Agenti, PlanConturi, Gestiuni, TipuriArticole, Grupe, Filiale, Actionari, Masini, Articole | create+read+update+delete verified with a throwaway record on each |
-| **2 — Generic read/export/report** | `saga_list_rows`, `saga_get_row`, `saga_lookup`, `saga_export_grid`, `saga_run_report` + report registry | all 23 "Situatii" features produce a file on disk |
-| **3 — Sales & purchases** | Iesiri, Intrari, IntrariValuta (+ validate/devalidate), Numere si serii | a full invoice (header+lines+VAT) round-trips and matches the UI totals |
-| **4 — Cash, bank, expenses** | RegistruCasa (+valuta), Jurnal de banca (+valuta), Deconturi (+valuta), Cecuri | receipts/payments post and reconcile; chitanta PDF generated |
-| **5 — Stock & production** | Transferuri, Bonuri de consum, BonuriOI, Productie, Inventariere, Imobilizari | stock documents post and validate |
-| **6 — Commercial** | Comenzi, Contracte, Cheltuieli/venituri în avans, Diurne, Situatie comenzi | `Contracte/GenerareFacturi` gated preview works |
-| **7 — e-Factura (read side)** | list/download inbound, import status, error queues | inbound invoices downloadable; submit remains human-gated |
-| **8 — Gated screens** | Bilant, Inchidere luna, Salariati/StateSalarii, declarations, Administrare | read-only + hard-gated execute paths, with explicit user confirmation text |
-
-Each wave ends with: `pyproject.toml` version bump, `tools/catalog.py` updated in the same commit as `server.py`, and a smoke run of `list_tools`.
-
----
-
-## 8. Testing & verification
-
-- **Protocol unit tests** on recorded fixtures: feed saved JSON bodies into `protocol.classify` and assert the outcome (`Validation` → repost, `Choice` → gated, `ValidateData` → flags, `success` → done).
-- **Discovery snapshot tests**: `tablemodels/<Route>.json` committed; a test asserts the registry's endpoints still match the snapshot, so a SAGA UI update fails loudly instead of silently.
-- **Live round-trip test per screen** (manual, once per wave): create throwaway → read back → update → read back → delete → confirm gone.
-- **Golden document test**: the existing `data/fake_invoice_K003_FAKE_NORD_LOGISTICS.pdf` import must keep working after every wave — it exercises session, partner lookup, partner create, FX rate, document header+lines, and the WhatsApp notify skill.
-- **Never test on real accounting data.** Test firm or `MARKUS-TEST-*` records only.
+- **Preview-then-confirm** on every mutation (`confirm_write=false` → `{requires_confirmation, preview}`; only `true` writes).
+- **Never auto-answer `Choice`** unless `confirm_write=true`; always echo the question text.
+- **Never invent field values.** Report auto-filled defaults.
+- **No generic employee writes.**
+- **Format-agnostic writes.** New named write tools take canonical documents / field dicts **after schema mapping**. File-path tools are wrappers around ingest + those tools (or Import date transport). Do not grow a second posting implementation per file type.
+- **Catalog is the schema.** Do not hand-maintain a third field list in adapters. Writes use committed `schemas/*.json` until a reviewed probe updates them. Do not snapshot the entire SAGA database.
+- **Human-only execute:** Inchidere lună, State salarii, Config salarii/societăți, Utilizatori, Întreținere BD, D406/205/Intrastat, e-Transport, REVISAL, Dezmembrări, Operații speciale, Reglări descărcare, e-Factura ANAF submit/cancel.
+- **Rights-aware** via `LoadDrepturiEcrane`.
+- **Period-aware** — refuse writes in a closed month.
+- Mutating tools return endpoint, payload, response chain, screenshot, capture path.
+- Single SAGA browser worker.
+- `tools/catalog.py` updates in the same commit as `server.py`.
+- Golden path: `data/fake_invoice_K003_FAKE_NORD_LOGISTICS.pdf` FX import + WhatsApp notify must keep working after every wave.
 
 ---
 
-## 9. Risks
+## 8. Rollout waves
+
+Each wave: engine/registry as needed, **named tools** the agent will call, **skill** if it is a job, catalog + version bump, smoke `list_tools`, golden FX invoice.
+
+| Wave | Engine / ingest | Named MCP | Skill | Exit |
+|---|---|---|---|---|
+| **0 — Foundation** | `protocol`, `discovery`, `grid`, `registry`, `context`, **`schema.py`**; seed `schemas/` from Clienti + IesiriValuta (+ wipe tables as needed); migrate Clienti + IesiriValuta + **wipe handshake** | `saga_context`, `saga_describe_screen` (from catalog), `saga_list_screens`; keep current names | none new | FX skill unchanged; `describe` matches today’s field catalogs; wipe order unchanged |
+| **0b — Documents skeleton** | `documents/` + `map_fields`; lift Facturi / I_/P_ parsers | XML wrappers call parsers then mapper | — | parsers + mapper unit-tested without browser; wrappers still work |
+| **1 — Generic reads** | lookups, export | `saga_list_rows`, `saga_get_row`, `saga_lookup`, `saga_export_grid` | — | list/export without new writes |
+| **2 — Reports** | `reports.py` + `auxiliar` schemas | `saga_run_report` + top wrappers | period-pack | real PDF/XLS on disk |
+| **3 — Master data writes** | Furnizori + Articole adapters | `saga_*_supplier`, `saga_*_item` | only if a job needs it | throwaway CRUD |
+| **4 — Sales & purchases (format-agnostic)** | Iesiri / Intrari adapters | **`saga_add_iesire(document)`**, `saga_add_intrare(document)`; XML tools become thin wrappers | **one** RON sales skill: chat / PDF / XML | same posting path for chat dict and Facturi XML; totals match UI |
+| **5 — Cash & bank (format-agnostic)** | RegistruCasa + bank adapters | **`saga_post_bank_entries`**, `saga_add_casa_entry`; I_/P_ wrapper thin | bank skill: chat / XML | one posting path |
+| **6 — Stock / commercial** | adapters when a job exists | named document tools only | matching skill | no menu dump |
+| **7 — e-Factura read** | adapter | list / download | inbound review | submit remains H |
+| **8 — Gated** | read-only + hard-gated execute | explicit confirm copy | none that auto-closes a month | cannot run unattended |
+| **9 — Journals leftover** | validate/devalidate; FX bank/cash/deconturi schemas; GetNrDoc; ensure-partner resolve | `saga_validate_document`; casa/bank route on Valuta | skills note abort-if-missing partner | create ≠ lock; Import extrase still for bank FX |
+| **10 — Reports + H declarations + drift** | remaining Situatii provisional setters; D406/D205/Intrastat generate; catalog `diff_probe` | `saga_generate_declaration`, `saga_submit_declaration` | none that auto-file ANAF | CI fixture vs `schemas/*.json`; submit needs `TRIMITE DECLARATIE` |
+
+Wave 0 / 0b may shuffle files without a new user-facing job. Do not start Wave 3 by copy-pasting `partners.py`. Wave 4 must not leave a permanent fork where XML posts differently from chat.
+
+---
+
+## 9. Testing
+
+- **Protocol unit tests** on saved JSON (`Validation` / `Choice` / `ValidateData` / success).
+- **Ingest unit tests** on fixture XML/XLS → mapped canonical documents (no browser).
+- **Schema mapper tests:** aliases (`ClientNume` → `Client`), unknown keys rejected, required missing listed.
+- **Catalog drift tests:** `probe` snapshot (fixture) vs committed `schemas/<table>.json`.
+- **Parity test:** Facturi XML fixture and an equivalent hand-built dict produce the same mapped `RowData` before POST.
+- **Live throwaway round-trip** per new named write (manual, once per wave).
+- **Golden FX invoice** after every wave.
+- **Skill smoke:** chat-shaped document and XML-shaped document for the same job.
+- Never test on real ledgers.
+
+---
+
+## 10. Risks
 
 | Risk | Mitigation |
 |---|---|
-| SAGA ships a UI update and changes `RowData` keys | discovery is runtime-first (`tableModel`), snapshots make drift a loud test failure rather than a silent bad write |
-| A `Choice` auto-answered wrongly writes bad accounting data | never auto-answer without `confirm_write=true`; echo the question text in the result |
-| Reports depend on server-side session state (`SetDataRaport` then `CreateRaport`) — two agents interleaving would cross filters | all SAGA work is serialized on the single browser worker; keep it that way |
-| `Descarca=true` returns HTML error pages instead of PDF | validate `content-type`/magic bytes before writing the file; return the HTML as `error_html` when it isn't a PDF |
-| Restricted rights (`access=1`) look like generic failures | pre-flight `LoadDrepturiEcrane` and return a specific message |
-| Session expiry mid-workflow | `Home/IsStillConnected` before long workflows; auto re-login only when it does not require OTP |
+| SAGA changes `RowData` keys | committed `schemas/*.json` + probe diff fails CI; review before writes |
+| Copying “all of SAGA SQL” | we don’t; catalog is grid `tableModel`s for onboarded operations only |
+| Stale catalog vs live SAGA | probe drift test; writes stay on committed schema until review |
+| Agent invents columns not in catalog | `map_fields` rejects unknown; preview shows unmapped |
+| Chat extract invents Cont / TVA | validate against catalog; preview; never invent; skill asks user |
+| Agent uses a generic write on the wrong table | generic writes not on employee MCP |
+| Tool API couples to XML forever | canonical documents; path tools are wrappers only |
+| Two posting paths (XML vs chat) drift | one adapter; parity test in Wave 4/5 |
+| `Choice` auto-answered | `confirm_write` + echo text |
+| Two report calls interleave filters | single browser worker |
+| `Descarca=true` returns HTML | magic-byte check |
+| Access=1 looks like HTTP noise | `LoadDrepturiEcrane` first |
+| Session expiry mid-skill | `IsStillConnected`; re-login only without OTP |
+| Compact inventory used as backlog | this plan is source of truth |
+| Wave 0 ignores `wipe.py` | handshake extracted from wipe + iesiri_valuta together |
+| MCP instruction / tool list explodes | named verbs + skills; generic reads only; ingest not 77 tools |
 
 ---
 
-## 10. Appendix — raw research index
+## 11. Appendix — research index
 
-Source files under `data/saga/research/`:
+Under `data/saga/research/` (tree is gitignored with `data/`; keep this index so the files are not “lost”):
 
-- `AdvancedControls.min.js` — the grid engine: `parseTableModel`, `getData`, `toolbarActionSave`, delete handshake, `getNextIndex`, `copyDetail`, `Home/ExportDate`, `Home/GetAdvancedComboBoxViewComponent`.
-- `Layout.min.js` — shell: `Home/LoadOperationalData`, `LoadDrepturiEcrane`, `IsStillConnected`, `Balanta/ExecutaBalanta`, `BackupDB/*`, `EFactura/SaveToken`.
-- `modules/*.js` (40 files) — per-screen business endpoints; the inventory in §1.8/§1.9 was extracted from these.
-- `feature_inventory.json` / `feature_inventory_compact.json` — 77 features with access flags and feasibility.
-- `_menu.json` — RO/EN labels for every screen (use for tool descriptions so agents can match Romanian user phrasing).
-- `_pages.json`, `_modals.json`, `_common.json` — RO/EN UI string dictionaries (useful for matching modal/warning text in `Choice`/`Warning` responses).
-- `data/saga/network-*.json` — live captures already recorded for login, partners, partner create/update/delete, IesiriValuta probe and create.
+- `AdvancedControls.min.js` — `parseTableModel`, getData, save, delete handshake, getNextIndex, copyDetail, `Home/ExportDate`.
+- `Layout.min.js` — `LoadOperationalData`, `LoadDrepturiEcrane`, `IsStillConnected`, `Balanta/ExecutaBalanta`, `BackupDB`, `EFactura/SaveToken`.
+- `modules/*.js` (~39) — per-screen business endpoints.
+- `feature_inventory.json` — 77 menu items. **Do not use compact `t:` as shipped status.**
+- `_menu.json`, `_pages.json`, `_modals.json`, `_common.json` — RO/EN strings for tool descriptions and `Choice` text.
+- `data/saga/network-*.json` — login, partners CRUD, IesiriValuta probe/create.
+
+Committed runtime catalog (not gitignored): `src/markus_mcp/tools/saga/schemas/*.json` — reviewed `tableModel` snapshots + `aliases.json`.
+
+Existing Markus SAGA modules to treat as engine/ingest input, not legacy to ignore: `partners.py`, `iesiri_valuta.py` (already format-agnostic header/lines), `iesiri.py` / `jurnal_banca_import.py` (lift parsers into `documents/`), `import_date.py` (Import date transport), `wipe.py` (already knows Furnizori, Intrări/Ieșiri ± valută, `Iesiri_Incasari` allocation grids, Jurnal layers — seed schemas from these paths), `session.py`.
+
+---
+
+## 12. Completeness check (this revision)
+
+The plan is **enough to execute Wave 0–0b** and to grow coverage job-by-job. It is **not** a finished spec of all 77 menu items. Use this section so implementers do not rediscover the holes.
+
+### 12.1 In the plan and sufficient
+
+- Layers: schema catalog, ingest, engine, named tools, skills.
+- No generic employee writes; XML wrappers → document tools.
+- Protocol, runbook, guardrails, waves, human-gated list.
+- Seed schemas from Clienti + IesiriValuta; wipe handshake in Wave 0.
+
+### 12.2 Decide once, then keep (were implicit)
+
+| Topic | Decision |
+|---|---|
+| **Operation id** | One key per job, same in `registry.py`, `schemas/`, skills: `clienti`, `iesiri`, `iesiri_valuta`, `intrari`, `jurnal_banca`, … Not three names (`sales_invoice` vs `iesiri` vs `saga_add_iesire`). Document `kind` maps 1:1 to that id (`sales_invoice` → `iesiri` if RON, `iesiri_valuta` if FX). |
+| **RON vs FX** | Skill/ingest looks at currency (and user wording). RON → `iesiri`. Non-RON → `iesiri_valuta`. Do not post FX lines on Iesiri. |
+| **Batch** | Canonical tools take **one** document (or one `BankBundle`). XML wrappers loop. Chat “these 3 invoices” = three tool calls (or one wrapper that loops internally and still previews the batch). |
+| **Ensure partner** | Invoice/bank jobs: search/create partner **before** posting the document (FX skill already does this). Schema for `clienti` / `furnizori` is part of those jobs, not only the invoice header. |
+| **Derived vs invented** | Fetching `GetCursValutar`, `GetNrDoc` / `GetNrIesiriValutaTip` is allowed and must be labelled `auto_filled` in the preview. Guessing Cont or TVA is not. |
+| **Import date vs `saga_add_intrare`** | Bulk SmartBill / NIR purchases stay **Import date** (`saga_import_xml`) until `saga_add_intrare` is proven. Chat/PDF single purchase → `saga_add_intrare` once Wave 4 exists. |
+| **Furnizori ≠ Clienți** | `saga_*_partner` is Clienti. Purchases and plăți need Furnizori (`wipe.py` already has `GetData_Furnizori`). Wave 3 named supplier tools; do not reuse Clienti create for suppliers. |
+| **Validare** | Creating a row ≠ locking it. Optional later named tool `saga_validate_document` (`ExecutaValidare`) with `confirm_write`. Not Wave 0. |
+| **Numere și serii** | Required for Wave 4 document adapters (which series to use). Probe + schema in Wave 4, not a separate employee CRUD app. |
+| **Child grids** | Wipe already deletes `Iesiri_Incasari` (receipt allocations) and bank day/entry layers. Invoice **create** does not post allocations; `saga_post_bank_entries` + Asociere does. Do not invent an allocation document until a job needs it. |
+| **Scanned PDFs** | Out of scope. Skills require text-readable PDF or chat/XML. No OCR in Markus. |
+| **Unlisted menu items** | Anything in the 77 not given **N** stays: probe → **E** (read) if useful; **no write tool** until there is a job. No backlog of 50 CRUD tools. |
+| **Packaging** | `schemas/*.json` must be included in the PyInstaller spec / wheel (`force-include`). Frozen `--setup` still copies skills. |
+| **MCP instructions** | `server.py` `instructions=` and `tools/catalog.py` update in the same commit as new tools (already said for catalog; instructions drift the same way). |
+| **Tests / CI** | Add `tests/` for protocol + `map_fields` + XML fixtures (no browser). Installer workflow may stay separate; do not wait for live SAGA in CI. |
+| **Shipped skills omitted from §1.5 table** | Also exists: `export-smartbill-supplier-invoices`, `import-xml-to-saga`. Keep until jobs merge. |
+
+### 12.3 Still unknown until a live probe (do not fake)
+
+- Whether `tableColumns` exposes a real **required** flag (U3). Until then, required = what we learned from a captured UI create + existing Python catalogs (`required_on_create` on Clienti, Cont on FX lines).
+- Exact `auxiliar` per report (U6) — Wave 2.
+- Report `data-api` origin (U4) — Wave 2.
+- Jurnal de Bancă Import extrase is **not** a normal grid create; the wrapper stays a workflow even after `BankBundle` exists (Asociere + Accept). Canonical entries feed that workflow; they do not replace it with `grid.create` on Solduri.
+
+### 12.4 Out of this plan
+
+WhatsApp pairing, SmartBill Cloud login, installer/DMG, `private.data` keys — already shipped. This plan only says skills may call them and ingest may reuse SmartBill→canonical.
+
+### 12.5 Ready / not ready
+
+| Start now | Wait |
+|---|---|
+| Wave 0 engine + schema seed from Clienti, IesiriValuta, wipe targets | Wave 3+ writes without a job |
+| Wave 0b parsers + `map_fields` | Treating Import date as obsolete |
+| | Full 23 Situatii without `auxiliar` captures |
+| | e-Factura submit, month close, payroll |
+
+---
+
+## 13. Master checklist — 100% SAGA automation
+
+**Definition of 100% (this plan):** after login/OTP, an accountant can run **every onboarded job** from chat, XML, or text PDF (schema → ingest → named tool → SAGA), **every menu screen can be probed and read** if we have a reason, and **legal/destructive ops** exist only as read + hard-gated execute. **Not** in 100%: unattended ANAF submit, unattended month close, unattended payroll, OCR of scans, cloning 77 CRUD tools with no job.
+
+Tick `[x]` only when the exit next to the item is true. `[H]` = execute stays human-gated even when the line is otherwise done.
+
+Per-screen write items follow the runbook in §6 (probe → read → capture create → catalog → replay → named tool → skill if it is a job).
+
+### 13.1 Foundation (Wave 0)
+
+- [x] `protocol.py` — classify + `_CHECKED` / `uvf` handshake; POST-then-GET delete; `SenderID`; unified `RequestSetup`
+- [x] Handshake folded from `iesiri_valuta`, `partners`, **and** `wipe` (no second protocol)
+- [x] `grid.py` — list / get / create / update / delete / details
+- [x] `discovery.py` — `probe_screen` → raw `tableModel`
+- [x] `registry.py` — operation ids (`clienti`, `iesiri`, `iesiri_valuta`, …)
+- [x] `schema.py` + `map_fields` + `aliases.json`
+- [x] `context.py` — `LoadOperationalData`, rights, interval, closed-period check
+- [x] `saga_context`, `saga_list_screens`, `saga_describe_screen` MCP tools
+- [x] Clienti + IesiriValuta **migrated** onto grid/schema with **zero tool-name changes** (Clienti UI fallback remains for non-preflight API failures; `partners.py` is the MCP facade, not a second grid client)
+- [x] Wipe still deletes in the same order; catalog screens use `SagaGrid.delete`, Solduri / Iesiri_Incasari keep wipe-owned URLs
+- [x] `schemas/*.json` in wheel + PyInstaller spec
+- [x] `server.py` instructions + `tools/catalog.py` updated in the same commits
+- [ ] Golden FX PDF skill still works end-to-end (incl. WhatsApp `Eu`)
+
+### 13.2 Ingest (Wave 0b)
+
+- [x] `documents/` types as facades over catalog tables
+- [x] Lift Facturi XML parser; `saga_import_iesiri_xml` = parse → map → (later) `saga_add_iesire`
+- [x] Lift I_/P_ XML parser; `saga_import_incasari_xml` = parse → map → bank workflow
+- [x] Unit tests: parsers + aliases + unknown keys + missing required (no browser)
+- [x] Optional MCP: `saga_parse_facturi_xml` / `saga_parse_incasari_xml` (or parse only inside write preview)
+
+### 13.3 Generic reads (Wave 1)
+
+- [x] `saga_list_rows` / `saga_get_row` / `saga_lookup` / `saga_export_grid`
+- [x] Lookups follow `selectModel` + Home redirects
+- [x] Export via `Home/ExportDate`; file is real xlsx (magic-byte check; live firm export not yet golden)
+
+### 13.4 Reports (Wave 2)
+
+Engine:
+
+- [x] `reports.py` — SetDataRaport → CreateRaport; magic-byte check; `data-api` from the page
+- [x] `saga_run_report(name, filters)` + `auxiliar` schemas in catalog
+- [x] Period-pack skill (balanță + jurnale + fișe for the working interval)
+- [x] `saga_context` refuses or warns on closed period where relevant
+
+Per Situatii feature (schema `auxiliar` + at least one successful PDF/XLS on a test firm).
+Provisional setters exist in `reports.json` for the remaining names; **do not tick** until a real test-firm file is saved:
+
+- [ ] Fise conturi
+- [ ] Balante
+- [ ] Carte mare
+- [ ] Jurnale de cumparari / vânzari
+- [ ] Situatie furnizori
+- [ ] Situatie clienti
+- [ ] Situatie cecuri / bilete la ordin
+- [ ] Registru jurnal
+- [ ] Registru inventar
+- [ ] Bilant — **local PDF only**; ANAF submit is `[H]` in §13.8
+- [ ] Fise articole
+- [ ] Situatie aprovizionari
+- [ ] Situatie vânzari
+- [ ] Situatie consumuri
+- [ ] Situatie obiecte inventar
+- [ ] Situatie productie
+- [ ] Situatie stocuri
+- [ ] Situatie ambalaje SGR
+- [ ] Raport de gestiune
+- [ ] Situatii manageriale
+- [ ] Situatie comenzi (Diverse, report)
+
+### 13.5 Auth / session (4)
+
+- [x] Login (`saga_login`)
+- [x] OTP / browser authorize (`saga_submit_otp`; user clicks email)
+- [x] Firm select (inside login)
+- [x] Working interval — read in `saga_context`; [x] `saga_set_interval` with `confirm_write`
+
+### 13.6 Fisiere — master data (12)
+
+Each line: schema catalog · generic read · named write (if a job) · aliases.
+
+Honesty: `[x]` below means a named job or a **probed/used** catalog. Wave 6–9 screens whose JSON says “best-effort until a live tableModel probe” stay `[ ]` — `saga_list_rows` may 404. That is not “readable”.
+
+- [x] **Clienti** — named tools; writes + list/search via `SagaGrid`; UI fallback only if the API fails (not on closed-month / rights preflight); [x] `map_fields`
+- [x] **Furnizori** — schema (wipe endpoints, not a live probe); E; N `saga_*_supplier`; not Clienti
+- [x] **Articole** — schema; E; N `saga_*_item`; TVA/preturi/SGR/barcode side-effect endpoints are **not** auto-called (pass those fields if the user specified them)
+- [x] **Plan conturi** — schema; E `saga_chart_of_accounts`; writes only if a job needs them
+- [x] **Gestiuni** — schema; E via `saga_list_rows` / `saga_lookup`; named write not added (no job yet)
+- [x] **Tipuri de articole / servicii** — schema; E via generic reads; named write not added (no job yet)
+- [ ] **Agenti** — schema stub (unprobed); `saga_list_rows` may 404; N only if a job needs it
+- [ ] **Grupe** — schema stub (unprobed)
+- [ ] **Filiale** — schema stub (unprobed)
+- [ ] **Actionari** — schema stub (unprobed)
+- [ ] **Masini** — schema stub (unprobed)
+- [H] **Salariati** — schema stub (unprobed); **no unattended write**
+
+### 13.7 Operatii — journals (24)
+
+**Sales / purchases (Wave 4)** — format-agnostic: chat / XML / text PDF → same adapter.
+
+- [x] **Iesiri - valuta** — `saga_add_iesiri_valuta` is a thin name over `invoices._add` / `post_on_page` (same path as `saga_add_iesire` when Valuta is not RON); FX extras (Curs/Tip) stay in `iesiri_valuta.py`; skill = any source
+- [x] **Iesiri** — XML wrapper shipped; [x] schema; [x] `saga_add_iesire(document)`; [x] XML wrapper = thin loop over `post_on_page`; [x] one RON sales skill (chat/PDF/XML); [ ] totals match UI (live); [x] RON vs FX routing
+- [x] **Intrari** — schema; `saga_add_intrare(document)`; chat/PDF skill; bulk NIR stays Import date
+- [x] **Intrari - valuta** — schema; same `saga_add_intrare` when Valuta is not RON; `GetCursValutar` fills Curs when omitted
+- [ ] **Numere și serii** (Administrare) — schema stub (unprobed); adapters still pick `GetNrDoc` / `GetNrIesiriValutaTip` when `NrDoc` omitted (`auto_filled`)
+- [x] **Validare / devalidare** — `saga_validate_document` with `confirm_write` (not implied by create)
+- [x] Ensure partner: Clienți before Ieșiri; Furnizori before Intrări (skills create first; adapter resolves and aborts if missing — does not auto-create)
+
+**Bank / cash (Wave 5)**
+
+- [x] **Jurnal de banca** — I_/P_ XML + Asociere shipped; [x] schema + `BankBundle` parse; [x] `saga_post_bank_entries`; [x] XML convenience wrapper still `saga_import_incasari_xml` (same Import extrase worker); [x] skill chat/XML; [x] still Import extrase workflow (not `grid.create` on Solduri)
+- [x] **Jurnal de banca - valuta** — schema + same Import extrase workflow when Moneda is not RON
+- [x] **Registru de casa** — schema; `saga_add_casa_entry`; [ ] chitanță PDF if a job needs it
+- [x] **Registru de casa - valuta** — same `saga_add_casa_entry` + `GetLastValuta` when Curs omitted
+- [ ] **Deconturi** — schema stub (unprobed)
+- [ ] **Deconturi - valuta** — schema stub (unprobed)
+- [ ] **Cecuri, BO emise/primite** — schema stub (unprobed)
+
+**e-Factura (Wave 7)**
+
+- [x] **e-Facturi** list / download inbound; skill: review (`saga_efactura_list` / `download`). WEB may still be issued-send-only for some firms.
+- [H] e-Factura ANAF **submit / cancel / token** — `saga_efactura_submit` / `cancel` exist; never unattended (`confirm_phrase`)
+
+**Stock / production (Wave 6) — N+A only when there is a job; otherwise E after a live probe. `[ ]` = schema stub, not proven readable.**
+
+- [ ] **Articole contabile** — schema stub (unprobed)
+- [ ] **Imobilizari** — schema stub (unprobed)
+- [ ] **Transferuri** — schema stub (unprobed)
+- [ ] **Bonuri de consum** — schema stub (unprobed)
+- [ ] **Dare în folosinta ob. inv. (BonuriOI)** — schema stub (unprobed)
+- [ ] **Productie** — schema stub (unprobed)
+- [ ] **Inventariere** — schema stub (unprobed)
+- [H] **Dezmembrari** — schema stub (unprobed); no unattended write
+- [H] **Operatii speciale** — schema stub (unprobed); no unattended write
+- [H] **Reglari descarcare** — schema stub (unprobed); no unattended write
+
+**Always human execute (Wave 8)**
+
+- [H] **State salarii** — schema stub (unprobed); D112/filings `[H]`
+- [H] **Inchidere luna** — status in `saga_context`; execute `saga_close_month` `[H]` with `confirm_phrase='INCHIDE LUNA'`
+
+### 13.8 Situatii — declarations (subset of 23; rest in §13.4)
+
+- [H] Declaratia 406 (SAF-T) — generate/read `saga_generate_declaration`; submit `saga_submit_declaration` `[H]` (`TRIMITE DECLARATIE`)
+- [H] Declaratia 205 — same
+- [H] Declaratia Intrastat — same
+
+### 13.9 Diverse (8)
+
+- [x] **Import date** — `saga_import_xml`; [x] emit Facturi XML from canonical (`emit_facturi_xml`)
+- [ ] **Comenzi** — schema stub (unprobed)
+- [ ] **Contracte** — schema stub (unprobed); `GenerareFacturi` stays `confirm_write` when a named tool exists
+- [ ] **Cheltuieli / venituri în avans** — schema stub (unprobed)
+- [ ] **Diurne** — schema stub (unprobed)
+- [x] **Situatie comenzi** — covered under reports (§13.4; provisional setter)
+- [H] **e-Transport** — `[H]` via `saga_submit_declaration` (`TRIMITE DECLARATIE`)
+- [H] **REVISAL** — `[H]` via `saga_submit_declaration` (`TRIMITE DECLARATIE`)
+
+### 13.10 Administrare (6)
+
+- [x] **Despre...** — E (`saga_about`)
+- [x] **Configurare societati** — read via `saga_context` / LoadOperationalData; **write `[H]`**
+- [H] **Configurare salarii** — `[H]`
+- [ ] **Numere si serii** — schema stub (unprobed); see §13.7
+- [H] **Utilizatori** — `[H]`
+- [H] **Intretinere BD** — `[H]`
+
+### 13.11 Jobs / skills (accountant-facing)
+
+Shipped (keep until merged into “any source” skills):
+
+- [x] `import-fx-invoice-to-saga`
+- [x] `smartbill-to-saga-import`
+- [x] `export-smartbill-supplier-invoices`
+- [x] `import-xml-to-saga`
+- [x] `import-iesiri-xml-to-saga`
+- [x] `import-incasari-xml-to-saga`
+- [x] `wipe-saga-data`
+
+To add (one skill per job, any input format):
+
+- [x] Sales invoice **any source** (RON) — chat / PDF / Facturi XML → `saga_add_iesire`
+- [x] FX invoice **any source** — retarget existing FX skill to catalog/`map_fields`
+- [x] Purchase invoice **any source** — chat/PDF → `saga_add_intrare`; bulk NIR → Import date
+- [x] Bank entries **any source** — chat / I_/P_ XML → `saga_post_bank_entries`
+- [x] Cash receipt — `saga_add_casa_entry`
+- [x] Period pack — `saga_run_report` + `saga_context`
+- [x] Inbound e-Factura review (no auto-submit)
+- [x] Ensure-partner baked into invoice/bank skills (Clienți / Furnizori)
+
+### 13.12 Tests, CI, packaging
+
+- [x] `tests/` protocol fixtures (Validation / Choice / ValidateData / success)
+- [x] `tests/` `map_fields` + XML fixtures
+- [x] Parity: XML fixture vs hand-built dict → same mapped header/lines (not a live RowData POST)
+- [x] Catalog drift test (probe fixture vs `schemas/*.json`)
+- [x] No live SAGA in CI
+- [x] Installer still ships schemas + skills
+
+### 13.13 Done when
+
+- [ ] All items in §13.1–13.2 and §13.12 are `[x]`
+- [ ] Every feature in §13.5–13.10 is either `[x]` (automated job or read) or `[H]` with a gated tool/read — **no silent gaps**
+- [ ] §13.4 reports that accountants actually use have at least one golden PDF on the test firm
+- [x] §13.11 “any source” skills exist for sales, purchases, bank (the daily work)
+- [ ] Remaining stock/commercial/nomenclator rows have an **E schema stub** (catalog + `saga_list_rows` wiring). Not live-proven; list may 404 until a probe. Unticked in §13.6–13.10 until a reviewed `tableModel` lands.
+
+That last bullet is how 77/77 is closed without 77 write tools. E stubs are not a substitute for a reviewed probe.

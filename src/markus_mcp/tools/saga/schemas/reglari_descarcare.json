@@ -1,0 +1,80 @@
+{
+  "operation": "reglari_descarcare",
+  "table": "ReglariDescarcare",
+  "controller": "ReglariDescarcare",
+  "primary_key": "Id",
+  "route": "ReglariDescarcare",
+  "write_style": "classic",
+  "risk": "high",
+  "actions": {
+    "get_data": [
+      "ReglariDescarcare/GetData_ReglariDescarcare"
+    ]
+  },
+  "usage": "Unload adjustments. E only; no unattended write.",
+  "notes": [
+    "Wave 6 E. Best-effort columns until a live tableModel probe. No employee write tool.",
+    "No unattended write."
+  ],
+  "columns": [
+    {
+      "name": "NrDoc",
+      "aliases": [
+        "nr_doc",
+        "nr",
+        "number"
+      ],
+      "kind": "text",
+      "description": "Document number"
+    },
+    {
+      "name": "Data",
+      "aliases": [
+        "data",
+        "date"
+      ],
+      "kind": "date",
+      "description": "Document date"
+    },
+    {
+      "name": "Cod",
+      "aliases": [
+        "cod"
+      ],
+      "kind": "text",
+      "description": "Partner/item code"
+    },
+    {
+      "name": "Denumire",
+      "aliases": [
+        "denumire",
+        "name",
+        "explicatie"
+      ],
+      "kind": "text",
+      "description": "Description"
+    },
+    {
+      "name": "Valoare",
+      "aliases": [
+        "valoare",
+        "suma",
+        "amount"
+      ],
+      "kind": "number",
+      "description": "Amount"
+    },
+    {
+      "name": "Validat",
+      "kind": "text",
+      "description": "Validated flag",
+      "expose": false
+    },
+    {
+      "name": "Id",
+      "kind": "text",
+      "description": "Row id",
+      "expose": false
+    }
+  ]
+}

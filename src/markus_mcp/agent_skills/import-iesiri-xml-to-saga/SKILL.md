@@ -15,9 +15,10 @@ This is **not** `saga_import_xml` / Import date (purchases / Intrări valută).
 This is **not** `saga_add_iesiri_valuta` (FX). This is **not**
 `saga_import_incasari_xml` (I_/P_ bank receipts).
 
-`saga_import_iesiri_xml` opens **Ieșiri**, posts `Iesiri/Create_Iesiri` plus
-line creates, and keeps **NrDoc** = `<FacturaNumar>` so Jurnal de Bancă
-Asociere can match receipts. Existing NrDoc values are **skipped**.
+`saga_import_iesiri_xml` opens **Ieșiri** and posts through the same path as
+`saga_add_iesire` (`Iesiri/Create_Iesiri` + lines), keeping **NrDoc** =
+`<FacturaNumar>`. Existing NrDoc values are **skipped**. Prefer
+`saga_add_iesire` when the user pastes fields or a single invoice.
 
 Typical file: `F_<cif>_<dd>_<mm>_<yyyy>.xml` with root `<Facturi>`,
 `<ClientNume>` / `<ClientCod>`, line `<Cont>` (default 704) and `<TVAProc>`.

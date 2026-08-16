@@ -1,0 +1,55 @@
+{
+  "operation": "salariati",
+  "table": "Salariati",
+  "controller": "Salariati",
+  "primary_key": "Cod",
+  "route": "Salariati",
+  "write_style": "ex",
+  "risk": "high",
+  "actions": {
+    "get_data": [
+      "Salariati/GetData_Salariati"
+    ]
+  },
+  "usage": "Employees. Read-only. Payroll execute stays human-gated.",
+  "notes": [
+    "Wave 6 E. Best-effort columns until a live tableModel probe. No employee write tool.",
+    "No unattended write."
+  ],
+  "columns": [
+    {
+      "name": "Cod",
+      "aliases": [
+        "cod"
+      ],
+      "kind": "text",
+      "description": "Code"
+    },
+    {
+      "name": "Denumire",
+      "aliases": [
+        "denumire",
+        "name"
+      ],
+      "kind": "text",
+      "description": "Name"
+    },
+    {
+      "name": "CNP",
+      "aliases": [
+        "cnp"
+      ],
+      "kind": "text",
+      "description": "CNP"
+    },
+    {
+      "name": "Functie",
+      "aliases": [
+        "functie",
+        "job"
+      ],
+      "kind": "text",
+      "description": "Job title"
+    }
+  ]
+}

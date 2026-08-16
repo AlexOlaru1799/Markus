@@ -24,7 +24,9 @@ Trigger on this flow only:
    empty on multi-client files. For `P_*.xml`, SAGA matches **Intrări**.
 
 This is **not** `saga_import_xml` (Import date / purchases) and **not**
-`saga_import_iesiri_xml` (create sales invoices).
+`saga_import_iesiri_xml` (create sales invoices). Chat rows (no XML file)
+use **`saga_post_bank_entries`** instead; that tool emits I_/P_ XML and
+then runs this same Import extrase workflow.
 
 ## Checklist
 

@@ -7,19 +7,14 @@ from typing import Any
 from urllib.parse import urljoin
 from xml.etree import ElementTree as ET
 
-from markus_mcp.tools.saga import iesiri_valuta as fx
 from markus_mcp.tools.saga import import_date as saga_import_date
+from markus_mcp.tools.saga import invoices as saga_invoices
 from markus_mcp.tools.saga import partners as saga_partners
 from markus_mcp.tools.saga import session as saga_session
+from markus_mcp.tools.saga.documents.parse_facturi_xml import parse_facturi_xml
 
 
 ROUTE = "Iesiri"
-CREATE_HEADER = "Iesiri/Create_Iesiri"
-CREATE_LINES = (
-    "Iesiri/Create_IesiriDetalii",
-    "IesiriDetalii/Create_IesiriDetalii",
-)
-GET_DATA = "Iesiri/GetData_Iesiri"
 DEFAULT_CONT = "704"
 SAMPLE_LIMIT = 25
 
@@ -50,16 +45,54 @@ def import_iesiri_xml(xml_path: str, *, confirm_write: bool = False) -> dict[str
 
         saga_session.clear_capture()
         existing = {_row_nr(row) for row in _list_iesiri(page)}
+        documents = list(preview.get("documents") or [])
         created: list[dict[str, Any]] = []
         skipped: list[dict[str, Any]] = []
         failed: list[dict[str, Any]] = []
 
-        for invoice in preview.get("parsed") or []:
-            nr = str(invoice.get("number") or "").strip()
+        if not documents:
+            for invoice in preview.get("parsed") or []:
+                documents.append(
+                    {
+                        "header": {
+                            "NrDoc": invoice.get("number"),
+                            "Data": invoice.get("date"),
+                            "Scadent": invoice.get("scadent") or invoice.get("date"),
+                            "Cod": invoice.get("cod"),
+                            "Client": invoice.get("client"),
+                        },
+                        "lines": [
+                            {
+                                "Denumire": line.get("descriere"),
+                                "Cantitate": line.get("cantitate"),
+                                "PretUnitar": line.get("pret") or line.get("valoare"),
+                                "Valoare": line.get("valoare"),
+                                "TVA": line.get("tva"),
+                                "TVA_ART": line.get("tva_proc"),
+                                "Cont": line.get("cont") or DEFAULT_CONT,
+                                "Cod": line.get("cod"),
+                            }
+                            for line in (invoice.get("lines") or [])
+                        ],
+                    }
+                )
+
+        for document in documents:
+            header = document.get("header") or {}
+            nr = str(header.get("NrDoc") or "").strip()
             if nr and nr in existing:
                 skipped.append({"number": nr, "reason": "NrDoc already exists on Ieșiri"})
                 continue
-            result = _create_invoice(page, invoice)
+            result = saga_invoices.post_on_page(
+                page,
+                "iesiri",
+                {str(k): str(v) for k, v in header.items() if v not in (None, "")},
+                [
+                    {str(k): str(v) for k, v in line.items() if v not in (None, "")}
+                    for line in (document.get("lines") or [])
+                    if isinstance(line, dict)
+                ],
+            )
             if result.get("ok"):
                 created.append(result)
                 if nr:
@@ -181,6 +214,7 @@ def preview_iesiri_xml(xml_path: str) -> dict[str, Any]:
             for item in invoices[:SAMPLE_LIMIT]
         ],
         "parsed": invoices,
+        "documents": parsed.get("documents") or [],
         "warnings": warnings,
         "details": (
             f"Will create {len(invoices)} Ieșiri invoice(s) from {source.name} "
@@ -190,68 +224,13 @@ def preview_iesiri_xml(xml_path: str) -> dict[str, Any]:
 
 
 def parse_iesiri_xml(path: Path) -> dict[str, Any]:
-    tree = ET.parse(path)
-    root = tree.getroot()
-    kind = saga_import_date._local(root.tag)
-    if kind.casefold() == "facturi":
-        kind = "Facturi"
-    elif kind.casefold() == "incasari":
-        kind = "Incasari"
-    elif kind.casefold() == "plati":
-        kind = "Plati"
-
-    invoices: list[dict[str, Any]] = []
-    line_count = 0
-    total_amount = 0.0
-    for factura in saga_import_date._findall(root, "Factura"):
-        antet = saga_import_date._find(factura, "Antet") or factura
-        xml_lines = saga_import_date._findall(factura, "Linie")
-        lines: list[dict[str, str]] = []
-        amount = 0.0
-        for line in xml_lines:
-            valoare = saga_import_date._child_text(line, "Valoare")
-            tva = saga_import_date._child_text(line, "TVA") or "0"
-            pret = saga_import_date._child_text(line, "Pret") or valoare
-            qty = saga_import_date._child_text(line, "Cantitate") or "1"
-            lines.append(
-                {
-                    "descriere": saga_import_date._child_text(line, "Descriere"),
-                    "cantitate": qty,
-                    "pret": pret,
-                    "valoare": valoare or pret,
-                    "tva": tva,
-                    "tva_proc": saga_import_date._child_text(line, "TVAProc")
-                    or saga_import_date._child_text(line, "TVA_ART")
-                    or "0",
-                    "cont": saga_import_date._child_text(line, "Cont") or DEFAULT_CONT,
-                    "cod": saga_import_date._child_text(line, "Cod"),
-                }
-            )
-            amount += saga_import_date._number(valoare or pret) + saga_import_date._number(tva)
-        line_count += len(lines)
-        total_amount += amount
-        number = saga_import_date._child_text(antet, "FacturaNumar")
-        invoices.append(
-            {
-                "number": number,
-                "date": saga_import_date._child_text(antet, "FacturaData"),
-                "scadent": saga_import_date._child_text(antet, "FacturaScadenta")
-                or saga_import_date._child_text(antet, "FacturaData"),
-                "client": saga_import_date._child_text(antet, "ClientNume"),
-                "cif": saga_import_date._child_text(antet, "ClientCIF"),
-                "cod": saga_import_date._child_text(antet, "ClientCod"),
-                "currency": saga_import_date._child_text(antet, "FacturaMoneda") or "RON",
-                "supplier": saga_import_date._child_text(antet, "FurnizorNume"),
-                "supplier_cif": saga_import_date._child_text(antet, "FurnizorCIF"),
-                "amount": round(amount, 2),
-                "lines": lines,
-            }
-        )
+    parsed = parse_facturi_xml(path, operation="iesiri")
     return {
-        "kind": kind,
-        "invoices": invoices,
-        "line_count": line_count,
-        "total_amount": round(total_amount, 2),
+        "kind": parsed.get("kind"),
+        "invoices": parsed.get("invoices") or [],
+        "documents": parsed.get("documents") or [],
+        "line_count": parsed.get("line_count", 0),
+        "total_amount": parsed.get("total_amount"),
     }
 
 
@@ -274,103 +253,45 @@ def _open_iesiri(page) -> dict[str, Any]:
 
 
 def _list_iesiri(page) -> list[dict[str, Any]]:
-    probed = fx._get_json(
-        page,
-        GET_DATA,
-        params={"RequestSetup": fx._request_setup(skip=0, batch_size=500)},
-    )
-    return fx._rows_from_payload((probed or {}).get("body"))
+    from markus_mcp.tools.saga import grid as saga_grid
+
+    fetched = saga_grid.SagaGrid.for_operation("iesiri").list(page, skip=0, batch_size=500)
+    return list(fetched.get("rows") or [])
 
 
 def _create_invoice(page, invoice: dict[str, Any]) -> dict[str, Any]:
-    lines = list(invoice.get("lines") or [])
-    if not lines:
-        return {
-            "ok": False,
-            "number": invoice.get("number"),
-            "error": "Invoice has no <Linie> rows.",
-        }
+    """Thin wrapper: same posting path as saga_add_iesire."""
     header = {
         "NrDoc": str(invoice.get("number") or ""),
         "Data": str(invoice.get("date") or ""),
         "Scadent": str(invoice.get("scadent") or invoice.get("date") or ""),
         "Cod": str(invoice.get("cod") or ""),
         "Client": str(invoice.get("client") or ""),
-        "Tip": "",
-        "TVAI": "0",
-        "Validat": "0",
-        "Valoare": "0.00",
-        "TVA": "0.00",
-        "Total": "0.00",
-        "Neachitat": "0.00",
-        "Adaos": "0.00",
     }
-    header_result = fx._post_with_validation_retry(page, path=CREATE_HEADER, row_data=header)
-    ids = fx._extract_created_ids(header_result.get("response"), header)
-    if header_result.get("ok") and not ids.get("ID_Iesire"):
-        found = next((row for row in _list_iesiri(page) if _row_nr(row) == header["NrDoc"]), None)
-        if found:
-            ids["ID_Iesire"] = _row_get(found, "ID_Iesire", "Id", "ID", "PK")
-    if not header_result.get("ok") or not ids.get("ID_Iesire"):
-        return {
-            "ok": False,
-            "number": invoice.get("number"),
-            "error": "Header create failed.",
-            "response": header_result.get("response"),
-        }
-
-    line_results: list[dict[str, Any]] = []
-    for xml_line in lines:
-        payload = {
-            "ID_Iesire": ids["ID_Iesire"],
-            "DenumireArticolServiciu": xml_line.get("descriere") or f"Linie {header['NrDoc']}",
+    lines = []
+    for xml_line in invoice.get("lines") or []:
+        line = {
             "Denumire": xml_line.get("descriere") or f"Linie {header['NrDoc']}",
-            "Cantitate": _num(xml_line.get("cantitate"), "1"),
-            "PretUnitar": _num(xml_line.get("pret") or xml_line.get("valoare")),
-            "TVA_ART": _num(xml_line.get("tva_proc"), "0"),
-            "Valoare": _num(xml_line.get("valoare") or xml_line.get("pret")),
-            "TVA": _num(xml_line.get("tva"), "0.00"),
-            "Total": _num(
-                str(
-                    saga_import_date._number(xml_line.get("valoare") or "0")
-                    + saga_import_date._number(xml_line.get("tva") or "0")
-                )
-            ),
+            "Cantitate": xml_line.get("cantitate") or "1",
+            "PretUnitar": xml_line.get("pret") or xml_line.get("valoare"),
+            "Valoare": xml_line.get("valoare") or xml_line.get("pret"),
+            "TVA": xml_line.get("tva") or "0",
+            "TVA_ART": xml_line.get("tva_proc") or "0",
             "Cont": xml_line.get("cont") or DEFAULT_CONT,
-            "Tip": "",
         }
         if xml_line.get("cod"):
-            payload["Cod"] = xml_line["cod"]
-        line_result = {"ok": False}
-        for path in CREATE_LINES:
-            line_result = fx._post_with_validation_retry(page, path=path, row_data=payload)
-            if line_result.get("ok"):
-                break
-            parsed = line_result.get("response")
-            if isinstance(parsed, dict) and parsed.get("type") in ("Warning", "Choice", "Error"):
-                break
-        line_results.append(line_result)
-        if not line_result.get("ok"):
-            return {
-                "ok": False,
-                "number": invoice.get("number"),
-                "id": ids.get("ID_Iesire"),
-                "error": "Line create failed.",
-                "response": line_result.get("response"),
-            }
-
-    return {
-        "ok": True,
-        "number": invoice.get("number"),
-        "client": invoice.get("client"),
-        "id": ids.get("ID_Iesire"),
-        "line_count": len(line_results),
-        "amount": invoice.get("amount"),
-    }
+            line["Cod"] = xml_line["cod"]
+        lines.append({k: str(v) for k, v in line.items() if v not in (None, "")})
+    return saga_invoices.post_on_page(
+        page,
+        "iesiri",
+        {k: v for k, v in header.items() if v},
+        lines,
+    )
 
 
 def _public_preview(preview: dict[str, Any]) -> dict[str, Any]:
-    return {key: value for key, value in preview.items() if key != "parsed"}
+    return {key: value for key, value in preview.items() if key not in {"parsed", "documents"}}
 
 
 def _row_nr(row: dict[str, Any]) -> str:
@@ -386,12 +307,3 @@ def _row_get(row: dict[str, Any], *names: str) -> str:
         if key is not None and row[key] not in (None, ""):
             return str(row[key]).strip()
     return ""
-
-
-def _num(value: Any, default: str = "0.00") -> str:
-    if value is None or str(value).strip() == "":
-        return default
-    try:
-        return f"{float(str(value).replace(',', '.')):.2f}"
-    except ValueError:
-        return str(value).strip() or default

@@ -1,0 +1,38 @@
+{
+  "operation": "furnizori",
+  "table": "Furnizori",
+  "controller": "Furnizori",
+  "primary_key": "Cod",
+  "route": "Furnizori",
+  "write_style": "ex",
+  "risk": "low",
+  "actions": {
+    "get_data": ["Furnizori/GetData_Furnizori"],
+    "create": ["Furnizori/Create_Furnizori"],
+    "edit": ["Furnizori/Edit_Furnizori"],
+    "delete": ["Furnizori/Delete_Furnizori"]
+  },
+  "usage": "Pass only user-specified Furnizori fields. Denumire is required on create. Not Clienti — use saga_*_supplier.",
+  "columns": [
+    {"name": "Cod", "aliases": ["cod"], "kind": "text", "description": "Supplier code"},
+    {"name": "Denumire", "aliases": ["denumire", "name", "company_name", "supplier", "furnizor"], "kind": "text", "description": "Supplier name (required on create)", "required_on_create": true},
+    {"name": "CodFiscal", "aliases": ["cod_fiscal", "codfiscal", "cui", "cnp", "FurnizorCIF"], "kind": "text", "description": "Fiscal code / CUI"},
+    {"name": "Analitic", "aliases": ["analitic", "cont_analitic"], "kind": "text", "description": "Analytical account"},
+    {"name": "Tara", "aliases": ["tara", "country"], "kind": "combo", "selectModel": "Tari", "description": "Country code (e.g. RO)"},
+    {"name": "Judet", "aliases": ["judet", "county"], "kind": "combo", "selectModel": "Judete", "description": "County code"},
+    {"name": "Localitate", "aliases": ["localitate", "city"], "kind": "combo", "selectModel": "Localitati", "description": "City / locality"},
+    {"name": "Adresa", "aliases": ["adresa", "address"], "kind": "text", "description": "Street address"},
+    {"name": "ContBanca", "aliases": ["cont_banca", "iban", "bank_account"], "kind": "text", "description": "Bank account"},
+    {"name": "Banca", "aliases": ["banca", "bank"], "kind": "text", "description": "Bank name"},
+    {"name": "Telefon", "aliases": ["telefon", "phone"], "kind": "text", "description": "Phone"},
+    {"name": "Email", "aliases": ["email", "mail"], "kind": "text", "description": "Email"},
+    {"name": "Grupa", "aliases": ["grupa", "group"], "kind": "text", "description": "Supplier group"},
+    {"name": "REG_COM", "aliases": ["reg_com", "registru_comert", "j"], "kind": "text", "description": "Trade register"},
+    {"name": "ZileScadenta", "aliases": ["zile_scadenta", "scadenta", "due_days"], "kind": "text", "description": "Payment due days"},
+    {"name": "BLOCAT", "aliases": ["blocat", "blocked"], "kind": "text", "description": "Blocked flag 0/1"},
+    {"name": "InformatiiSuplimentare", "aliases": ["informatii_suplimentare", "notes", "info"], "kind": "text", "description": "Extra notes"},
+    {"name": "TIP_TERT", "aliases": ["tip_tert"], "kind": "text", "description": "Partner type (I/E/empty)"},
+    {"name": "IsTVA", "aliases": ["is_tva", "tva"], "kind": "text", "description": "VAT payer 0/1"},
+    {"name": "IsEFactura", "aliases": ["is_efactura", "efactura"], "kind": "text", "description": "e-Factura 0/1"}
+  ]
+}

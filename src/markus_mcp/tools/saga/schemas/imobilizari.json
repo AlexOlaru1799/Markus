@@ -1,0 +1,87 @@
+{
+  "operation": "imobilizari",
+  "table": "Imobilizari",
+  "controller": "Imobilizari",
+  "primary_key": "NrInventar",
+  "route": "Imobilizari",
+  "write_style": "classic",
+  "risk": "medium",
+  "actions": {
+    "get_data": [
+      "Imobilizari/GetData_Imobilizari"
+    ],
+    "next_index": [
+      "Imobilizari/GetNrInventar"
+    ]
+  },
+  "usage": "Fixed assets. Read-only until a job exists.",
+  "notes": [
+    "Wave 6 E. Best-effort columns until a live tableModel probe. No employee write tool."
+  ],
+  "columns": [
+    {
+      "name": "NrDoc",
+      "aliases": [
+        "nr_doc",
+        "nr",
+        "number"
+      ],
+      "kind": "text",
+      "description": "Document number"
+    },
+    {
+      "name": "NrInventar",
+      "aliases": [
+        "nr_inventar",
+        "inventory_number"
+      ],
+      "kind": "text",
+      "description": "Inventory number"
+    },
+    {
+      "name": "Denumire",
+      "aliases": [
+        "denumire",
+        "name"
+      ],
+      "kind": "text",
+      "description": "Asset name"
+    },
+    {
+      "name": "Data",
+      "aliases": [
+        "data",
+        "date"
+      ],
+      "kind": "date",
+      "description": "Date"
+    },
+    {
+      "name": "Valoare",
+      "aliases": [
+        "valoare"
+      ],
+      "kind": "number",
+      "description": "Value"
+    },
+    {
+      "name": "Cont",
+      "aliases": [
+        "cont",
+        "account"
+      ],
+      "kind": "combo",
+      "selectModel": "Conturi",
+      "description": "Account"
+    },
+    {
+      "name": "Gestiune",
+      "aliases": [
+        "gestiune"
+      ],
+      "kind": "combo",
+      "selectModel": "Gestiuni",
+      "description": "Warehouse"
+    }
+  ]
+}

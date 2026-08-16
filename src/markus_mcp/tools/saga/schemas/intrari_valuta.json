@@ -1,0 +1,28 @@
+{
+  "operation": "intrari_valuta",
+  "table": "IntrariValuta",
+  "controller": "IntrariValuta",
+  "primary_key": "ID_Intrare",
+  "route": "IntrariValuta",
+  "write_style": "classic",
+  "risk": "medium",
+  "detail_operation": "intrari_valuta_detalii",
+  "actions": {
+    "get_data": ["IntrariValuta/GetData_IntrariValuta"],
+    "create": ["IntrariValuta/Create_IntrariValuta"],
+    "delete": ["IntrariValuta/Delete_IntrariValuta"]
+  },
+  "usage": "FX purchase invoices. Required: Furnizor or Cod, Valuta, Data. Curs auto-filled from GetCursValutar when omitted. Bulk NIR still uses Import date.",
+  "columns": [
+    {"name": "NrDoc", "aliases": ["nr_doc", "number", "invoice_number", "FacturaNumar"], "kind": "text", "description": "Document number"},
+    {"name": "Data", "aliases": ["data", "date", "invoice_date", "FacturaData"], "kind": "date", "description": "Document date"},
+    {"name": "Scadent", "aliases": ["scadent", "due_date", "FacturaScadenta"], "kind": "date", "description": "Due date"},
+    {"name": "Cod", "aliases": ["cod", "cod_furnizor", "FurnizorCod"], "kind": "text", "description": "Supplier code"},
+    {"name": "Furnizor", "aliases": ["furnizor", "supplier", "FurnizorNume", "vendor"], "kind": "combo", "selectModel": "Furnizori", "description": "Supplier name"},
+    {"name": "Valuta", "aliases": ["valuta", "currency", "FacturaMoneda"], "kind": "combo", "selectModel": "Valute", "description": "Currency"},
+    {"name": "Curs", "aliases": ["curs", "fx_rate", "exchange_rate"], "kind": "number", "description": "FX rate to RON"},
+    {"name": "ID_Intrare", "kind": "text", "description": "Internal id", "expose": false},
+    {"name": "Id", "kind": "text", "description": "Classic RowData Id", "expose": false},
+    {"name": "Validat", "kind": "text", "description": "Validated flag", "expose": false}
+  ]
+}

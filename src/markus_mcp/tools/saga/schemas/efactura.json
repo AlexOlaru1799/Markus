@@ -1,0 +1,114 @@
+{
+  "operation": "efactura",
+  "table": "EFactura",
+  "controller": "EFactura",
+  "primary_key": "Id",
+  "route": "EFactura",
+  "write_style": "classic",
+  "risk": "high",
+  "actions": {
+    "get_data": [
+      "EFactura/LoadFacturiImport",
+      "EFactura/GetData_EFactura",
+      "ImportEFactura/GetData_ImportEFactura",
+      "ImportEFacturiPrimite/GetData_ImportEFacturiPrimite"
+    ]
+  },
+  "usage": "Inbound/outbound e-Factura list. saga_efactura_list / download. Submit/cancel/token stay human-gated.",
+  "notes": [
+    "SAGA WEB historically could send issued invoices before inbound import was fully migrated.",
+    "Do not call submit/cancel/SaveToken unless the user explicitly confirms.",
+    "Wave 6 E. Best-effort columns until a live tableModel probe. No employee write tool."
+  ],
+  "columns": [
+    {
+      "name": "NrDoc",
+      "aliases": [
+        "nr_doc",
+        "number",
+        "FacturaNumar"
+      ],
+      "kind": "text",
+      "description": "Invoice number"
+    },
+    {
+      "name": "Data",
+      "aliases": [
+        "data",
+        "date"
+      ],
+      "kind": "date",
+      "description": "Invoice date"
+    },
+    {
+      "name": "CIF",
+      "aliases": [
+        "cif",
+        "cui"
+      ],
+      "kind": "text",
+      "description": "Partner CIF"
+    },
+    {
+      "name": "Denumire",
+      "aliases": [
+        "denumire",
+        "name",
+        "client",
+        "furnizor"
+      ],
+      "kind": "text",
+      "description": "Partner name"
+    },
+    {
+      "name": "Index",
+      "aliases": [
+        "index",
+        "index_incarcare"
+      ],
+      "kind": "text",
+      "description": "SPV index"
+    },
+    {
+      "name": "Stare",
+      "aliases": [
+        "stare",
+        "status"
+      ],
+      "kind": "text",
+      "description": "Status"
+    },
+    {
+      "name": "Tip",
+      "aliases": [
+        "tip"
+      ],
+      "kind": "text",
+      "description": "Issued/received"
+    },
+    {
+      "name": "Total",
+      "aliases": [
+        "total",
+        "valoare"
+      ],
+      "kind": "number",
+      "description": "Amount"
+    },
+    {
+      "name": "Id",
+      "kind": "text",
+      "description": "Row id",
+      "expose": false
+    },
+    {
+      "name": "ID_EFACT",
+      "aliases": [
+        "id_efact"
+      ],
+      "kind": "text",
+      "description": "e-Factura id",
+      "expose": false
+    }
+  ]
+}

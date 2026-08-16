@@ -1,0 +1,85 @@
+{
+  "operation": "deconturi",
+  "table": "Deconturi",
+  "controller": "Deconturi",
+  "primary_key": "ID_Decont",
+  "route": "Deconturi",
+  "write_style": "classic",
+  "risk": "medium",
+  "actions": {
+    "get_data": [
+      "Deconturi/GetData_Deconturi"
+    ]
+  },
+  "usage": "Settlements. Read-only until a job exists.",
+  "notes": [
+    "Wave 6 E. Best-effort columns until a live tableModel probe. No employee write tool."
+  ],
+  "columns": [
+    {
+      "name": "NrDoc",
+      "aliases": [
+        "nr_doc",
+        "nr",
+        "number"
+      ],
+      "kind": "text",
+      "description": "Document number"
+    },
+    {
+      "name": "Data",
+      "aliases": [
+        "data",
+        "date"
+      ],
+      "kind": "date",
+      "description": "Document date"
+    },
+    {
+      "name": "Cod",
+      "aliases": [
+        "cod"
+      ],
+      "kind": "text",
+      "description": "Partner/item code"
+    },
+    {
+      "name": "Denumire",
+      "aliases": [
+        "denumire",
+        "name",
+        "explicatie"
+      ],
+      "kind": "text",
+      "description": "Description"
+    },
+    {
+      "name": "Valoare",
+      "aliases": [
+        "valoare",
+        "suma",
+        "amount"
+      ],
+      "kind": "number",
+      "description": "Amount"
+    },
+    {
+      "name": "Validat",
+      "kind": "text",
+      "description": "Validated flag",
+      "expose": false
+    },
+    {
+      "name": "Id",
+      "kind": "text",
+      "description": "Row id",
+      "expose": false
+    },
+    {
+      "name": "ID_Decont",
+      "kind": "text",
+      "description": "Internal id",
+      "expose": false
+    }
+  ]
+}

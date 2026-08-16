@@ -1,0 +1,17 @@
+{
+  "operation": "gestiuni",
+  "table": "Gestiuni",
+  "controller": "Gestiuni",
+  "primary_key": "Cod",
+  "route": "Gestiuni",
+  "write_style": "ex",
+  "risk": "low",
+  "actions": {
+    "get_data": ["Gestiuni/GetData_Gestiuni"]
+  },
+  "usage": "Read-only until Intrări/Articole need GetNextPK writes.",
+  "columns": [
+    {"name": "Cod", "aliases": ["cod"], "kind": "text", "description": "Warehouse code"},
+    {"name": "Denumire", "aliases": ["denumire", "name", "warehouse"], "kind": "text", "description": "Warehouse name"}
+  ]
+}

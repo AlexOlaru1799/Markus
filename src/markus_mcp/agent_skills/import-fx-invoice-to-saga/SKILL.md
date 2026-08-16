@@ -1,14 +1,26 @@
 ---
 name: import-fx-invoice-to-saga
 description: >-
-  Import a readable PDF sales invoice into SAGA WEB foreign invoices (IesiriValuta)
-  via Markus MCP: detect currency, extract fields, ensure partner exists, create FX
-  invoice, summarize steps, then WhatsApp-notify Eu. Use when the user gives a PDF
-  path and asks to put/add/import that invoice into SAGA (foreign / FX /
-  IesiriValuta / valuta).
+  Put a foreign-currency sales invoice into SAGA WEB IesiriValuta via Markus MCP
+  saga_add_iesiri_valuta (or saga_add_iesire, which routes when Valuta is not RON),
+  from chat fields or a readable PDF. Use when the user asks for FX / valută /
+  IesiriValuta / foreign invoice. After a PDF import, WhatsApp-notify Eu.
 ---
 
-# Import FX invoice PDF into SAGA
+# FX sales invoice any source → SAGA Ieșiri valută
+
+Use Markus MCP (`user-markus`). Credentials stay in `private.data`.
+
+One posting path: **`saga_add_iesiri_valuta(header, lines)`**. `saga_add_iesire`
+with non-RON `Valuta` / `currency` routes here. Use `saga_describe_screen("iesiri_valuta")`
+or `saga_iesiri_valuta_fields` for column names. Map through catalog aliases
+(`customer` → Client, `price_fx` → PretUnitarValuta).
+
+If currency is **RON only**, use `import-sales-invoice-to-saga` / `saga_add_iesire`
+instead.
+
+**Chat:** map user-specified fields only (never invent Cont/TVA/amounts), then
+`saga_add_iesiri_valuta(..., confirm_write=false)` → explicit OK → `true`.
 
 When the user gives a **PDF path** and asks to put that invoice into SAGA, run this
 workflow end-to-end with **Markus MCP** (`user-markus`). Do not skip steps.

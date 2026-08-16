@@ -1,6 +1,6 @@
 [project]
 name = "markus-mcp"
-version = "0.7.0"
+version = "0.12.0"
 description = "Local Cursor MCP for SAGA WEB and WhatsApp Web automation."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -29,3 +29,4 @@ packages = ["src/markus_mcp"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "src/markus_mcp/agent_skills" = "markus_mcp/agent_skills"
+"src/markus_mcp/tools/saga/schemas" = "markus_mcp/tools/saga/schemas"

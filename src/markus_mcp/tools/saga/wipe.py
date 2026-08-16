@@ -15,21 +15,19 @@ as the other SAGA write tools.
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from typing import Any
-from urllib.parse import urlencode, urljoin
+from urllib.parse import urljoin
 
+from markus_mcp.tools.saga import context as saga_context
 from markus_mcp.tools.saga import partners as saga_partners
+from markus_mcp.tools.saga import protocol as saga_protocol
 from markus_mcp.tools.saga import session as saga_session
 
 
 SAMPLE_LIMIT = 10
 BATCH_SIZE = 200
 VALIDATED_VALUES = {"v", "1", "true", "da", "yes"}
-
-# jQuery $.ajax default is GET. Ex-style CRUD uses POST. Try both.
-_DELETE_METHODS = ("POST", "GET")
 
 
 @dataclass(frozen=True)
@@ -44,6 +42,7 @@ class JournalLayer:
     ins_mod_table: str | None = None
     get_data_alt: tuple[str, ...] = ()
     delete_alt: tuple[str, ...] = ()
+    operation: str | None = None
 
 
 @dataclass(frozen=True)
@@ -63,6 +62,7 @@ class WipeTarget:
     journal_entries: JournalLayer | None = None
     journal_lines: JournalLayer | None = None
     child_layers: tuple[JournalLayer, ...] = ()
+    operation: str | None = None
 
 
 # Jurnal de bancă: Solduri (day) is blocked until Casa (intrări din zi) is empty.
@@ -108,6 +108,7 @@ _JURNAL_BANCA_ENTRIES = JournalLayer(
     ),
     parent_id_fields=("Data", "data"),
     ins_mod_table="REGISTRU_AC",
+    operation="jurnal_banca",
 )
 _JURNAL_BANCA_LINES = JournalLayer(
     get_data="RegistruCasa/GetData_CasaDetalii",
@@ -125,6 +126,7 @@ _INTRARI_VALUTA_DETAILS = JournalLayer(
     parent_id_fields=("ID_Intrare", "Id", "ID"),
     get_data_alt=("IntrariValutaDetalii/GetData_IntrariValutaDetalii",),
     delete_alt=("IntrariValutaDetalii/Delete_IntrariValutaDetalii",),
+    operation="intrari_valuta_detalii",
 )
 _INTRARI_DETAILS = JournalLayer(
     get_data="Intrari/GetData_IntrariDetalii",
@@ -134,6 +136,7 @@ _INTRARI_DETAILS = JournalLayer(
     parent_id_fields=("ID_Intrare", "Id", "ID"),
     get_data_alt=("IntrariDetalii/GetData_IntrariDetalii",),
     delete_alt=("IntrariDetalii/Delete_IntrariDetalii",),
+    operation="intrari_detalii",
 )
 _IESIRI_VALUTA_ALLOCATIONS = JournalLayer(
     get_data="IesiriValuta/GetData_Iesiri_Incasari",
@@ -152,6 +155,7 @@ _IESIRI_VALUTA_DETAILS = JournalLayer(
     parent_id_fields=("ID_Iesire", "Id", "ID"),
     get_data_alt=("IesiriValutaDetalii/GetData_IesiriValutaDetalii",),
     delete_alt=("IesiriValutaDetalii/Delete_IesiriValutaDetalii",),
+    operation="iesiri_valuta_detalii",
 )
 _IESIRI_ALLOCATIONS = JournalLayer(
     get_data="Iesiri/GetData_Iesiri_Incasari",
@@ -168,6 +172,7 @@ _IESIRI_DETAILS = JournalLayer(
     parent_id_fields=("ID_Iesire", "Id", "ID"),
     get_data_alt=("IesiriDetalii/GetData_IesiriDetalii",),
     delete_alt=("IesiriDetalii/Delete_IesiriDetalii",),
+    operation="iesiri_detalii",
 )
 
 # Bank journal first so associated receipts do not block invoice delete.
@@ -202,6 +207,7 @@ WIPE_TARGETS: tuple[WipeTarget, ...] = (
         label_fields=("NrDoc", "Furnizor", "Client", "Data", "Moneda", "Total", "Validat"),
         ins_mod_table="INTRD",
         child_layers=(_INTRARI_VALUTA_DETAILS,),
+        operation="intrari_valuta",
     ),
     WipeTarget(
         key="intrari",
@@ -216,6 +222,7 @@ WIPE_TARGETS: tuple[WipeTarget, ...] = (
         label_fields=("NrDoc", "Furnizor", "Client", "Data", "Total", "Validat"),
         ins_mod_table="FACTURI",
         child_layers=(_INTRARI_DETAILS,),
+        operation="intrari",
     ),
     WipeTarget(
         key="iesiri_valuta",
@@ -230,6 +237,7 @@ WIPE_TARGETS: tuple[WipeTarget, ...] = (
         label_fields=("NrDoc", "Client", "Data", "Valuta", "Total", "Validat"),
         ins_mod_table="EXPORT",
         child_layers=(_IESIRI_VALUTA_ALLOCATIONS, _IESIRI_VALUTA_DETAILS),
+        operation="iesiri_valuta",
     ),
     WipeTarget(
         key="iesiri",
@@ -244,6 +252,7 @@ WIPE_TARGETS: tuple[WipeTarget, ...] = (
         label_fields=("NrDoc", "Client", "Data", "Total", "Validat"),
         ins_mod_table="IESIRI",
         child_layers=(_IESIRI_ALLOCATIONS, _IESIRI_DETAILS),
+        operation="iesiri",
     ),
     WipeTarget(
         key="furnizori",
@@ -257,6 +266,7 @@ WIPE_TARGETS: tuple[WipeTarget, ...] = (
         pk_fields=("Cod", "Id", "ID"),
         label_fields=("Cod", "Denumire", "CodFiscal", "CUI"),
         ins_mod_table="FURNIZOR",
+        operation="furnizori",
     ),
     WipeTarget(
         key="clienti",
@@ -270,6 +280,7 @@ WIPE_TARGETS: tuple[WipeTarget, ...] = (
         pk_fields=("Cod", "Id", "ID"),
         label_fields=("Cod", "Denumire", "CodFiscal", "CUI"),
         ins_mod_table="CLIENTI",
+        operation="clienti",
     ),
 )
 
@@ -313,7 +324,12 @@ def wipe_data(*, confirm_write: bool = False, targets: str = "") -> dict[str, An
         }
 
     def _run(browser_page):
+        from markus_mcp.tools.saga import context as saga_context
+
         page = saga_partners._ready(browser_page)
+        blocked = saga_context.assert_writable(page, screen="wipe")
+        if blocked:
+            return blocked
         return _wipe_confirmed(page, selected, preview)
 
     return saga_session.run_in_session(_run)
@@ -483,17 +499,14 @@ def _wipe_confirmed(page, selected: list[WipeTarget], preview: dict[str, Any]) -
 
 
 def _firm_context(page) -> dict[str, Any]:
-    probed = _ajax(page, "GET", "Home/LoadOperationalData")
-    body = probed.get("response") if isinstance(probed.get("response"), dict) else {}
-    toolbar = body.get("Toolbar") if isinstance(body.get("Toolbar"), dict) else {}
-    user = body.get("Utilizator") if isinstance(body.get("Utilizator"), dict) else {}
+    operational = saga_context.load_operational_data(page)
     return {
-        "firm_name": toolbar.get("DenumireFirma"),
-        "firm_code": toolbar.get("CodFirma"),
-        "interval_start": toolbar.get("IntervalStart"),
-        "interval_end": toolbar.get("IntervalEnd"),
-        "user": user.get("COD") or toolbar.get("DenumireUtilizator"),
-        "raw_ok": probed.get("ok_http"),
+        "firm_name": operational.get("firm_name"),
+        "firm_code": operational.get("firm_code"),
+        "interval_start": operational.get("interval_start"),
+        "interval_end": operational.get("interval_end"),
+        "user": operational.get("user"),
+        "raw_ok": operational.get("ok"),
     }
 
 
@@ -819,6 +832,12 @@ def _list_layer(
 
 
 def _delete_layer(page, layer: JournalLayer, pk: str) -> dict[str, Any]:
+    if layer.operation:
+        from markus_mcp.tools.saga import grid as saga_grid
+
+        result = saga_grid.SagaGrid.for_operation(layer.operation).delete(page, pk, allow_choices=True)
+        if result.get("ok") or result.get("blocked"):
+            return result
     last: dict[str, Any] = {"ok": False}
     for path in (layer.delete, *layer.delete_alt):
         outcome = _delete_pk(page, path, pk)
@@ -908,124 +927,18 @@ def _devalidate(page, target: WipeTarget, row: dict[str, Any], pk: str) -> dict[
 
 
 def _delete_row(page, target: WipeTarget, pk: str) -> dict[str, Any]:
-    sender = _sender_id(page)
-    # Ex-style (Clienti/Furnizori and newer grids).
-    ex = _delete_ex(page, target, pk)
-    if ex.get("ok"):
-        return ex
-    # Classic AdvancedControls: Id + _CHECKED handshake (often GET).
-    classic = _delete_classic(page, target, pk, sender)
-    if classic.get("ok"):
-        return classic
-    return {
-        "ok": False,
-        "error": classic.get("error") or ex.get("error") or "Delete failed.",
-        "response": classic.get("response") or ex.get("response"),
-        "via": "api",
-    }
+    if target.operation:
+        from markus_mcp.tools.saga import grid as saga_grid
 
-
-def _delete_ex(page, target: WipeTarget, pk: str) -> dict[str, Any]:
-    form: dict[str, str] = {"ID": pk, "UserValidationFlags": "[]"}
-    result = _ajax(page, "POST", target.delete, form=form)
-    parsed = result.get("response")
-    if isinstance(parsed, dict) and parsed.get("success") is True:
-        return {"ok": True, "via": "api_ex", "response": parsed}
-    if isinstance(parsed, dict) and parsed.get("errorCode") == "ValidateData":
-        flags = []
-        for flag in parsed.get("validationFlags") or []:
-            if not isinstance(flag, dict):
-                continue
-            flag_id = flag.get("id") or flag.get("ID")
-            if flag_id:
-                flags.append({"ID": flag_id, "UserChoice": "Yes"})
-        if flags:
-            form = {
-                "ID": pk,
-                "UserValidationFlags": json.dumps(flags, ensure_ascii=False),
-            }
-            result = _ajax(page, "POST", target.delete, form=form)
-            parsed = result.get("response")
-            if isinstance(parsed, dict) and parsed.get("success") is True:
-                return {"ok": True, "via": "api_ex", "response": parsed}
-    return {
-        "ok": False,
-        "error": _status_text(parsed) or "Ex delete failed.",
-        "response": parsed,
-    }
-
-
-def _delete_classic(page, target: WipeTarget, pk: str, sender: str) -> dict[str, Any]:
-    last_error = "Classic delete failed."
-    last_response: Any = None
-    for method in _DELETE_METHODS:
-        first = _ajax(
-            page,
-            method,
-            target.delete,
-            params={"Id": pk, "_CHECKED": "false", "SenderID": sender}
-            if method == "GET"
-            else None,
-            form={"Id": pk, "_CHECKED": "false", "SenderID": sender}
-            if method == "POST"
-            else None,
-        )
-        parsed = first.get("response")
-        last_response = parsed
-        if isinstance(parsed, dict) and parsed.get("type") == "Choice":
-            flag = str(parsed.get("flagId") or "").strip()
-            if flag:
-                _ajax(
-                    page,
-                    "GET",
-                    "Home/CheckFlag",
-                    params={"Id": flag, "Status": "true", "Aux": ""},
-                )
-            checked_form = {
-                "Id": pk,
-                "_CHECKED": "true",
-                "SenderID": sender,
-            }
-            if flag:
-                checked_form["Type"] = flag
-            second = _ajax(
-                page,
-                method,
-                target.delete,
-                params=checked_form if method == "GET" else None,
-                form=checked_form if method == "POST" else None,
-            )
-            parsed = second.get("response")
-            last_response = parsed
-            if _is_delete_done(parsed, second.get("ok_http")):
-                return {"ok": True, "via": f"api_classic_{method.lower()}", "response": parsed}
-            last_error = _status_text(parsed) or last_error
-            continue
-        if isinstance(parsed, dict) and parsed.get("type") == "Warning":
-            last_error = _status_text(parsed) or last_error
-            continue
-        if isinstance(parsed, dict) and parsed.get("type") == "Validation":
-            second = _ajax(
-                page,
-                method,
-                target.delete,
-                params={"Id": pk, "_CHECKED": "true", "SenderID": sender}
-                if method == "GET"
-                else None,
-                form={"Id": pk, "_CHECKED": "true", "SenderID": sender}
-                if method == "POST"
-                else None,
-            )
-            parsed = second.get("response")
-            last_response = parsed
-            if _is_delete_done(parsed, second.get("ok_http")):
-                return {"ok": True, "via": f"api_classic_{method.lower()}", "response": parsed}
-            last_error = _status_text(parsed) or last_error
-            continue
-        if _is_delete_done(parsed, first.get("ok_http")):
-            return {"ok": True, "via": f"api_classic_{method.lower()}", "response": parsed}
-        last_error = _status_text(parsed) or last_error
-    return {"ok": False, "error": last_error, "response": last_response}
+        result = saga_grid.SagaGrid.for_operation(target.operation).delete(page, pk, allow_choices=True)
+        if result.get("ok") or result.get("blocked"):
+            return result
+    return saga_protocol.delete_with_handshake(
+        page,
+        target.delete,
+        pk,
+        allow_choices=True,
+    )
 
 
 def _executa_ins_mod(page, target: WipeTarget, pk: str) -> None:
@@ -1048,87 +961,19 @@ def _ajax(
     params: dict[str, str] | None = None,
     form: dict[str, str] | None = None,
 ) -> dict[str, Any]:
-    app_base = saga_session.app_base_url(page)
-    absolute = urljoin(app_base.rstrip("/") + "/", path.lstrip("/"))
-    headers = saga_session._auth_headers(page)
-    try:
-        if method.upper() == "GET":
-            url = f"{absolute}?{urlencode(params or {})}" if params else absolute
-            response = page.request.get(url, headers=headers, timeout=45_000)
-        else:
-            response = page.request.post(
-                absolute,
-                form=form or params or {},
-                headers=headers,
-                timeout=45_000,
-            )
-    except Exception as exc:
-        return {
-            "ok_http": False,
-            "status": 0,
-            "endpoint": absolute,
-            "error": str(exc),
-            "response": None,
-        }
-    content_type = response.headers.get("content-type", "")
-    try:
-        parsed: Any = response.json() if "json" in content_type else response.text()
-    except Exception:
-        parsed = response.text()
-    if isinstance(parsed, str) and parsed.strip()[:1] in "{[":
-        try:
-            parsed = json.loads(parsed)
-        except Exception:
-            pass
-    return {
-        "ok_http": bool(response.ok),
-        "status": response.status,
-        "endpoint": absolute,
-        "response": parsed,
-    }
+    return saga_protocol.ajax(page, method, path, params=params, form=form, timeout=45_000)
 
 
 def _request_setup(*, skip: int = 0, batch_size: int = BATCH_SIZE, master_id: str | None = None) -> str:
-    payload: dict[str, Any] = {
-        "FilterSearchType": 1,
-        "FilterCaseSensitive": False,
-        "FilterCurrentTable": False,
-        "Skip": max(skip, 0),
-        "BatchSize": max(batch_size, 1),
-        "GetRowsCount": True,
-    }
-    if master_id:
-        payload["Id"] = master_id
-    return json.dumps(payload, separators=(",", ":"))
+    return saga_protocol.request_setup(skip=skip, batch_size=batch_size, master_id=master_id)
 
 
 def _rows_from_payload(payload: Any) -> list[dict[str, Any]]:
-    if payload is None:
-        return []
-    if isinstance(payload, list):
-        return [item for item in payload if isinstance(item, dict)]
-    if not isinstance(payload, dict):
-        return []
-    for key in ("data", "Data", "rows", "Rows", "items", "Items", "result", "Result"):
-        value = payload.get(key)
-        if isinstance(value, list):
-            return [item for item in value if isinstance(item, dict)]
-        if isinstance(value, dict):
-            nested = _rows_from_payload(value)
-            if nested:
-                return nested
-    return []
+    return saga_protocol.rows_from_payload(payload)
 
 
 def _row_get(row: dict[str, Any], *names: str) -> str:
-    lower = {str(key).casefold(): key for key in row}
-    for name in names:
-        if name in row and row[name] not in (None, ""):
-            return str(row[name]).strip()
-        key = lower.get(name.casefold())
-        if key is not None and row[key] not in (None, ""):
-            return str(row[key]).strip()
-    return ""
+    return saga_protocol.row_get(row, *names)
 
 
 def _row_pk(target: WipeTarget, row: dict[str, Any]) -> str:
@@ -1163,26 +1008,11 @@ def _is_validated(row: dict[str, Any]) -> bool:
 
 
 def _sender_id(page) -> str:
-    try:
-        value = page.evaluate(
-            "() => (typeof tabID !== 'undefined' && tabID != null) ? String(tabID) : '0'"
-        )
-        if value:
-            return str(value)
-    except Exception:
-        pass
-    return "0"
+    return saga_protocol.sender_id(page)
 
 
 def _status_text(parsed: Any) -> str:
-    if isinstance(parsed, dict):
-        for key in ("status", "message", "error", "Message"):
-            value = parsed.get(key)
-            if value:
-                return str(value).strip()
-    if isinstance(parsed, str) and parsed.strip():
-        return parsed.strip()[:400]
-    return ""
+    return saga_protocol.status_text(parsed)
 
 
 def _is_soft_success(parsed: Any, http_ok: bool | None) -> bool:

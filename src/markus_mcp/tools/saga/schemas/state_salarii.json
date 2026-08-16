@@ -1,0 +1,62 @@
+{
+  "operation": "state_salarii",
+  "table": "StateSalarii",
+  "controller": "StateSalarii",
+  "primary_key": "Id",
+  "route": "StateSalarii",
+  "write_style": "classic",
+  "risk": "high",
+  "actions": {
+    "get_data": [
+      "StateSalarii/GetData_StateSalarii"
+    ]
+  },
+  "usage": "Payroll sheets. Read-only; filings stay human-gated.",
+  "notes": [
+    "Wave 6 E. Best-effort columns until a live tableModel probe. No employee write tool.",
+    "No unattended write."
+  ],
+  "columns": [
+    {
+      "name": "An",
+      "aliases": [
+        "an",
+        "year"
+      ],
+      "kind": "text",
+      "description": "Year"
+    },
+    {
+      "name": "Luna",
+      "aliases": [
+        "luna",
+        "month"
+      ],
+      "kind": "text",
+      "description": "Month"
+    },
+    {
+      "name": "Salariat",
+      "aliases": [
+        "salariat",
+        "employee"
+      ],
+      "kind": "text",
+      "description": "Employee"
+    },
+    {
+      "name": "Total",
+      "aliases": [
+        "total"
+      ],
+      "kind": "number",
+      "description": "Total"
+    },
+    {
+      "name": "Id",
+      "kind": "text",
+      "description": "Row id",
+      "expose": false
+    }
+  ]
+}

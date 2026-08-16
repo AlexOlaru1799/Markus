@@ -1,0 +1,17 @@
+{
+  "operation": "tipuri_articole",
+  "table": "TipArticole",
+  "controller": "TipArticole",
+  "primary_key": "Cod",
+  "route": "TipArticole",
+  "write_style": "ex",
+  "risk": "low",
+  "actions": {
+    "get_data": ["TipArticole/GetData_TipArticole", "TipArticole/GetData"]
+  },
+  "usage": "Read-only until Articole create needs a new type.",
+  "columns": [
+    {"name": "Cod", "aliases": ["cod"], "kind": "text", "description": "Type code"},
+    {"name": "Denumire", "aliases": ["denumire", "name"], "kind": "text", "description": "Type name"}
+  ]
+}

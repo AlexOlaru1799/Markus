@@ -1,0 +1,37 @@
+{
+  "operation": "articole",
+  "table": "Articole",
+  "controller": "Articole",
+  "primary_key": "Cod",
+  "route": "Articole",
+  "write_style": "ex",
+  "risk": "low",
+  "actions": {
+    "get_data": ["Articole/GetData_Articole"],
+    "create": ["Articole/Create_Articole"],
+    "edit": ["Articole/Edit_Articole"],
+    "delete": ["Articole/Delete_Articole"]
+  },
+  "usage": "Pass only user-specified Articole fields. Denumire is required on create. Do not invent TVA, pret, or SGR flags.",
+  "notes": [
+    "TVA / preturi / SGR / barcode side-effects (GetTVAArticol, CheckSGR, GenereazaCB) are not auto-called. Pass those fields if the user specified them.",
+    "Cod is auto-filled from Articole/GetNextIndex when omitted."
+  ],
+  "columns": [
+    {"name": "Cod", "aliases": ["cod", "sku", "article_code"], "kind": "text", "description": "Article/service code"},
+    {"name": "Denumire", "aliases": ["denumire", "name", "item_name"], "kind": "text", "description": "Article/service name (required on create)", "required_on_create": true},
+    {"name": "UM", "aliases": ["um", "unit"], "kind": "text", "description": "Unit of measure"},
+    {"name": "TVA", "aliases": ["tva", "vat_rate", "TVA_ART"], "kind": "number", "description": "VAT rate %"},
+    {"name": "Cont", "aliases": ["cont", "account", "cont_venituri"], "kind": "combo", "selectModel": "Conturi", "description": "Revenue/expense account"},
+    {"name": "ContStoc", "aliases": ["cont_stoc", "stock_account"], "kind": "combo", "selectModel": "Conturi", "description": "Stock account"},
+    {"name": "Gestiune", "aliases": ["gestiune", "warehouse"], "kind": "combo", "selectModel": "Gestiuni", "description": "Warehouse"},
+    {"name": "PretVanzare", "aliases": ["pret_vanzare", "sale_price", "price"], "kind": "number", "description": "Sale price"},
+    {"name": "PretAchizitie", "aliases": ["pret_achizitie", "purchase_price"], "kind": "number", "description": "Purchase price"},
+    {"name": "Tip", "aliases": ["tip", "item_type"], "kind": "combo", "selectModel": "TipArticol", "description": "Item type (article/service)"},
+    {"name": "Grupa", "aliases": ["grupa", "group"], "kind": "text", "description": "Article group"},
+    {"name": "CodBare", "aliases": ["cod_bare", "barcode", "ean"], "kind": "text", "description": "Barcode"},
+    {"name": "SGR", "aliases": ["sgr"], "kind": "text", "description": "SGR flag 0/1"},
+    {"name": "IsVandabil", "aliases": ["is_vandabil", "vandabil"], "kind": "text", "description": "Sellable flag 0/1"},
+    {"name": "InformatiiSuplimentare", "aliases": ["informatii_suplimentare", "notes"], "kind": "text", "description": "Notes"}
+  ]
+}

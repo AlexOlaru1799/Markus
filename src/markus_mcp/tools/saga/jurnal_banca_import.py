@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import re
-from collections import Counter
 from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin
@@ -12,7 +11,9 @@ from xml.etree import ElementTree as ET
 
 from markus_mcp.tools.saga import import_date as saga_import_date
 from markus_mcp.tools.saga import partners as saga_partners
+from markus_mcp.tools.saga import protocol as saga_protocol
 from markus_mcp.tools.saga import session as saga_session
+from markus_mcp.tools.saga.documents.parse_incasari_xml import parse_incasari_xml
 
 
 JURNAL_ROUTE = "JurnalDeBanca"
@@ -61,7 +62,12 @@ def import_incasari_xml(
         }
 
     def _run(browser_page):
+        from markus_mcp.tools.saga import context as saga_context
+
         page = saga_partners._ready(browser_page)
+        blocked = saga_context.assert_writable(page, screen="jurnal_banca")
+        if blocked:
+            return {**blocked, "preview": preview}
         source = Path(preview["resolved_path"])
         opened = _open_jurnal(page)
         if not opened.get("ok"):
@@ -261,50 +267,14 @@ def preview_incasari_xml(
 
 
 def summarize_incasari_xml(path: Path) -> dict[str, Any]:
-    tree = ET.parse(path)
-    root = tree.getroot()
-    kind = saga_import_date._local(root.tag)
-    if kind.casefold() == "incasari":
-        kind = "Incasari"
-    elif kind.casefold() == "plati":
-        kind = "Plati"
-    elif kind.casefold() == "facturi":
-        kind = "Facturi"
-    lines_out: list[dict[str, Any]] = []
+    parsed = parse_incasari_xml(path)
+    lines = list(parsed.get("lines") or [])
     lines_by_key: dict[str, dict[str, Any]] = {}
-    dates: Counter[str] = Counter()
-    accounts: Counter[str] = Counter()
-    currencies: Counter[str] = Counter()
-    total = 0.0
-    for node in saga_import_date._findall(root, "Linie"):
-        row = {
-            "data": saga_import_date._child_text(node, "Data"),
-            "numar": saga_import_date._child_text(node, "Numar"),
-            "suma": round(saga_import_date._number(saga_import_date._child_text(node, "Suma")), 2),
-            "cont": saga_import_date._child_text(node, "Cont"),
-            "explicatie": saga_import_date._child_text(node, "Explicatie"),
-            "factura_numar": saga_import_date._child_text(node, "FacturaNumar"),
-            "moneda": saga_import_date._child_text(node, "Moneda") or "RON",
-        }
-        dates[row["data"]] += 1
-        if row["cont"]:
-            accounts[row["cont"]] += 1
-        currencies[row["moneda"]] += 1
-        total += float(row["suma"] or 0)
-        key = _line_key(row["data"], row["numar"], row["suma"])
-        lines_by_key[key] = row
-        if len(lines_out) < SAMPLE_LIMIT:
-            lines_out.append(row)
-    default_account = accounts.most_common(1)[0][0] if accounts else ""
+    for row in lines:
+        lines_by_key[_line_key(row.get("data"), row.get("numar"), row.get("suma"))] = row
     return {
-        "kind": kind,
-        "line_count": sum(dates.values()) if dates else len(saga_import_date._findall(root, "Linie")),
-        "total_amount": round(total, 2),
-        "dates": [{"date": key, "count": count} for key, count in dates.most_common()],
-        "accounts": [{"account": key, "count": count} for key, count in accounts.most_common()],
-        "currencies": [{"currency": key, "count": count} for key, count in currencies.most_common()],
-        "default_account": default_account,
-        "lines": lines_out,
+        **parsed,
+        "lines": lines[:SAMPLE_LIMIT],
         "lines_by_key": lines_by_key,
     }
 
@@ -974,31 +944,16 @@ def _post(
 
 
 def _request_setup(*, skip: int = 0, batch_size: int = 0, master_id: str | None = None) -> str:
-    payload: dict[str, Any] = {
-        "FilterSearchType": 1,
-        "FilterCaseSensitive": False,
-        "FilterCurrentTable": False,
-        "Skip": max(skip, 0),
-        "BatchSize": max(batch_size, 0),
-        "GetRowsCount": False,
-    }
-    if master_id:
-        payload["Id"] = master_id
-    return json.dumps(payload, separators=(",", ":"))
+    return saga_protocol.request_setup(
+        skip=skip,
+        batch_size=batch_size,
+        master_id=master_id,
+        get_rows_count=False,
+    )
 
 
 def _rows(payload: Any) -> list[dict[str, Any]]:
-    if payload is None:
-        return []
-    if isinstance(payload, list):
-        return [item for item in payload if isinstance(item, dict)]
-    if not isinstance(payload, dict):
-        return []
-    for key in ("data", "Data", "rows", "Rows"):
-        value = payload.get(key)
-        if isinstance(value, list):
-            return [item for item in value if isinstance(item, dict)]
-    return []
+    return saga_protocol.rows_from_payload(payload)
 
 
 def _row_get(row: dict[str, Any], *names: str) -> str:

@@ -1,0 +1,48 @@
+{
+  "route": "Clienti",
+  "live": {
+    "picked": "Clienti",
+    "primary": {
+      "name": "Clienti",
+      "tableModel": {
+        "tableName": "Clienti",
+        "controllerName": "Clienti",
+        "primaryKey": "Cod",
+        "columns": [
+          {"name": "Cod", "inputType": "text"},
+          {"name": "Denumire", "inputType": "text"},
+          {"name": "CodFiscal", "inputType": "text"},
+          {"name": "Analitic", "inputType": "text"},
+          {"name": "Tara", "inputType": "combo", "selectModel": "Tari"},
+          {"name": "Judet", "inputType": "combo", "selectModel": "Judete"},
+          {"name": "Localitate", "inputType": "combo", "selectModel": "Localitati"},
+          {"name": "Adresa", "inputType": "text"},
+          {"name": "ContBanca", "inputType": "text"},
+          {"name": "Banca", "inputType": "text"},
+          {"name": "Telefon", "inputType": "text"},
+          {"name": "Email", "inputType": "text"},
+          {"name": "Grupa", "inputType": "text"},
+          {"name": "REG_COM", "inputType": "text"},
+          {"name": "Delegat", "inputType": "text"},
+          {"name": "BI_SERIE", "inputType": "text"},
+          {"name": "BI_NUMAR", "inputType": "text"},
+          {"name": "BI_POL", "inputType": "text"},
+          {"name": "MASINA", "inputType": "text"},
+          {"name": "AGENT", "inputType": "text"},
+          {"name": "DEN_AGENT", "inputType": "text"},
+          {"name": "Discount", "inputType": "text"},
+          {"name": "ZileScadenta", "inputType": "text"},
+          {"name": "C_LIMIT", "inputType": "text"},
+          {"name": "BLOCAT", "inputType": "text"},
+          {"name": "InformatiiSuplimentare", "inputType": "text"},
+          {"name": "TIP_TERT", "inputType": "text"},
+          {"name": "IsTVA", "inputType": "text"},
+          {"name": "DATA_V_TVA", "inputType": "text"},
+          {"name": "IsEFactura", "inputType": "text"},
+          {"name": "ID_EFACT", "inputType": "text"}
+        ]
+      },
+      "sampleKeys": ["Cod", "Denumire", "CodFiscal"]
+    }
+  }
+}

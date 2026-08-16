@@ -1,0 +1,54 @@
+{
+  "operation": "iesiri_valuta",
+  "table": "IesiriValuta",
+  "controller": "IesiriValuta",
+  "primary_key": "ID_Iesire",
+  "route": "IesiriValuta",
+  "write_style": "classic",
+  "risk": "medium",
+  "detail_operation": "iesiri_valuta_detalii",
+  "actions": {
+    "get_data": ["IesiriValuta/GetData_IesiriValuta", "IesiriValuta/GetData"],
+    "create": ["IesiriValuta/Create_IesiriValuta"],
+    "delete": ["IesiriValuta/Delete_IesiriValuta"]
+  },
+  "usage": {
+    "header": "Required: Client or Cod, Valuta, Data. Optional: Scadent, NrDoc, Tip, Curs, Agent, notes.",
+    "lines": "Required per line: Cont, and amounts (Cantitate + PretUnitarValuta, or explicit totals). Also useful: Denumire, Cod_Art/Cod, UM, TVA_ART, Gestiune.",
+    "confirm_write": "Call saga_add_iesiri_valuta with confirm_write=false first, then true after user OK.",
+    "endpoint": "POST IesiriValuta/Create_IesiriValuta (+ Create_IesiriValutaDetalii) with RowData JSON."
+  },
+  "notes": [
+    "Tip '' = Factura (default). Other codes from GetData_ComboBox_Tip_Iesiri (T, A, S, …).",
+    "Cont is mandatory on each line (SAGA warning: Nu ati ales contul).",
+    "FX rate Curs is auto-fetched from IntrariValuta/GetCursValutar when omitted."
+  ],
+  "columns": [
+    {"name": "NrDoc", "aliases": ["nr_doc", "number", "invoice_number", "nr"], "kind": "text", "description": "Document number"},
+    {"name": "Data", "aliases": ["data", "date", "invoice_date"], "kind": "date", "description": "Document date (dd.mm.yyyy)"},
+    {"name": "Scadent", "aliases": ["scadent", "due_date"], "kind": "date", "description": "Due date"},
+    {"name": "Tip", "aliases": ["tip", "tip_factura", "invoice_type"], "kind": "combo", "selectModel": "Tip_Iesiri", "description": "Invoice type"},
+    {"name": "Cod", "aliases": ["cod", "cod_client", "client_code"], "kind": "text", "description": "Client code"},
+    {"name": "Client", "aliases": ["client", "denumire_client", "customer", "customer_name"], "kind": "combo", "selectModel": "Clienti", "description": "Client name"},
+    {"name": "Valuta", "aliases": ["valuta", "currency"], "kind": "combo", "selectModel": "Valute", "description": "Currency code (e.g. EUR, USD)"},
+    {"name": "Curs", "aliases": ["curs", "fx_rate", "exchange_rate"], "kind": "number", "description": "FX rate to RON"},
+    {"name": "CodAgent", "aliases": ["cod_agent", "agent_code"], "kind": "text", "description": "Agent code"},
+    {"name": "Agent", "aliases": ["agent", "agent_name"], "kind": "combo", "selectModel": "Agenti", "description": "Agent name"},
+    {"name": "InformatiiSuplimentare", "aliases": ["informatii_suplimentare", "explicatie", "notes", "description"], "kind": "text", "description": "Header notes"},
+    {"name": "TipOperatie", "aliases": ["tip_operatie"], "kind": "text", "description": "Operation type"},
+    {"name": "FelD", "aliases": ["feld", "fel_document"], "kind": "text", "description": "Document kind"},
+    {"name": "TVAI", "aliases": ["tvai"], "kind": "text", "description": "VAT on receipt flag/value"},
+    {"name": "DataDocument", "aliases": ["data_document"], "kind": "date", "description": "Related document date"},
+    {"name": "ID_Iesire", "kind": "text", "description": "Internal invoice id", "expose": false},
+    {"name": "Id", "kind": "text", "description": "Classic RowData Id", "expose": false},
+    {"name": "Validat", "kind": "text", "description": "Validated flag", "expose": false},
+    {"name": "ValoareValuta", "kind": "number", "description": "Header amount FX", "expose": false},
+    {"name": "Valoare", "kind": "number", "description": "Header amount RON", "expose": false},
+    {"name": "TVAValuta", "kind": "number", "description": "Header VAT FX", "expose": false},
+    {"name": "TVA", "kind": "number", "description": "Header VAT RON", "expose": false},
+    {"name": "TotalValuta", "kind": "number", "description": "Header total FX", "expose": false},
+    {"name": "Total", "kind": "number", "description": "Header total RON", "expose": false},
+    {"name": "NeachitatValuta", "kind": "number", "description": "Unpaid FX", "expose": false},
+    {"name": "Adaos", "kind": "number", "description": "Markup", "expose": false}
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "operation": "numere_serii",
+  "table": "NumereSiSerii",
+  "controller": "NumereSiSerii",
+  "primary_key": "Cod",
+  "route": "NumereSiSerii",
+  "write_style": "ex",
+  "risk": "medium",
+  "actions": {
+    "get_data": [
+      "NumereSiSerii/GetData_NumereSiSerii"
+    ]
+  },
+  "usage": "Document series. Read-only; document adapters pick series when a write job needs it.",
+  "notes": [
+    "Wave 6 E. Best-effort columns until a live tableModel probe. No employee write tool."
+  ],
+  "columns": [
+    {
+      "name": "Cod",
+      "aliases": [
+        "cod"
+      ],
+      "kind": "text",
+      "description": "Series code"
+    },
+    {
+      "name": "Serie",
+      "aliases": [
+        "serie"
+      ],
+      "kind": "text",
+      "description": "Series"
+    },
+    {
+      "name": "Numar",
+      "aliases": [
+        "numar",
+        "number"
+      ],
+      "kind": "text",
+      "description": "Next number"
+    },
+    {
+      "name": "TipDocument",
+      "aliases": [
+        "tip_document",
+        "doc_type"
+      ],
+      "kind": "text",
+      "description": "Document type"
+    }
+  ]
+}

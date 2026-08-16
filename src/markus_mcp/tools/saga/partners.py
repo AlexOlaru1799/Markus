@@ -5,6 +5,9 @@ import re
 from typing import Any
 from urllib.parse import urlencode, urljoin
 
+from markus_mcp.tools.saga import grid as saga_grid
+from markus_mcp.tools.saga import protocol as saga_protocol
+from markus_mcp.tools.saga import schema as saga_schema
 from markus_mcp.tools.saga import session as saga_session
 
 
@@ -105,45 +108,35 @@ def _open_partners_ui(page) -> dict[str, Any]:
 
 
 def _request_setup(*, skip: int = 0, batch_size: int = 100) -> str:
-    return json.dumps(
-        {
-            "FilterSearchType": 1,
-            "FilterCaseSensitive": False,
-            "FilterCurrentTable": False,
-            "Skip": max(skip, 0),
-            "BatchSize": max(batch_size, 1),
-            "GetRowsCount": True,
-        },
-        separators=(",", ":"),
+    return saga_protocol.request_setup(skip=skip, batch_size=batch_size)
+
+
+def _fetch_clienti_data(
+    page,
+    *,
+    skip: int = 0,
+    batch_size: int = 100,
+    keyword: str | None = None,
+) -> dict[str, Any] | None:
+    fetched = saga_grid.SagaGrid.for_operation("clienti").list(
+        page, skip=skip, batch_size=batch_size, keyword=keyword
     )
-
-
-def _fetch_clienti_data(page, *, skip: int = 0, batch_size: int = 100) -> dict[str, Any] | None:
-    app_base = saga_session.app_base_url(page)
-    absolute = urljoin(app_base.rstrip("/") + "/", "Clienti/GetData_Clienti")
-    params = {"RequestSetup": _request_setup(skip=skip, batch_size=batch_size)}
-    try:
-        response = page.request.get(
-            f"{absolute}?{urlencode(params)}",
-            headers=saga_session._auth_headers(page),
-            timeout=30_000,
-        )
-    except Exception:
+    if not fetched.get("ok"):
         return None
-    if not response.ok:
-        return None
-    try:
-        body = response.json()
-    except Exception:
-        return None
-    if isinstance(body, (dict, list)):
-        return {"endpoint": absolute, "params": params, "body": body, "status": response.status}
-    return None
+    body = fetched.get("body")
+    if body is None:
+        body = fetched.get("rows") or []
+    return {
+        "endpoint": fetched.get("endpoint"),
+        "body": body,
+        "status": fetched.get("status"),
+        "rows": fetched.get("rows") or [],
+    }
 
 
 def _probe_data_endpoints(page, query: str | None = None) -> dict[str, Any] | None:
     # Prefer the real SAGA C clients endpoint discovered after firm connect.
-    fetched = _fetch_clienti_data(page, skip=0, batch_size=100)
+    fetched = _fetch_clienti_data(page, skip=0, batch_size=100, keyword=query)
     if fetched is not None:
         return fetched
 
@@ -178,21 +171,7 @@ def _probe_data_endpoints(page, query: str | None = None) -> dict[str, Any] | No
 
 
 def _rows_from_json(payload: Any) -> list[dict[str, Any]]:
-    if payload is None:
-        return []
-    if isinstance(payload, list):
-        return [item for item in payload if isinstance(item, dict)]
-    if not isinstance(payload, dict):
-        return []
-    for key in ("data", "Data", "rows", "Rows", "items", "Items", "result", "Result", "parteneri", "Parteneri"):
-        value = payload.get(key)
-        if isinstance(value, list):
-            return [item for item in value if isinstance(item, dict)]
-        if isinstance(value, dict):
-            nested = _rows_from_json(value)
-            if nested:
-                return nested
-    return []
+    return saga_protocol.rows_from_payload(payload)
 
 
 def _scrape_partner_table(page) -> list[dict[str, Any]]:
@@ -405,69 +384,6 @@ def get_partner(partner_id: str) -> dict[str, Any]:
     return {"ok": True, "partner": exact[0], "url": result.get("url")}
 
 
-# Writable SAGA Clienti columns. Agents may use either the SAGA name or an alias.
-# Only keys provided by the user are written; unspecified fields are left untouched.
-CLIENTI_FIELD_CATALOG: dict[str, dict[str, Any]] = {
-    "Cod": {"aliases": ("cod",), "kind": "text", "description": "Client code"},
-    "Denumire": {
-        "aliases": ("denumire", "name", "company_name"),
-        "kind": "text",
-        "description": "Client name (required on create)",
-        "required_on_create": True,
-    },
-    "CodFiscal": {
-        "aliases": ("cod_fiscal", "codfiscal", "cui", "cnp"),
-        "kind": "text",
-        "description": "Fiscal code / CNP",
-    },
-    "Analitic": {"aliases": ("analitic", "cont_analitic"), "kind": "text", "description": "Analytical account"},
-    "Tara": {"aliases": ("tara", "country"), "kind": "combo", "description": "Country code (e.g. RO)"},
-    "Judet": {"aliases": ("judet", "county"), "kind": "combo", "description": "County code (e.g. B)"},
-    "Localitate": {"aliases": ("localitate", "city"), "kind": "combo", "description": "City / locality"},
-    "Adresa": {"aliases": ("adresa", "address"), "kind": "text", "description": "Street address"},
-    "ContBanca": {"aliases": ("cont_banca", "iban", "bank_account"), "kind": "text", "description": "Bank account"},
-    "Banca": {"aliases": ("banca", "bank"), "kind": "text", "description": "Bank name"},
-    "Telefon": {"aliases": ("telefon", "phone"), "kind": "text", "description": "Phone"},
-    "Email": {"aliases": ("email", "mail"), "kind": "text", "description": "Email"},
-    "Grupa": {"aliases": ("grupa", "group"), "kind": "text", "description": "Client group"},
-    "REG_COM": {"aliases": ("reg_com", "registru_comert", "j"), "kind": "text", "description": "Trade register"},
-    "Delegat": {"aliases": ("delegat",), "kind": "text", "description": "Delegate name"},
-    "BI_SERIE": {"aliases": ("bi_serie",), "kind": "text", "description": "ID card series"},
-    "BI_NUMAR": {"aliases": ("bi_numar",), "kind": "text", "description": "ID card number"},
-    "BI_POL": {"aliases": ("bi_pol",), "kind": "text", "description": "ID card issuer"},
-    "MASINA": {"aliases": ("masina", "auto"), "kind": "text", "description": "Vehicle"},
-    "AGENT": {"aliases": ("agent",), "kind": "text", "description": "Agent code"},
-    "DEN_AGENT": {"aliases": ("den_agent", "agent_name"), "kind": "text", "description": "Agent name"},
-    "Discount": {"aliases": ("discount",), "kind": "text", "description": "Discount"},
-    "ZileScadenta": {
-        "aliases": ("zile_scadenta", "scadenta", "due_days"),
-        "kind": "text",
-        "description": "Payment due days",
-    },
-    "C_LIMIT": {
-        "aliases": ("c_limit", "limita_sold", "credit_limit"),
-        "kind": "text",
-        "description": "Credit limit",
-    },
-    "BLOCAT": {"aliases": ("blocat", "blocked"), "kind": "text", "description": "Blocked flag 0/1"},
-    "InformatiiSuplimentare": {
-        "aliases": ("informatii_suplimentare", "notes", "info"),
-        "kind": "text",
-        "description": "Extra notes",
-    },
-    "TIP_TERT": {"aliases": ("tip_tert",), "kind": "text", "description": "Partner type (I/E/empty)"},
-    "IsTVA": {"aliases": ("is_tva", "tva"), "kind": "text", "description": "VAT payer 0/1"},
-    "DATA_V_TVA": {"aliases": ("data_v_tva",), "kind": "text", "description": "VAT date"},
-    "IsEFactura": {"aliases": ("is_efactura", "efactura"), "kind": "text", "description": "e-Factura 0/1"},
-    "ID_EFACT": {"aliases": ("id_efact",), "kind": "text", "description": "e-Factura id"},
-}
-
-FIELD_ALIASES: dict[str, tuple[str, ...]] = {}
-for _saga_name, _meta in CLIENTI_FIELD_CATALOG.items():
-    FIELD_ALIASES[_normalize(_saga_name)] = (_saga_name,)
-    for _alias in _meta.get("aliases") or ():
-        FIELD_ALIASES[_normalize(str(_alias))] = (_saga_name,)
-
 JUDET_CODES = {
     "bucuresti": "B",
     "bucurești": "B",
@@ -535,22 +451,14 @@ JUDET_CODES = {
 
 
 def partner_field_catalog() -> dict[str, Any]:
-    fields = []
-    for name, meta in CLIENTI_FIELD_CATALOG.items():
-        fields.append(
-            {
-                "name": name,
-                "aliases": list(meta.get("aliases") or ()),
-                "kind": meta.get("kind"),
-                "description": meta.get("description"),
-                "required_on_create": bool(meta.get("required_on_create")),
-            }
-        )
+    described = saga_schema.describe_screen("clienti")
+    fields = described.get("fields") or []
     return {
         "ok": True,
         "count": len(fields),
         "fields": fields,
-        "details": (
+        "details": described.get("details")
+        or (
             "Pass only the fields the user specifies. Unspecified fields are left unchanged "
             "(update) or blank (create). Use either the SAGA name or an alias as the dict key."
         ),
@@ -581,40 +489,23 @@ def _is_valid_ro_cui(value: str) -> bool:
 
 def _map_user_fields(fields: dict[str, Any]) -> tuple[dict[str, str], list[str]]:
     """Map user-specified keys to SAGA Clienti columns. Unknown keys are reported, not invented."""
-    row: dict[str, str] = {}
-    unknown: list[str] = []
-    for key, value in fields.items():
-        if value is None:
-            continue
-        text_value = str(value).strip()
-        if text_value == "":
-            continue
-        norm = _normalize(str(key)).replace(" ", "_")
-        targets = FIELD_ALIASES.get(norm)
-        if not targets:
-            # Allow exact passthrough for already-canonical SAGA names with odd casing.
-            if str(key) in CLIENTI_FIELD_CATALOG:
-                targets = (str(key),)
-            else:
-                unknown.append(str(key))
-                continue
-        for target in targets:
-            row[target] = text_value
+    mapped = saga_schema.map_fields("clienti", fields)
+    row = dict(mapped.fields)
 
     # Normalize only values the user actually provided.
     if "Tara" in row and _normalize(row["Tara"]) in {"romania", "românia", "ro"}:
         row["Tara"] = "RO"
     if "Judet" in row:
         jud = row["Judet"].strip()
-        mapped = JUDET_CODES.get(_normalize(jud))
-        if mapped:
-            row["Judet"] = mapped
+        mapped_jud = JUDET_CODES.get(_normalize(jud))
+        if mapped_jud:
+            row["Judet"] = mapped_jud
         elif len(jud) <= 2:
             row["Judet"] = jud.upper()
     if "Localitate" in row and _normalize(row["Localitate"]) in {"bucuresti", "bucurești"}:
         row["Localitate"] = "BUCURESTI"
 
-    return row, unknown
+    return row, mapped.unknown
 
 
 def _row_data_from_fields(fields: dict[str, Any]) -> dict[str, str]:
@@ -751,25 +642,55 @@ def _post_clienti_row(
     row_data: dict[str, str],
     user_validation_flags: list[dict[str, str]] | None = None,
 ) -> dict[str, Any]:
-    app_base = saga_session.app_base_url(page)
-    absolute = urljoin(app_base.rstrip("/") + "/", path.lstrip("/"))
-    form: dict[str, str] = {f"Data[{key}]": str(value) for key, value in row_data.items()}
-    form["_CHECKED"] = "false"
-    form["IsPaste"] = "false"
-    if user_validation_flags:
-        form["uvf"] = json.dumps(user_validation_flags, ensure_ascii=False)
-    response = page.request.post(
-        absolute,
-        form=form,
-        headers=saga_session._auth_headers(page),
-        timeout=45_000,
+    client = saga_grid.SagaGrid.for_operation("clienti")
+    if "Edit" in path:
+        result = client.update(
+            page,
+            str(row_data.get("Cod") or ""),
+            row_data,
+            allow_choices=True,
+            uvf=user_validation_flags,
+        )
+    else:
+        result = client.create(page, row_data, allow_choices=True, uvf=user_validation_flags)
+    payload = result.as_dict()
+    parsed = payload.get("response")
+    blocked = parsed.get("blocked") if isinstance(parsed, dict) else None
+    return {
+        "endpoint": payload.get("endpoint"),
+        "status": payload.get("status"),
+        "response": parsed,
+        "ok_http": payload.get("ok_http"),
+        "ok": result.ok,
+        "outcome": result.outcome,
+        "error": payload.get("error") or result.message,
+        "attempts": payload.get("attempts"),
+        "blocked": blocked,
+    }
+
+
+def _preflight_write_block(api_result: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Return the grid preflight payload; caller must skip the Clienti UI fallback."""
+    if not isinstance(api_result, dict):
+        return None
+    parsed = api_result.get("response") if isinstance(api_result.get("response"), dict) else {}
+    blocked = api_result.get("blocked") or parsed.get("blocked")
+    if blocked not in {"closed_period", "rights"}:
+        return None
+    error = (
+        parsed.get("error")
+        or api_result.get("error")
+        or api_result.get("message")
+        or "Write blocked."
     )
-    content_type = response.headers.get("content-type", "")
-    try:
-        parsed: Any = response.json() if "json" in content_type else response.text()
-    except Exception:
-        parsed = response.text()
-    return {"endpoint": absolute, "status": response.status, "response": parsed, "ok_http": response.ok}
+    return {
+        "ok": False,
+        "error": error,
+        "blocked": blocked,
+        "outcome": api_result.get("outcome") or "error",
+        "screen": parsed.get("screen") or api_result.get("screen") or "clienti",
+        "closed_period": parsed.get("closed_period") or api_result.get("closed_period"),
+    }
 
 
 def _click_clienti_toolbar(page, *labels: str) -> bool:
@@ -900,17 +821,11 @@ def create_partner(fields: dict[str, Any], *, confirm_write: bool = False) -> di
             return {"ok": False, "error": "denumire/Denumire is required to create a client.", "request": payload}
 
         api_result = _create_clienti_via_api(p, row_data)
+        blocked = _preflight_write_block(api_result)
+        if blocked:
+            return blocked
         parsed = api_result.get("response")
-        if isinstance(parsed, dict) and parsed.get("errorCode") == "ValidateData":
-            flags = []
-            for flag in parsed.get("validationFlags") or []:
-                if isinstance(flag, dict) and flag.get("id"):
-                    flags.append({"id": flag["id"], "userChoice": "Yes"})
-            if flags:
-                api_result = _create_clienti_via_api(p, row_data, user_validation_flags=flags)
-                parsed = api_result.get("response")
-
-        if isinstance(parsed, dict) and parsed.get("success") is True:
+        if api_result.get("ok") or (isinstance(parsed, dict) and parsed.get("success") is True):
             verified = _verify_created(p, row_data)
             return {
                 "ok": True,
@@ -1035,22 +950,11 @@ def update_partner(
                     break
 
         api_result = _post_clienti_row(p, path="Clienti/Edit_Clienti", row_data=row_data)
+        blocked = _preflight_write_block(api_result)
+        if blocked:
+            return blocked
         parsed = api_result.get("response")
-        if isinstance(parsed, dict) and parsed.get("errorCode") == "ValidateData":
-            flags = []
-            for flag in parsed.get("validationFlags") or []:
-                if isinstance(flag, dict) and flag.get("id"):
-                    flags.append({"id": flag["id"], "userChoice": "Yes"})
-            if flags:
-                api_result = _post_clienti_row(
-                    p,
-                    path="Clienti/Edit_Clienti",
-                    row_data=row_data,
-                    user_validation_flags=flags,
-                )
-                parsed = api_result.get("response")
-
-        if isinstance(parsed, dict) and parsed.get("success") is True:
+        if api_result.get("ok") or (isinstance(parsed, dict) and parsed.get("success") is True):
             verified = _verify_created(p, row_data)
             return {
                 "ok": True,
@@ -1158,80 +1062,8 @@ def _partner_still_exists(page, pk: str) -> bool:
 
 
 def _delete_clienti_via_api(page, pk: str) -> dict[str, Any]:
-    """Delete via Clienti/Delete_Clienti using both Ex and classic payloads."""
-    app_base = saga_session.app_base_url(page)
-    absolute = urljoin(app_base.rstrip("/") + "/", "Clienti/Delete_Clienti")
-    headers = saga_session._auth_headers(page)
-    attempts: list[dict[str, Any]] = []
-
-    def _post(form: dict[str, Any]) -> dict[str, Any]:
-        response = page.request.post(absolute, form=form, headers=headers, timeout=45_000)
-        content_type = response.headers.get("content-type", "")
-        try:
-            parsed: Any = response.json() if "json" in content_type else response.text()
-        except Exception:
-            parsed = response.text()
-        entry = {
-            "endpoint": absolute,
-            "status": response.status,
-            "request": form,
-            "response": parsed,
-            "ok_http": response.ok,
-        }
-        attempts.append(entry)
-        return entry
-
-    # Ex-style (same family as Create_Clienti success/ValidateData responses).
-    result = _post({"ID": pk, "UserValidationFlags": "[]"})
-    parsed = result.get("response")
-    if isinstance(parsed, dict) and parsed.get("success") is True:
-        return {"ok": True, "via": "api_ex", **result, "attempts": attempts}
-
-    if isinstance(parsed, dict) and parsed.get("errorCode") == "ValidateData":
-        flags = []
-        for flag in parsed.get("validationFlags") or []:
-            if isinstance(flag, dict) and flag.get("id"):
-                flags.append({"ID": flag["id"], "UserChoice": "Yes"})
-            elif isinstance(flag, dict) and flag.get("ID"):
-                flags.append({"ID": flag["ID"], "UserChoice": "Yes"})
-        if flags:
-            result = _post({"ID": pk, "UserValidationFlags": json.dumps(flags, ensure_ascii=False)})
-            parsed = result.get("response")
-            if isinstance(parsed, dict) and parsed.get("success") is True:
-                return {"ok": True, "via": "api_ex", **result, "attempts": attempts}
-
-    # Classic AdvancedControls delete: Id + _CHECKED handshake.
-    sender = "0"
-    try:
-        sender = str(
-            page.evaluate(
-                "() => (typeof tabID !== 'undefined' && tabID != null) ? String(tabID) : '0'"
-            )
-            or "0"
-        )
-    except Exception:
-        pass
-    result = _post({"Id": pk, "_CHECKED": "false", "SenderID": sender})
-    parsed = result.get("response")
-    if isinstance(parsed, dict) and parsed.get("type") == "Validation":
-        result = _post({"Id": pk, "_CHECKED": "true", "SenderID": sender})
-        parsed = result.get("response")
-        if result.get("ok_http") and not (
-            isinstance(parsed, dict) and parsed.get("type") in ("Warning", "Choice")
-        ):
-            if not (isinstance(parsed, dict) and parsed.get("success") is False):
-                return {"ok": True, "via": "api_classic", **result, "attempts": attempts}
-
-    if isinstance(parsed, dict) and parsed.get("success") is True:
-        return {"ok": True, "via": "api_classic", **result, "attempts": attempts}
-
-    return {
-        "ok": False,
-        "via": "api",
-        "endpoint": absolute,
-        "attempts": attempts,
-        "response": parsed if isinstance(parsed, dict) else result,
-    }
+    """Delete via SagaGrid Clienti (Delete_Clienti handshake)."""
+    return saga_grid.SagaGrid.for_operation("clienti").delete(page, pk, allow_choices=True)
 
 
 def _delete_clienti_via_ui(page, pk: str) -> dict[str, Any]:
@@ -1368,6 +1200,9 @@ def delete_partner(partner_id: str, *, confirm_write: bool = False) -> dict[str,
 
         saga_session.clear_capture()
         api_result = _delete_clienti_via_api(p, pk)
+        blocked = _preflight_write_block(api_result)
+        if blocked:
+            return blocked
         gone = not _partner_still_exists(p, pk)
 
         if api_result.get("ok") and gone:
