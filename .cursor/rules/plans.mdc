@@ -1,14 +1,17 @@
 ---
-description: Save all plans under .cursor/plans
+description: Active plans under .cursor/plans; finished plans under .cursor/plans-done
 alwaysApply: true
 ---
 
-# Plans live under `.cursor/plans`
+# Plans
 
 When writing, updating, or saving a plan, design doc, or implementation plan:
 
-- Put it in `.cursor/plans/` (create the folder if needed)
+- **Not yet implemented** — `.cursor/plans/` (create the folder if needed)
+- **Done** — move it to `.cursor/plans-done/` (create the folder if needed)
 - Use a kebab-case markdown filename, e.g. `.cursor/plans/rebuild-installers.md`
 - Do **not** write plans to repo-root `plans/`, `docs/plans/`, or chat-only files meant to persist
 
-If an older plan still lives under `plans/`, move it into `.cursor/plans/` when you next edit it.
+When a plan is fully implemented, `git mv` it from `.cursor/plans/` to `.cursor/plans-done/`. Do not leave completed work in `.cursor/plans/`.
+
+If an older plan still lives under `plans/`, put it in `.cursor/plans/` or `.cursor/plans-done/` (whichever matches its status) when you next edit it.
