@@ -22,7 +22,7 @@ real PDF or Excel file (magic bytes). HTML error pages are not saved.
 ```
 - [ ] 1. saga_status / saga_login (pause for email auth / OTP if needed)
 - [ ] 2. saga_context — show firm_name, interval_start/interval_end, closed_period_warning
-- [ ] 3. If closed_period_warning is set, tell the user. Still run reports; do not write into a closed month.
+- [ ] 3. If closed_period_warning is set, tell the user. Still run reports. Writes still need their yes; SAGA may refuse.
 - [ ] 4. saga_run_report(name="period_pack") — or the three reports below
 - [ ] 5. If the user named accounts → saga_run_report(name="fise_conturi", accounts="401") per account
          (or period_pack with accounts="401,4111")

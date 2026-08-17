@@ -5,6 +5,7 @@ from typing import Any
 
 from markus_mcp import __version__
 from markus_mcp.paths import credentials_file, data_dir, markus_home
+from markus_mcp.source_info import fingerprint
 from markus_mcp.tools.smartbill.credentials import load_credentials as load_smartbill_credentials
 
 
@@ -16,7 +17,7 @@ def health_check() -> dict[str, Any]:
     else:
         transport_name = "stdio"
         endpoint = None
-    return {
+    payload = {
         "status": "ok",
         "server": "markus-mcp",
         "version": __version__,
@@ -31,3 +32,5 @@ def health_check() -> dict[str, Any]:
         "smartbill_token_configured": load_smartbill_credentials().token_configured,
         "smartbill_saga_xml": True,
     }
+    payload.update(fingerprint())
+    return payload

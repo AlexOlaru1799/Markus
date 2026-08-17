@@ -811,7 +811,12 @@ def create_partner(fields: dict[str, Any], *, confirm_write: bool = False) -> di
         }
 
     def _run(browser_page):
+        from markus_mcp.tools.saga import context as saga_context
+
         p = _ready(browser_page)
+        blocked = saga_context.assert_writable(p, screen="clienti")
+        if blocked:
+            return blocked
         opened = _open_partners_ui(p)
         if not opened.get("ok"):
             return {"ok": False, **opened}
@@ -934,7 +939,12 @@ def update_partner(
         }
 
     def _run(browser_page):
+        from markus_mcp.tools.saga import context as saga_context
+
         p = _ready(browser_page)
+        blocked = saga_context.assert_writable(p, screen="clienti")
+        if blocked:
+            return blocked
         opened = _open_partners_ui(p)
         if not opened.get("ok"):
             return {"ok": False, **opened}
@@ -1193,7 +1203,12 @@ def delete_partner(partner_id: str, *, confirm_write: bool = False) -> dict[str,
         }
 
     def _run(browser_page):
+        from markus_mcp.tools.saga import context as saga_context
+
         p = _ready(browser_page)
+        blocked = saga_context.assert_writable(p, screen="clienti")
+        if blocked:
+            return blocked
         opened = _open_partners_ui(p)
         if not opened.get("ok"):
             return {"ok": False, **opened}

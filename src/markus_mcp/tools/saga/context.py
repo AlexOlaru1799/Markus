@@ -83,7 +83,8 @@ def closed_period_notice(closed: Any) -> str | None:
     if closed is True or (isinstance(closed, str) and closed.strip().casefold() in {"true", "da", "yes"}):
         return (
             "SAGA reports a closed period (Home/GetInchidereCurenta). "
-            "Do not post documents into a closed month. Reports for that interval may still run."
+            "Tell the user before posting. If they still want the write, continue after confirm_write. "
+            "SAGA itself may refuse. Reports for that interval may still run."
         )
     if isinstance(closed, dict):
         useful = [
@@ -95,7 +96,8 @@ def closed_period_notice(closed: Any) -> str | None:
             return None
     return (
         "SAGA reports a closed period (Home/GetInchidereCurenta). "
-        "Do not post documents into a closed month. Reports for that interval may still run."
+        "Tell the user before posting. If they still want the write, continue after confirm_write. "
+        "SAGA itself may refuse. Reports for that interval may still run."
     )
 
 
@@ -191,22 +193,14 @@ def screen_write_denied(rights_body: Any, screen: str) -> bool:
 
 
 def assert_writable(page, *, screen: str = "", allow_closed: bool = False) -> dict[str, Any] | None:
-    """Pre-flight LoadDrepturiEcrane + GetInchidereCurenta. None = proceed."""
-    closed = load_closed_period(page)
+    """Pre-flight LoadDrepturiEcrane. None = proceed.
+
+    Closed month is not a Markus veto. Warn via saga_context; after the user
+    confirms the write, continue. SAGA may still refuse. allow_closed is kept
+    so existing callers do not break.
+    """
+    _ = allow_closed
     rights = load_rights(page)
-    if not allow_closed and closed.get("ok") and not closed.get("unknown"):
-        if period_is_closed(closed.get("closed")):
-            return {
-                "ok": False,
-                "error": (
-                    "SAGA working interval is a closed month (GetInchidereCurenta). "
-                    "Refusing the write. Change the interval with saga_set_interval, "
-                    "or reopen the month in the SAGA UI."
-                ),
-                "blocked": "closed_period",
-                "closed_period": closed.get("closed"),
-                "screen": screen,
-            }
     if rights.get("ok") and screen and screen_write_denied(rights.get("rights"), screen):
         return {
             "ok": False,
@@ -249,8 +243,8 @@ def snapshot(page) -> dict[str, Any]:
         "operational_ok": bool(operational.get("ok")),
         "details": (
             "Working interval and firm come from Home/LoadOperationalData. "
-            "Named writes call assert_writable (GetInchidereCurenta + LoadDrepturiEcrane) "
-            "before mutating when closed_period is known."
+            "Named writes call assert_writable (LoadDrepturiEcrane) before mutating. "
+            "A closed month is a warning, not a Markus veto."
         ),
     }
 
@@ -328,6 +322,9 @@ def set_interval(
         from markus_mcp.tools.saga import partners as saga_partners
 
         page = saga_partners._ready(browser_page)
+        blocked = assert_writable(page, screen="set_interval", allow_closed=True)
+        if blocked:
+            return blocked
         form = {"IntervalStart": start, "IntervalEnd": end, "DataStart": start, "DataStop": end}
         last: dict[str, Any] = {}
         for path in ("Home/SetInterval", "Home/SalvareInterval", "Home/SetDataInterval"):
@@ -387,6 +384,9 @@ def close_month(*, confirm_write: bool = False, confirm_phrase: str = "") -> dic
         from markus_mcp.tools.saga import partners as saga_partners
 
         page = saga_partners._ready(browser_page)
+        blocked = assert_writable(page, screen="inchidere_luna", allow_closed=True)
+        if blocked:
+            return blocked
         saga_grid.open_screen(page, "InchidereLuna")
         last: dict[str, Any] = {}
         for path in (

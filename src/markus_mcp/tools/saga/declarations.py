@@ -160,6 +160,11 @@ def submit_declaration(
         from markus_mcp.tools.saga import partners as saga_partners
 
         page = saga_partners._ready(browser_page)
+        from markus_mcp.tools.saga import context as saga_context
+
+        blocked = saga_context.assert_writable(page, screen="declarations", allow_closed=True)
+        if blocked:
+            return blocked
         saga_grid.open_screen(page, str(spec.get("route") or "InchidereLuna"))
         last: dict[str, Any] = {}
         form = {str(k): str(v) for k, v in (filters or {}).items() if v not in (None, "")}

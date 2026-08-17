@@ -108,7 +108,9 @@ class ContextNoticeTests(unittest.TestCase):
     def test_closed_period_notice(self) -> None:
         self.assertIsNone(context.closed_period_notice(None))
         self.assertIsNone(context.closed_period_notice({}))
-        self.assertIn("closed period", context.closed_period_notice(True) or "")
+        notice = context.closed_period_notice(True) or ""
+        self.assertIn("closed period", notice)
+        self.assertIn("confirm_write", notice)
         self.assertIn("closed period", context.closed_period_notice({"Luna": "7", "An": "2026"}) or "")
 
 

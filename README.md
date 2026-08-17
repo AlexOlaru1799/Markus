@@ -22,6 +22,8 @@ You do not need the Markus git repo.
 
 ## For developers (this repo)
 
+Accountant-pilot checkout (`ap/<name>`): [`.cursor/accountant-quickstart.md`](.cursor/accountant-quickstart.md) for the accountant, [`.cursor/accountant-pilot-engineer.md`](.cursor/accountant-pilot-engineer.md) for machine setup. Offline gate: `python scripts/quality_gate.py`.
+
 ```bash
 cd /path/to/Markus
 python3 -m pip install -e .

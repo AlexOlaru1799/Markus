@@ -1,0 +1,14 @@
+---
+description: Regression and safety invariants for every Markus change
+alwaysApply: true
+---
+
+# Regression safety
+
+- Prefer the smallest change that matches the reported accounting outcome.
+- Do not delete, skip, or weaken an existing test to make a change pass.
+- After code changes, run `python scripts/quality_gate.py` before publishing.
+- SAGA mutations keep `confirm_write=false` preview, then `confirm_write=true` only after explicit user OK. Gated tools still need their confirm phrases.
+- Never commit `private.data`, `.env`, browser profiles, passwords, tokens, or production documents.
+- Publish only via `python scripts/accountant-checkpoint.py` on `ap/<name>`. Never push `main`, never force-push.
+- After changing MCP Python, tell the user to reload Markus MCP; the running process keeps old code.

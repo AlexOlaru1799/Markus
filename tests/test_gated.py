@@ -110,6 +110,19 @@ class CatalogWave678Tests(unittest.TestCase):
 
 
 class WritePreflightTests(unittest.TestCase):
+    def test_assert_writable_does_not_veto_closed_month(self) -> None:
+        from unittest.mock import patch
+
+        page = object()
+        allowed = {"ok": True, "rights": [{"Ecran": "Clienti", "Adaugare": "1"}]}
+        with patch.object(context, "load_rights", return_value=allowed):
+            self.assertIsNone(context.assert_writable(page, screen="clienti"))
+        denied = {"ok": True, "rights": [{"Ecran": "Clienti", "Adaugare": "0"}]}
+        with patch.object(context, "load_rights", return_value=denied):
+            blocked = context.assert_writable(page, screen="clienti")
+        self.assertIsNotNone(blocked)
+        self.assertEqual(blocked["blocked"], "rights")
+
     def test_period_is_closed(self) -> None:
         self.assertTrue(context.period_is_closed(True))
         self.assertTrue(context.period_is_closed("da"))

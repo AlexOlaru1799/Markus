@@ -233,6 +233,11 @@ def _gated(
         from markus_mcp.tools.saga import partners as saga_partners
 
         page_obj = saga_partners._ready(browser_page)
+        from markus_mcp.tools.saga import context as saga_context
+
+        blocked = saga_context.assert_writable(page_obj, screen="efactura", allow_closed=True)
+        if blocked:
+            return blocked
         saga_grid.open_screen(page_obj, "EFactura")
         last: dict[str, Any] = {}
         for path in paths:
