@@ -10,8 +10,8 @@ description: >-
 
 # Accountant pilot
 
-Read and follow [`.cursor/accountant-context.md`](../../accountant-context.md).
+Read and follow [`.cursor/accountant-context.md`](../../accountant-context.md) and [`.cursor/rules/accountant-machine.mdc`](../../rules/accountant-machine.mdc).
 
-Do the requested flow with Markus tools first. On correction: verify it, add sanitized evidence under `tests/accountant_scenarios/`, fix Markus, run `python scripts/quality_gate.py`, ask them to reload Markus MCP, then retry.
+Do the requested flow with Markus tools first. On correction: verify it, then change this repository as needed (source, tests, findings). Run `python scripts/quality_gate.py`, ask them to reload Markus MCP, then retry. You may read a file they provide outside this repo; do not write or delete outside this repo.
 
 Publish only with `python scripts/accountant-checkpoint.py` on the current `ap/<name>` branch.

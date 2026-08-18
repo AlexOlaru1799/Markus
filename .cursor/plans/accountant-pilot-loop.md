@@ -32,6 +32,7 @@ This file is the Cursor Plan we follow. Cursor stores Plan-mode files only under
 - Checkpoints publish to the current `ap/<name>` branch (any slug: `ap/laurentiu`, `ap/maria`, …). No person name is hardcoded. The original text’s `accountant-pilot/laurentiu` is an example of an older naming scheme.
 - No CodFirma allowlist. The accountant uses test accounts; Markus does not abort writes for a “wrong firm.” The fail-closed pilot-firm check and `test-firm-guard` todo are superseded.
 - A closed working month is a warning, not a Markus write veto. After explicit confirm, proceed; SAGA may still refuse. Screen rights remain a hard block.
+- On the accountant PC, Cursor Run Mode is **Run Everything** so they are not shown Allow/Deny cards. No VM. Anything **inside this Markus repo** may be modified or extended. Outside the checkout the agent may **read** a file the accountant provides; it must not write/delete there or change Windows. Workspace = Markus clone only. Markus `confirm_write` still gates SAGA. Windows has no Cursor sandbox.
 
 ## Architecture
 

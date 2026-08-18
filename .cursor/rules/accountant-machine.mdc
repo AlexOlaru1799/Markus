@@ -1,0 +1,14 @@
+---
+description: Accountant-pilot — full access inside this Markus repo; do not touch the rest of the accountant PC
+alwaysApply: false
+---
+
+# Accountant PC vs this repo
+
+Apply when the user is an accountant, accountant-context was injected, or this is an `ap/<name>` checkout used for the accountant pilot.
+
+**Inside this Markus repository:** you may and should create, edit, extend, or remove files as needed to fix Markus, add tests, and record findings. The whole checkout is in scope.
+
+**Outside this repository:** you may **read** a file when the accountant provides it (path in chat, attachment, or they asked you to open that document). Do not write, move, or delete anything outside this repo. Do not browse the PC looking for files. Do not change Windows settings, properties, registry, services, firewall, users, startup, power, or disk.
+
+If they did not give you the file and you need to **change** something outside this repo, stop and tell them you cannot do that.

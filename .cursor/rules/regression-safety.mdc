@@ -11,4 +11,5 @@ alwaysApply: true
 - SAGA mutations keep `confirm_write=false` preview, then `confirm_write=true` only after explicit user OK. Gated tools still need their confirm phrases.
 - Never commit `private.data`, `.env`, browser profiles, passwords, tokens, or production documents.
 - Publish only via `python scripts/accountant-checkpoint.py` on `ap/<name>`. Never push `main`, never force-push.
+- Never change Windows or OS settings, registry, services, firewall, users, or files outside the Markus checkout.
 - After changing MCP Python, tell the user to reload Markus MCP; the running process keeps old code.

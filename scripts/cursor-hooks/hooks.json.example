@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"./hooks/session-start-accountant.ps1\""
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"./hooks/before-shell-git.ps1\"",
+        "failClosed": true
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"./hooks/pre-tool-use-accountant.ps1\"",
+        "failClosed": true
+      }
+    ]
+  }
+}
