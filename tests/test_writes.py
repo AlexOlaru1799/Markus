@@ -37,6 +37,34 @@ class NomenclatorPreviewTests(unittest.TestCase):
         result = nomenclator.create_record("articole", {"cod": "A1"}, noun="item")
         self.assertIn("Denumire", result.get("missing_required") or [])
 
+    def test_chart_of_accounts_create_preview(self) -> None:
+        preview = nomenclator.create_record(
+            "plan_conturi",
+            {"cont": "60013", "denumire": "DEMO CONT", "tip": "A"},
+            noun="account",
+            confirm_write=False,
+            action="create_account",
+        )
+        self.assertTrue(preview.get("requires_confirmation"))
+        self.assertEqual(preview["mapped_fields"]["Cont"], "60013")
+        self.assertEqual(preview["mapped_fields"]["Denumire"], "DEMO CONT")
+        self.assertEqual(preview["mapped_fields"]["Tip"], "A")
+        self.assertEqual(preview["mapped_fields"]["Id"], "60013")
+
+    def test_chart_of_accounts_sintetic_is_not_tip(self) -> None:
+        result = nomenclator.create_record(
+            "plan_conturi",
+            {"cont": "60013", "denumire": "DEMO CONT", "tip": "sintetic"},
+            noun="account",
+        )
+        self.assertIn("Tip", result.get("missing_required") or [])
+
+    def test_chart_of_accounts_requires_cont(self) -> None:
+        result = nomenclator.create_record(
+            "plan_conturi", {"denumire": "DEMO CONT"}, noun="account"
+        )
+        self.assertIn("Cont", result.get("missing_required") or [])
+
     def test_casa_preview(self) -> None:
         preview = bank.add_casa_entry(
             {"date": "15.08.2026", "amount": "100", "account": "5311"},
@@ -213,6 +241,7 @@ class CatalogTests(unittest.TestCase):
             "saga_create_supplier",
             "saga_create_item",
             "saga_chart_of_accounts",
+            "saga_create_account",
             "saga_add_iesire",
             "saga_add_intrare",
             "saga_post_bank_entries",

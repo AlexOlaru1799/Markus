@@ -69,7 +69,8 @@ mcp = MCPServer(
         "saga_describe_screen(screen) dumps catalog columns/aliases/lookups (clienti, iesiri_valuta, …). "
         "Generic reads: saga_list_rows / saga_get_row / saga_lookup / saga_export_grid on onboarded screens. "
         "Master data: saga_*_supplier (Furnizori, not Clienti), saga_*_item (Articole), "
-        "saga_chart_of_accounts (read). "
+        "saga_chart_of_accounts (read), saga_create_account (Plan de conturi; Cont + Denumire; "
+        "Tip is A/P/B, not sintetic/analitic). "
         "Named document writes: saga_add_iesire (RON sales; FX routes to saga_add_iesiri_valuta), "
         "saga_add_intrare (purchases; FX uses IntrariValuta; bulk NIR still saga_import_xml), "
         "saga_post_bank_entries (BankBundle or I_/P_ XML via Import extrase; FX Moneda uses Jurnal de bancă valută), "
@@ -100,7 +101,7 @@ mcp = MCPServer(
         "pass only fields the user specified — never invent optional values. Mutations "
         "(create/update/remove/add_iesiri_valuta/add_iesire/add_intrare/post_bank_entries/add_casa_entry/"
         "import_xml/import_iesiri_xml/import_incasari_xml/wipe_data/create_supplier/update_supplier/"
-        "remove_supplier/create_item/update_item/remove_item/set_interval/close_month/"
+        "remove_supplier/create_item/update_item/remove_item/create_account/set_interval/close_month/"
         "efactura_submit/efactura_cancel/validate_document/submit_declaration) require confirm_write=false preview first, then "
         "confirm_write=true after explicit user OK. close_month also needs confirm_phrase='INCHIDE LUNA'; "
         "efactura_submit needs 'TRIMITE EFACTURA'; efactura_cancel needs 'ANULEAZA EFACTURA'; "
@@ -801,7 +802,7 @@ def saga_remove_item(item_id: str, confirm_write: bool = False) -> dict[str, Any
 
 @mcp.tool(
     title="SAGA chart of accounts",
-    description="List Plan de conturi (read-only). Optional query filter.",
+    description="List Plan de conturi. Optional query filter.",
     annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
 )
 def saga_chart_of_accounts(page: int = 1, page_size: int = 100, query: str | None = None) -> dict[str, Any]:
@@ -811,6 +812,33 @@ def saga_chart_of_accounts(page: int = 1, page_size: int = 100, query: str | Non
     if result.get("ok"):
         result["accounts"] = result.get("rows") or result.get("accounts") or []
     return result
+
+
+@mcp.tool(
+    title="SAGA account fields",
+    description=(
+        "List writable Plan de conturi fields/aliases. Cont and Denumire required on create. "
+        "Tip is A/P/B (Activ/Pasiv/Bifuncțional). Do not invent Tip."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False),
+)
+def saga_account_fields() -> dict[str, Any]:
+    return saga_nomenclator.field_catalog("plan_conturi")
+
+
+@mcp.tool(
+    title="SAGA create account",
+    description=(
+        "Create a Plan de conturi row. Required: Cont, Denumire. Optional Tip A/P/B. "
+        "sintetic/analitic is not Tip — omit parent Sintetic when the account itself is synthetic. "
+        "Preview with confirm_write=false, then true after explicit user OK."
+    ),
+    annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
+)
+def saga_create_account(fields: dict[str, Any], confirm_write: bool = False) -> dict[str, Any]:
+    return saga_nomenclator.create_record(
+        "plan_conturi", fields, noun="account", confirm_write=confirm_write, action="create_account"
+    )
 
 
 @mcp.tool(

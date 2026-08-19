@@ -4,16 +4,28 @@
   "controller": "PlanConturi",
   "primary_key": "Cont",
   "route": "PlanConturi",
-  "write_style": "ex",
+  "write_style": "classic",
   "risk": "high",
   "actions": {
-    "get_data": ["PlanConturi/GetData_PlanConturi", "PlanConturi/GetData"]
+    "get_data": ["PlanConturi/GetData_PlanConturi", "PlanConturi/GetData"],
+    "create": ["PlanConturi/Create_PlanConturi"],
+    "edit": ["PlanConturi/Edit_PlanConturi"],
+    "delete": ["PlanConturi/Delete_PlanConturi"]
   },
-  "usage": "Read-only in Wave 3. Use saga_chart_of_accounts or saga_list_rows(screen=plan_conturi). Writes only if a later job needs them.",
+  "usage": "Pass only user-specified Plan de conturi fields. Cont, Denumire, and Tip (A/P/B) are required on create. Do not invent Tip.",
+  "notes": [
+    "SAGA WEB posts classic RowData (not Data[col] ex). Warning Completati toate datele + flagId #dropdownToggle_TipCont means Tip is missing.",
+    "Sintetic vs analitic is the account-code hierarchy (GetTipSintetic), not Tip. Values sintetic/analitic on Tip are dropped.",
+    "Id is copied from Cont on create. Blocat/ContInchidere are optional."
+  ],
   "columns": [
-    {"name": "Cont", "aliases": ["cont", "account", "cod"], "kind": "text", "description": "Account code"},
-    {"name": "Denumire", "aliases": ["denumire", "name"], "kind": "text", "description": "Account name"},
-    {"name": "Tip", "aliases": ["tip"], "kind": "text", "description": "Account type"},
-    {"name": "Sintetic", "aliases": ["sintetic"], "kind": "text", "description": "Synthetic account"}
+    {"name": "Cont", "aliases": ["cont", "account", "cod"], "kind": "text", "description": "Account code (required on create)", "required_on_create": true},
+    {"name": "Id", "aliases": ["id"], "kind": "text", "description": "Row id; copied from Cont on create"},
+    {"name": "Denumire", "aliases": ["denumire", "name"], "kind": "text", "description": "Account name (required on create)", "required_on_create": true},
+    {"name": "Tip", "aliases": ["tip", "account_type"], "kind": "combo", "selectModel": "TipCont", "description": "A=Activ, P=Pasiv, B=Bifuncțional (required on create)", "required_on_create": true},
+    {"name": "Sintetic", "aliases": ["sintetic", "parent", "cont_sintetic"], "kind": "text", "description": "Parent synthetic account for analytics; omit when this account is itself synthetic"},
+    {"name": "ContInchidere", "aliases": ["cont_inchidere"], "kind": "text", "description": "Closing account"},
+    {"name": "Blocat", "aliases": ["blocat", "locked"], "kind": "text", "description": "Lock flag"},
+    {"name": "OriginalID", "aliases": ["original_id"], "kind": "text", "description": "Original id"}
   ]
 }

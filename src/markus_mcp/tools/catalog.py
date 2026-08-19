@@ -332,8 +332,20 @@ TOOL_CATALOG: tuple[ToolInfo, ...] = (
     ToolInfo(
         name="saga_chart_of_accounts",
         title="SAGA chart of accounts",
-        description="List Plan de conturi (read-only).",
+        description="List Plan de conturi.",
         read_only=True,
+    ),
+    ToolInfo(
+        name="saga_account_fields",
+        title="SAGA account fields",
+        description="List writable Plan de conturi fields/aliases.",
+        read_only=True,
+    ),
+    ToolInfo(
+        name="saga_create_account",
+        title="SAGA create account",
+        description="Create a Plan de conturi row with only user-specified fields; requires confirm_write.",
+        read_only=False,
     ),
     ToolInfo(
         name="saga_add_iesire",

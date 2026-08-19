@@ -40,6 +40,94 @@ def _normalize_geo(row: dict[str, str]) -> dict[str, str]:
     return row
 
 
+_PLAN_TIP = {
+    "a": "A",
+    "activ": "A",
+    "p": "P",
+    "pasiv": "P",
+    "b": "B",
+    "bifunctional": "B",
+    "bifuncțional": "B",
+}
+_PLAN_KIND = {"sintetic", "synthetic", "s", "analitic", "analytic"}
+
+
+def _normalize_plan_conturi(row: dict[str, str]) -> dict[str, str]:
+    """Tip is A/P/B. sintetic/analitic is hierarchy, not Tip — drop it rather than invent A/P/B."""
+    out = dict(row)
+    tip = str(out.get("Tip") or "").strip()
+    if tip:
+        folded = tip.casefold()
+        if folded in _PLAN_KIND:
+            out.pop("Tip", None)
+        elif folded in _PLAN_TIP:
+            out["Tip"] = _PLAN_TIP[folded]
+    syn = str(out.get("Sintetic") or "").strip().casefold()
+    if syn in _PLAN_KIND or syn in {"true", "yes", "1", "da"}:
+        out.pop("Sintetic", None)
+    cont = str(out.get("Cont") or "").strip()
+    if cont and not str(out.get("Id") or "").strip():
+        out["Id"] = cont
+    return out
+
+
+def _toolbar_create(page, table: str, row_data: dict[str, str]) -> dict[str, Any]:
+    """Adaug → fill visible row fields → Salvez (Plan de conturi and similar grids)."""
+    try:
+        page.evaluate(
+            """(name) => {
+              const table = (typeof getTable === 'function') ? getTable(name) : null;
+              if (table && table.ToolbarActionAdd) return table.ToolbarActionAdd();
+              return false;
+            }""",
+            table,
+        )
+        page.wait_for_timeout(800)
+    except Exception:
+        pass
+    filled: list[str] = []
+    for field, value in row_data.items():
+        loc = page.locator(f".rowFieldInput_{field}")
+        if loc.count() == 0:
+            continue
+        try:
+            target = loc.last
+            target.click(timeout=2_000)
+            target.fill("")
+            target.type(str(value), delay=10)
+            filled.append(field)
+        except Exception:
+            continue
+    saved = False
+    try:
+        saved = bool(
+            page.evaluate(
+                """(name) => {
+                  const table = (typeof getTable === 'function') ? getTable(name) : null;
+                  if (table && table.ToolbarActionSave) return table.ToolbarActionSave();
+                  return false;
+                }""",
+                table,
+            )
+        )
+        page.wait_for_timeout(1_500)
+    except Exception:
+        saved = False
+    if not saved:
+        for label in ("Salvez", "Salveaza", "Salvează", "Save"):
+            loc = page.locator(f'button:has-text("{label}")')
+            if loc.count() == 0:
+                continue
+            try:
+                loc.first.click(timeout=3_000)
+                page.wait_for_timeout(1_500)
+                saved = True
+                break
+            except Exception:
+                continue
+    return {"filled": filled, "saved": saved}
+
+
 def field_catalog(operation: str) -> dict[str, Any]:
     return saga_schema.describe_screen(operation)
 
@@ -96,6 +184,19 @@ def create_record(
             "writable_fields": catalog.get("fields"),
         }
     row_data = _normalize_geo(dict(mapped.fields))
+    if spec.operation == "plan_conturi":
+        before = dict(row_data)
+        row_data = _normalize_plan_conturi(row_data)
+        if row_data.get("Id") and not before.get("Id"):
+            mapped.auto_filled["Id"] = row_data["Id"]
+        if not str(row_data.get("Tip") or "").strip():
+            return {
+                "ok": False,
+                "error": "Missing required field(s): Tip",
+                "missing_required": ["Tip"],
+                "details": "Plan de conturi Tip must be A (Activ), P (Pasiv), or B (Bifuncțional).",
+                "writable_fields": catalog.get("fields"),
+            }
     verb = action or f"create_{noun}"
     if not confirm_write:
         return {
@@ -135,12 +236,17 @@ def create_record(
                 mapped.auto_filled[spec.pk] = generated
         result = client.create(page, row_data, allow_choices=True)
         payload_out = result.as_dict()
+        via = "grid"
+        ui: dict[str, Any] | None = None
+        if not result.ok and spec.operation == "plan_conturi":
+            ui = _toolbar_create(page, spec.table, row_data)
+            via = "ui"
         verified = client.get(page, row_data.get(spec.pk) or payload_out.get("new_id") or "")
-        ok = bool(result.ok)
+        ok = bool(result.ok) or bool(verified)
         return {
             "ok": ok,
             "created": ok,
-            "via": "grid",
+            "via": via if ok else "grid",
             "screen": spec.operation,
             "endpoint": payload_out.get("endpoint"),
             "request": payload,
@@ -148,6 +254,7 @@ def create_record(
             "auto_filled": mapped.auto_filled,
             "response": payload_out.get("response"),
             "outcome": result.outcome,
+            "ui": ui,
             noun: verified,
             "url": page.url,
             "screenshot_path": saga_session._save_screenshot(

@@ -172,7 +172,54 @@ class SagaGrid:
                 "rows_count": saga_protocol.rows_count_from_payload(body),
                 "ok": True,
             }
+        virtual = self._virtual_rows(page, keyword=keyword, skip=skip, batch_size=batch_size)
+        if virtual.get("ok"):
+            return virtual
         return {**last, "rows": last.get("rows") or []}
+
+    def _virtual_rows(
+        self,
+        page,
+        *,
+        keyword: str | None = None,
+        skip: int = 0,
+        batch_size: int = 50,
+    ) -> dict[str, Any]:
+        """Use AdvancedControls GetVirtualData when GetData is HTML/empty."""
+        try:
+            rows = page.evaluate(
+                """(name) => {
+                  try {
+                    const table = (typeof getTable === 'function') ? getTable(name) : null;
+                    if (!table || !table.GetVirtualData) return [];
+                    const data = table.GetVirtualData() || [];
+                    return data.filter((row) => row && typeof row === 'object');
+                  } catch (e) {
+                    return [];
+                  }
+                }""",
+                self.model.table_name,
+            )
+        except Exception:
+            rows = []
+        collected = [row for row in (rows or []) if isinstance(row, dict)]
+        if not collected:
+            return {"ok": False, "rows": [], "error": "GetVirtualData empty."}
+        needle = str(keyword or "").strip().casefold()
+        if needle:
+            collected = [
+                row
+                for row in collected
+                if needle in " ".join(str(value) for value in row.values() if value not in (None, "")).casefold()
+            ]
+        start = max(skip, 0)
+        size = max(batch_size, 0) or len(collected)
+        return {
+            "ok": True,
+            "via": "virtual",
+            "rows": collected[start : start + size],
+            "rows_count": len(collected),
+        }
 
     def get(self, page, pk: str) -> dict[str, Any] | None:
         key = str(pk or "").strip()

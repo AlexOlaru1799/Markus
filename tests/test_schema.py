@@ -64,6 +64,17 @@ class SchemaMapTests(unittest.TestCase):
         self.assertEqual(purchase.fields["Furnizor"], "Vendor SRL")
         self.assertEqual(purchase.fields["NrDoc"], "F9")
 
+    def test_plan_conturi_aliases(self) -> None:
+        mapped = schema.map_fields(
+            "plan_conturi",
+            {"account": "60013", "name": "DEMO CONT", "tip": "A"},
+            required_on_create=True,
+        )
+        self.assertEqual(mapped.fields["Cont"], "60013")
+        self.assertEqual(mapped.fields["Denumire"], "DEMO CONT")
+        self.assertEqual(mapped.fields["Tip"], "A")
+        self.assertEqual(mapped.missing_required, [])
+
     def test_describe_matches_named_catalogs(self) -> None:
         partners = schema.describe_screen("clienti")
         names = {item["name"] for item in partners["fields"]}
